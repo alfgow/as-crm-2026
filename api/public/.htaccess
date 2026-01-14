@@ -1,5 +1,9 @@
 RewriteEngine On
 
+# Asegurar que el Header Authorization llegue a PHP
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 # Permitir que Apache sirva archivos existentes
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

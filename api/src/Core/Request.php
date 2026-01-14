@@ -14,6 +14,16 @@ final class Request {
 
     $uri = $_SERVER['REQUEST_URI'] ?? '/';
     $uri = explode('?', $uri, 2)[0];
+    
+    // Detect base path to support running in subdirectories
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $dirname = dirname($scriptName);
+    $dirname = str_replace('\\', '/', $dirname); // Normalize windows paths
+
+    if ($dirname !== '/' && str_starts_with($uri, $dirname)) {
+        $uri = substr($uri, strlen($dirname));
+    }
+
     $this->path = '/' . ltrim($uri, '/');
 
     $this->query = $_GET ?? [];

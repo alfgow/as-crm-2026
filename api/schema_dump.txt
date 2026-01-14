@@ -1,0 +1,8 @@
+id (Null: NO, Default: NULL)
+nombre_usuario (Null: NO, Default: NULL)
+apellidos_usuario (Null: NO, Default: NULL)
+usuario (Null: NO, Default: NULL)
+corto_usuario (Null: NO, Default: NULL)
+mail_usuario (Null: NO, Default: NULL)
+password (Null: NO, Default: NULL)
+tipo_usuario (Null: NO, Default: NULL)
