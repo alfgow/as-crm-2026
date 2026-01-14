@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Permitir que Apache sirva archivos existentes
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Redirigir todo a index.php
+RewriteRule ^ index.php [QSA,L]
