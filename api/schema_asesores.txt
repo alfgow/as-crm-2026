@@ -1,0 +1,5 @@
+id (Type: int, Null: NO, Default: NULL, Extra: auto_increment)
+nombre_asesor (Type: varchar(60), Null: NO, Default: NULL, Extra: )
+email (Type: varchar(60), Null: NO, Default: NULL, Extra: )
+celular (Type: varchar(20), Null: NO, Default: NULL, Extra: )
+telefono (Type: varchar(20), Null: NO, Default: NULL, Extra: )

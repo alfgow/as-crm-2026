@@ -25,4 +25,11 @@ return [
     'allow_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     'allow_headers' => ['Authorization', 'Content-Type', 'X-Request-Id'],
   ],
+  'n8n' => [
+    'events_webhook_url' => getenv('N8N_EVENTS_WEBHOOK_URL') ?: '',
+    'hmac_secret' => getenv('N8N_HMAC_SECRET') ?: '',
+    'http_timeout' => (int)(getenv('OUTBOX_HTTP_TIMEOUT') ?: 10),
+    'max_attempts' => (int)(getenv('OUTBOX_MAX_ATTEMPTS') ?: 20),
+    'batch_size' => (int)(getenv('OUTBOX_BATCH_SIZE') ?: 20),
+  ],
 ];

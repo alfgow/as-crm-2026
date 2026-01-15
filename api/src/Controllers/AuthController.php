@@ -65,6 +65,7 @@ final class AuthController {
       'role' => $user['rol'] ?? 'admin',
       'iat' => $now,
       'exp' => $now + $this->config['jwt']['access_ttl'],
+      'jti' => bin2hex(random_bytes(16)), // Add Unique Identifier
     ];
 
     $refreshPayload = [
@@ -139,6 +140,7 @@ final class AuthController {
       'role' => $payload['role'] ?? 'admin',
       'iat' => $now,
       'exp' => $now + $this->config['jwt']['access_ttl'],
+      'jti' => bin2hex(random_bytes(16)), // New JTI for new access token
     ];
 
     $accessToken = Jwt::sign($accessPayload, $this->config['jwt']['access_secret']);
@@ -155,25 +157,31 @@ final class AuthController {
   }
 
   public function logout(Request $req, Response $res, array $params): void {
+    // 1. Revoke Access Token (Bearer) if present
+    $authHeader = $req->getHeader('Authorization');
+    if ($authHeader && preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+        $bearerToken = $matches[1];
+        $payload = Jwt::verify($bearerToken, $this->config['jwt']['access_secret']);
+        
+        if ($payload && isset($payload['jti'], $payload['sub'], $payload['exp'])) {
+            $this->tokens->blacklistAccessToken((string)$payload['jti'], (int)$payload['sub'], (int)$payload['exp']);
+        }
+    }
+
+    // 2. Revoke Refresh Token if passed
     $body = $req->getJson() ?? [];
     $refreshToken = (string)($body['refreshToken'] ?? '');
 
-    if ($refreshToken === '') {
-      $res->json([
-        'data' => null,
-        'meta' => ['requestId' => $req->getRequestId()],
-        'errors' => [[ 'code' => 'bad_request', 'message' => 'refreshToken is required' ]]
-      ], 400);
-    }
-
-    $payload = Jwt::verify($refreshToken, $this->config['jwt']['refresh_secret']);
-    if ($payload && !empty($payload['sub']) && !empty($payload['jti'])) {
-      $this->tokens->revokeRefreshToken((int)$payload['sub'], (string)$payload['jti']);
+    if ($refreshToken !== '') {
+        $payload = Jwt::verify($refreshToken, $this->config['jwt']['refresh_secret']);
+        if ($payload && !empty($payload['sub']) && !empty($payload['jti'])) {
+             $this->tokens->revokeRefreshToken((int)$payload['sub'], (string)$payload['jti']);
+        }
     }
 
     $this->apiLogs->log($req, 200, 'auth.logout');
     $res->json([
-      'data' => ['ok' => true],
+      'data' => ['ok' => true, 'message' => 'Logged out successfully (Access Token blacklisted, Refresh Token revoked)'],
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);

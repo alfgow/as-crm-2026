@@ -59,4 +59,20 @@ final class TokenRepository {
     $st = $this->pdo->prepare($sql);
     $st->execute([':user_id' => $userId, ':jti' => $jti]);
   }
+
+  // --- Access Token Blacklist ---
+
+  public function blacklistAccessToken(string $jti, int $userId, int $expiresTimestamp): void {
+      $expiresAt = date('Y-m-d H:i:s', $expiresTimestamp);
+      $sql = "INSERT INTO usuarios_access_token_blacklist (jti, user_id, expires_at) VALUES (:jti, :user_id, :expires_at)";
+      $st = $this->pdo->prepare($sql);
+      $st->execute([':jti' => $jti, ':user_id' => $userId, ':expires_at' => $expiresAt]);
+  }
+
+  public function isAccessTokenBlacklisted(string $jti): bool {
+      $sql = "SELECT 1 FROM usuarios_access_token_blacklist WHERE jti = :jti LIMIT 1";
+      $st = $this->pdo->prepare($sql);
+      $st->execute([':jti' => $jti]);
+      return (bool)$st->fetchColumn();
+  }
 }

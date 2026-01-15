@@ -7,9 +7,12 @@ use App\Core\Response;
 
 final class AuthMiddleware {
   private string $accessSecret;
+  private \App\Repositories\TokenRepository $tokens;
 
-  public function __construct(string $accessSecret) {
+  public function __construct(string $accessSecret, \App\Repositories\TokenRepository $tokens) {
+    echo ""; // Dummy to avoid whitespace issues
     $this->accessSecret = $accessSecret;
+    $this->tokens = $tokens;
   }
 
   /**
@@ -32,6 +35,17 @@ final class AuthMiddleware {
         'meta' => ['requestId' => $req->getRequestId()],
         'errors' => [[ 'code' => 'unauthorized', 'message' => 'Invalid or expired token' ]]
       ], 401);
+    }
+
+    // Check Blacklist if JTI is present
+    if (isset($payload['jti'])) {
+        if ($this->tokens->isAccessTokenBlacklisted((string)$payload['jti'])) {
+             $res->json([
+                'data' => null,
+                'meta' => ['requestId' => $req->getRequestId()],
+                'errors' => [[ 'code' => 'unauthorized', 'message' => 'Token has been revoked' ]]
+              ], 401);
+        }
     }
 
     return [

@@ -37,21 +37,31 @@ api/
 ---
 
 ## 🔥 Key Features
-
 ### 🔐 Advanced Security
 - **JWT Authentication**: Short-lived `Access Tokens` (15m) + Long-lived `Refresh Tokens` (30d).
-- **Refresh Rotation**: Detection of token theft via reuse chains.
-- **Secure Handling**: Passwords hashed, tokens hashed in DB.
+- **Token Blacklist**: Immediate logout capability via `usuarios_access_token_blacklist`.
+- **Refresh Rotation**: Secure session renewal detecting theft reuse.
 
-### 🔌 API Endpoints
+### 🧠 Smart Policy Engine
+- **Auto-Calculation**: Automatic derivation of policy numbers, dates, and effective periods.
+- **Intelligent Defaults**: Auto-fill for related entities (`id_obligado`, `id_fiador`) and properties data.
+- **Strict Enums**: Numeric state management (1=Vigente, 2=Concluida...) for consistency.
 
-| Method | Endpoint | Description | Auth Required |
+### 🤖 Event-Driven Automation (n8n Integration)
+- **Outbox Pattern**: Transactional event emitting via `event_outbox` table. Guaranteed delivery.
+- **Worker Dispatcher**: PHP CLI worker (`bin/dispatch_outbox.php`) to push events to n8n webhooks.
+- **HMAC Security**: All calls to/from n8n are signed with SHA-256 for integrity verification.
+- **Lifecycle Tracking**: Full log of automation execution in `automation_runs`.
+
+### 🔌 Key Endpoints
+| Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
-| `GET` | `/api/v1/health` | System status check | ❌ |
 | `POST` | `/api/v1/auth/login` | Obtain Access/Refresh tokens | ❌ |
-| `POST` | `/api/v1/auth/refresh` | Rotate Access token | ❌ |
-| `POST` | `/api/v1/auth/logout` | Revoke Refresh token | ❌ |
-| `GET` | `/api/v1/users/me` | Get current user profile | ✅ |
+| `POST` | `/api/v1/auth/logout` | Revoke tokens (Blacklist) | ✅ |
+| `GET` | `/api/v1/polizas` | List Policies (Smart Filters) | ✅ |
+| `POST` | `/api/v1/polizas` | Create Policy (Auto-Calculated) | ✅ |
+| `POST` | `/api/v1/events/emit` | Manually emit business event | ✅ |
+| `POST` | `/api/v1/automations/callbacks/{id}` | Receive n8n result (HMAC) | ⚠️ |
 
 ---
 
@@ -61,59 +71,55 @@ api/
 *   PHP 8.1 or higher
 *   MySQL 8.0
 *   Apache mod_rewrite enabled
+*   (Optional) Cron/Supervisor for Worker
 
 ### 2. Configure Environment
-Copy the example environment file and configure your database credentials:
-```bash
-cp .env.example .env
-```
-Edit `.env`:
+Copy `.env.example` -> `.env` and configure:
 ```ini
 DB_HOST=localhost
 DB_NAME=as_db
-JWT_ACCESS_SECRET=your_super_secret_key
+JWT_ACCESS_SECRET=super_secret
+N8N_EVENTS_WEBHOOK_URL=https://n8n.your-domain.com/webhook/...
+N8N_HMAC_SECRET=another_secret_for_signing
 ```
 
 ### 3. Database Migration
-Run this SQL to enable the secure Refresh Token system:
-```sql
-CREATE TABLE `usuarios_refresh_tokens` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `jti` varchar(36) NOT NULL,
-  `token_hash` varchar(255) NOT NULL,
-  `expires_at` datetime NOT NULL,
-  `revoked_at` datetime DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_user_jti` (`user_id`, `jti`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+Run the included SQL script to create all necessary tables (Auth, Outbox, Logs):
+`migration_auth_2026_01_14.sql`
+
+This script creates:
+- `usuarios_refresh_tokens`
+- `usuarios_access_token_blacklist`
+- `event_outbox`
+- `automation_runs`
+
+### 4. Running the Worker (Automation)
+To dispatch events to n8n, run the worker process. Ideally, configure via Supervisor or Cron (every minute):
+```bash
+php bin/dispatch_outbox.php
 ```
 
 ---
 
-## 👨‍💻 Usage
+## 👨‍💻 Usage & Standards
+
+### Standards
+- **Response Wrapper**: `{ data, meta, errors }`.
+- **Pagination**: Use `?page=1&limit=20`.
+- **Enums**: Always use numeric IDs for states (e.g., Póliza Status: 1=Vigente).
 
 ### Making Requests
-The API accepts and returns **JSON**. Ensure you send the correct headers:
-
 **Request Headers:**
 ```http
 Content-Type: application/json
-Accept: application/json
 Authorization: Bearer <YOUR_ACCESS_TOKEN>
 ```
 
 **Example Response:**
 ```json
 {
-  "data": {
-    "status": "ok",
-    "ts": "2026-01-14T12:00:00-06:00"
-  },
-  "meta": {
-    "requestId": "a1b2c3d4"
-  },
+  "data": { "status": "ok" },
+  "meta": { "requestId": "a1b2c3d4", "page": 1, "total": 100 },
   "errors": []
 }
 ```

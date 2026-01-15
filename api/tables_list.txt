@@ -1,0 +1,25 @@
+--- Tables in Database ---
+- api_clients
+- api_logs
+- api_refresh_tokens
+- api_token_revocations
+- arrendadores
+- arrendadores_archivos
+- asesores
+- blog_posts
+- ia_interacciones
+- inmuebles
+- inquilinos
+- inquilinos_archivos
+- inquilinos_direccion
+- inquilinos_fiador
+- inquilinos_historial_vivienda
+- inquilinos_trabajo
+- inquilinos_validaciones
+- inquilinos_validaciones_backup
+- polizas
+- prospect_update_tokens
+- usuarios2
+- usuarios_refresh_tokens
+- validaciones_legal
+- ventasvillanuevagarcia

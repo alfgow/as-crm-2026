@@ -3,43 +3,19 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Response;
-use App\Repositories\UserRepository;
+use App\Repositories\AsesorRepository;
 
-final class UsersController {
+final class AsesoresController {
   private array $config;
-  private UserRepository $users;
+  private AsesorRepository $asesores;
 
-  public function __construct(array $config, UserRepository $users) {
+  public function __construct(array $config, AsesorRepository $asesores) {
     $this->config = $config;
-    $this->users = $users;
+    $this->asesores = $asesores;
   }
 
-  public function me(Request $req, Response $res, array $ctx): void {
-    $user = $this->users->findById($ctx['userId']);
-    if (!$user) {
-      $res->json([
-        'data' => null,
-        'meta' => ['requestId' => $req->getRequestId()],
-        'errors' => [[ 'code' => 'not_found', 'message' => 'User not found' ]],
-      ], 404);
-    }
-
-    unset($user['password']); // nunca regreses hashes
-    $res->json([
-      'data' => $user,
-      'meta' => ['requestId' => $req->getRequestId()],
-      'errors' => [],
-    ]);
-  }
   public function index(Request $req, Response $res, array $ctx): void {
-    // TODO: Pagination support
-    $all = $this->users->findAll();
-    
-    // Clean passwords
-    $all = array_map(function($u) {
-      unset($u['password']);
-      return $u;
-    }, $all);
+    $all = $this->asesores->findAll();
 
     $res->json([
       'data' => $all,
@@ -52,12 +28,10 @@ final class UsersController {
   }
 
   public function store(Request $req, Response $res, array $ctx): void {
-    // Only admins? 
-    // if ($ctx['role'] !== 'admin') ...
-
     $body = $req->getJson();
-    // Validate required fields
-    if (empty($body['email']) || empty($body['password']) || empty($body['nombre_usuario'])) {
+    
+    // Validar requeridos
+    if (empty($body['nombre_asesor']) || empty($body['email']) || empty($body['celular'])) {
         $res->json([
             'data' => null,
             'meta' => ['requestId' => $req->getRequestId()],
@@ -66,17 +40,15 @@ final class UsersController {
     }
 
     try {
-        $id = $this->users->create($body);
-        $user = $this->users->findById($id);
-        unset($user['password']);
+        $id = $this->asesores->create($body);
+        $item = $this->asesores->findById($id);
 
         $res->json([
-            'data' => $user,
+            'data' => $item,
             'meta' => ['requestId' => $req->getRequestId()],
             'errors' => []
         ], 201);
     } catch (\Throwable $e) {
-        // e.g. duplicate email
         $res->json([
             'data' => null,
             'meta' => ['requestId' => $req->getRequestId()],
@@ -86,23 +58,19 @@ final class UsersController {
   }
 
   public function show(Request $req, Response $res, array $params): void {
-      // params contains route params if router logic supports it, e.g. ['id' => 123]
-      // But my simple router in App.php passes params as last arg
-      // Need to verifying how App.php calls this. `handler($req, $res, $params)`
       $id = (int)($params['id'] ?? 0);
-      $user = $this->users->findById($id);
+      $item = $this->asesores->findById($id);
 
-      if (!$user) {
+      if (!$item) {
           $res->json([
               'data' => null,
               'meta' => ['requestId' => $req->getRequestId()],
-              'errors' => [['code' => 'not_found', 'message' => 'User not found']]
+              'errors' => [['code' => 'not_found', 'message' => 'Asesor not found']]
           ], 404);
       }
 
-      unset($user['password']);
       $res->json([
-          'data' => $user,
+          'data' => $item,
           'meta' => ['requestId' => $req->getRequestId()],
           'errors' => []
       ]);
@@ -120,9 +88,8 @@ final class UsersController {
           ], 400);
       }
 
-      $this->users->update($id, $body);
-      $updated = $this->users->findById($id);
-      unset($updated['password']);
+      $this->asesores->update($id, $body);
+      $updated = $this->asesores->findById($id);
 
       $res->json([
           'data' => $updated,
@@ -133,7 +100,7 @@ final class UsersController {
 
   public function destroy(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
-      $this->users->delete($id);
+      $this->asesores->delete($id);
 
       $res->json([
           'data' => ['success' => true, 'id' => $id],
@@ -141,4 +108,4 @@ final class UsersController {
           'errors' => []
       ]);
   }
-}  
+}
