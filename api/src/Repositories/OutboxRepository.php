@@ -14,7 +14,7 @@ final class OutboxRepository {
     $sql = "INSERT INTO event_outbox
       (correlation_id, event_type, aggregate_type, aggregate_id, payload_json, status, attempts, next_attempt_at, created_at)
       VALUES
-      (:correlation_id, :event_type, :aggregate_type, :aggregate_id, CAST(:payload_json AS JSON), 'pending', 0, NOW(), NOW())";
+      (:correlation_id, :event_type, :aggregate_type, :aggregate_id, CAST(:payload_json AS JSON), 'pending', 0, UTC_TIMESTAMP(), UTC_TIMESTAMP())";
 
     $st = $this->pdo->prepare($sql);
     $st->execute([
@@ -35,12 +35,12 @@ final class OutboxRepository {
   public function claimBatch(int $limit): array {
     $this->pdo->beginTransaction();
 
-    // Nota: status IN ('pending','failed') y next_attempt_at <= NOW()
+    // Nota: status IN ('pending','failed') y next_attempt_at <= UTC_TIMESTAMP()
     // SKIP LOCKED evita doble proceso si corren múltiples dispatchers.
     $sql = "SELECT id, correlation_id, event_type, aggregate_type, aggregate_id, payload_json, attempts
             FROM event_outbox
             WHERE status IN ('pending','failed')
-              AND next_attempt_at <= NOW()
+              AND next_attempt_at <= UTC_TIMESTAMP()
             ORDER BY id ASC
             LIMIT :lim
             FOR UPDATE SKIP LOCKED";
@@ -60,7 +60,7 @@ final class OutboxRepository {
     $in = implode(',', array_fill(0, count($ids), '?'));
 
     $upd = $this->pdo->prepare("UPDATE event_outbox
-      SET status='processing', attempts = attempts + 1, updated_at = NOW()
+      SET status='processing', attempts = attempts + 1, updated_at = UTC_TIMESTAMP()
       WHERE id IN ($in)");
     $upd->execute($ids);
 
@@ -77,15 +77,8 @@ final class OutboxRepository {
   }
 
   public function markDelivered(int $id): void {
-    // Note: delivered_at column needs to be added to event_outbox migration if not present,
-    // or just assume updated_at is enough. The migration we made earlier didn't specific 'delivered_at'.
-    // Let's assume we alter table or change query to not use delivered_at if it breaks.
-    // Based on user request, they pasted this code, so I should trust it or warn.
-    // Migration 762 did NOT have delivered_at. I will add it via migration sql update or just fix query.
-    // Actually, let's fix the query to simply update status.
-    
     $sql = "UPDATE event_outbox
-            SET status='delivered', last_error=NULL, updated_at=NOW()
+            SET status='delivered', next_attempt_at=NULL, last_error=NULL, delivered_at=UTC_TIMESTAMP(), updated_at=UTC_TIMESTAMP()
             WHERE id=:id";
     $st = $this->pdo->prepare($sql);
     $st->execute([':id' => $id]);
@@ -93,7 +86,7 @@ final class OutboxRepository {
 
   public function markFailed(int $id, string $error, \DateTimeInterface $nextAttemptAt): void {
     $sql = "UPDATE event_outbox
-            SET status='failed', last_error=:err, next_attempt_at=:next, updated_at=NOW()
+            SET status='failed', last_error=:err, next_attempt_at=:next, updated_at=UTC_TIMESTAMP()
             WHERE id=:id";
     $st = $this->pdo->prepare($sql);
     $st->execute([
@@ -105,7 +98,7 @@ final class OutboxRepository {
 
   public function markDead(int $id, string $error): void {
     $sql = "UPDATE event_outbox
-            SET status='dead', last_error=:err, updated_at=NOW()
+            SET status='dead', last_error=:err, updated_at=UTC_TIMESTAMP()
             WHERE id=:id";
     $st = $this->pdo->prepare($sql);
     $st->execute([

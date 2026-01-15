@@ -36,8 +36,9 @@ CREATE TABLE IF NOT EXISTS `event_outbox` (
 
   `status` ENUM('pending','processing','delivered','failed','dead') NOT NULL DEFAULT 'pending',
   `attempts` INT UNSIGNED NOT NULL DEFAULT 0,
-  `next_attempt_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `next_attempt_at` DATETIME NULL DEFAULT NULL,
   `last_error` TEXT NULL,
+  `delivered_at` DATETIME NULL,
 
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
