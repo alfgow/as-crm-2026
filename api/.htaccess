@@ -1,0 +1,20 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Si la petición va a la carpeta public, detener el procesamiento aquí
+    RewriteRule ^public/ - [L]
+
+    # Redirigir todas las demás peticiones a la carpeta public
+    # Esto simula que el DocumentRoot es public/ aunque el servidor apunte a api/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Seguridad Adicional: Bloquear acceso directo a archivos sensibles
+# (En caso de que mod_rewrite falle o el DocumentRoot esté mal configurado)
+<FilesMatch "^\.(env|git|yml|json|lock)">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^(composer\.json|package\.json|README\.md|LICENSE)">
+    Require all denied
+</FilesMatch>
