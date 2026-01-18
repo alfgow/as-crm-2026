@@ -1,134 +1,127 @@
-# 🚀 AS-CRM Core API (2026 Edition)
+# 🏢 Arrendamiento Seguro CRM API (2026)
 
-> **High-Performance Backend System** | *Secure by Design, Scalable by Nature.*
+> **Backend de Alto Rendimiento** | *Seguro, Escalable y Diseñado a Medida para IONOS.*
 
 ![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)
 ![JWT Auth](https://img.shields.io/badge/JWT-Auth-critical?style=for-the-badge&logo=json-web-tokens&logoColor=white)
-![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Producción-success?style=for-the-badge)
 
-Welcome to the **AS-CRM API**, a bespoke backend solution engineered for the Arrendamiento Seguro ecosystem. This project abandons the bloat of monolithic frameworks in favor of a lean, SOLID-compliant architecture that puts **performance** and **maintainability** first.
-
----
-
-## 🏛️ Architecture & Design
-
-We follow a strict **Clean Architecture** approach:
-
-*   **⚡ Core**: The heart of the framework (Router, Request/Response, Database). Lightweight and fast.
-*   **🛡️ Middleware**: Interceptors for Security (Cors, Auth) applied before controllers.
-*   **🎮 Controllers**: Pure handlers that translate HTTP requests into domain actions.
-*   **💾 Repositories**: The *only* layer that talks to the database. SQL lives here.
-
-### Directory Structure
-```
-api/
-├── config/             # Environment & Global Config
-├── public/             # Entry Point (index.php)
-├── src/
-│   ├── Controllers/    # Http Handlers (Auth, User, etc.)
-│   ├── Core/           # The Framework Engine
-│   ├── Middleware/     # JWT & CORS Barriers
-│   └── Repositories/   # SQL & Data Access
-├── storage/            # Logs & Temp files
-└── .env                # Secrets (Not committed)
-```
+Bienvenido a la **API Core de Arrendamiento Seguro**, la columna vertebral del ecosistema CRM. Este sistema ha sido construido "a mano" (Custom Core) para garantizar máxima velocidad, control total sobre la seguridad y una integración fluida con **n8n** y hostings compartidos profesionales.
 
 ---
 
-## 🔥 Key Features
-### 🔐 Advanced Security
-- **JWT Authentication**: Short-lived `Access Tokens` (15m) + Long-lived `Refresh Tokens` (30d).
-- **Token Blacklist**: Immediate logout capability via `usuarios_access_token_blacklist`.
-- **Refresh Rotation**: Secure session renewal detecting theft reuse.
+## 🌐 Entorno de Producción
 
-### 🧠 Smart Policy Engine
-- **Auto-Calculation**: Automatic derivation of policy numbers, dates, and effective periods.
-- **Intelligent Defaults**: Auto-fill for related entities (`id_obligado`, `id_fiador`) and properties data.
-- **Strict Enums**: Numeric state management (1=Vigente, 2=Concluida...) for consistency.
+| Configuración | Valor |
+| :--- | :--- |
+| **URL Base** | `https://next.arrendamientoseguro.app/api/v1` |
+| **DocumentRoot** | `/api/public/` (Enlazado internamente) |
+| **Timezone** | `America/Mexico_City` |
 
-### 🤖 Event-Driven Automation (n8n Integration)
-- **Outbox Pattern**: Transactional event emitting via `event_outbox` table. Guaranteed delivery.
-- **Worker Dispatcher**: PHP CLI worker (`bin/dispatch_outbox.php`) to push events to n8n webhooks.
-- **HMAC Security**: All calls to/from n8n are signed with SHA-256 for integrity verification.
-- **Lifecycle Tracking**: Full log of automation execution in `automation_runs`.
+---
 
-### 🔌 Key Endpoints
-| Method | Endpoint | Description | Auth |
+## 🔐 Seguridad e Integridad
+
+Hemos implementado un modelo de seguridad de grado bancario adaptado a nuestras necesidades:
+
+1.  **JWT Dual**: Tokens de Acceso (15 min) y Tokens de Refresco (30 días).
+2.  **Blacklist Activa**: Capacidad de revocar accesos instantáneamente (Logout forzado).
+3.  **Rotación de Tokens**: Detección de robo de sesiones mediante reutilización de tokens.
+4.  **Protección de Archivos**: Sistema `.htaccess` personalizado para bloquear acceso a `.env`, `src` y `git`.
+5.  **HMAC Signatures**: Todas las comunicaciones con **n8n** están firmadas criptográficamente (`SHA-256`) para evitar suplantaciones.
+
+---
+
+## 📡 Endpoints Disponibles
+
+La API es totalmente RESTful y devuelve siempre JSON estandarizado: `{ data, meta, errors }`.
+
+### 👤 Autenticación
+| Método | Endpoint | Descripción | Requiere Auth |
 | :--- | :--- | :--- | :---: |
-| `POST` | `/api/v1/auth/login` | Obtain Access/Refresh tokens | ❌ |
-| `POST` | `/api/v1/auth/logout` | Revoke tokens (Blacklist) | ✅ |
-| `GET` | `/api/v1/polizas` | List Policies (Smart Filters) | ✅ |
-| `POST` | `/api/v1/polizas` | Create Policy (Auto-Calculated) | ✅ |
-| `POST` | `/api/v1/events/emit` | Manually emit business event | ✅ |
-| `POST` | `/api/v1/automations/callbacks/{id}` | Receive n8n result (HMAC) | ⚠️ |
+| `POST` | `/auth/login` | Iniciar sesión (Email/Pass). Devuelve Access + Refresh. | ❌ |
+| `POST` | `/auth/refresh` | Renovar Access Token usando Refresh Token. | ❌ |
+| `POST` | `/auth/logout` | Cerrar sesión (Invalida tokens actuales). | ✅ |
+
+### 🏢 Gestión de Negocio (CRUD)
+Todos estos endpoints soportan operaciones estándar: `GET /` (Listar), `POST /` (Crear), `GET /{id}` (Ver), `PUT /{id}` (Editar), `DELETE /{id}` (Borrar).
+
+*   **Users** (`/users`): Gestión de administradores y operadores del CRM.
+*   **Arrendadores** (`/arrendadores`): Propietarios de los inmuebles.
+*   **Inquilinos** (`/inquilinos`): Arrendatarios y su información legal.
+*   **Inmuebles** (`/inmuebles`): Propiedades registradas.
+*   **Asesores** (`/asesores`): Agentes inmobiliarios asociados.
+*   **Pólizas** (`/polizas`): La entidad central. Calcula vigencias automáticamente.
+    *   *Nota*: El sistema autocalcula fechas y valida relaciones (Fiadores, Obligados) al crear.
+
+### ✅ Validaciones
+*   `GET/PUT /inquilinos/{id}/validaciones`: Gestionar el estado de validación de un inquilino específico.
+
+### ⚙️ Sistema y Automatización
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| `GET` | `/health` | Chequeo de estado (Verifica PHP + Conexión DB). |
+| `POST` | `/events/emit` | Emitir manualmente un evento de negocio (ej. `poliza.creada`). |
+| `POST` | `/automations/callbacks/{correlationId}` | Webhook de retorno para n8n (Resultados asíncronos). |
 
 ---
 
-## 🛠️ Installation & Setup
+## 🚀 Despliegue en IONOS
 
-### 1. Requirements
-*   PHP 8.1 or higher
-*   MySQL 8.0
-*   Apache mod_rewrite enabled
-*   (Optional) Cron/Supervisor for Worker
+Debido a las restricciones de seguridad de IONOS (Shared Hosting), utilizamos una **Estrategia de Configuración Híbrida**:
 
-### 2. Configure Environment
-Copy `.env.example` -> `.env` and configure:
-```ini
-DB_HOST=localhost
-DB_NAME=as_db
-JWT_ACCESS_SECRET=super_secret
-N8N_EVENTS_WEBHOOK_URL=https://n8n.your-domain.com/webhook/...
-N8N_HMAC_SECRET=another_secret_for_signing
+### 1. Archivos Críticos
+*   **`.htaccess`**: En la raíz de `/api/`. Redirige tráfico a `/public/` y bloquea acceso a archivos sensibles.
+*   **`config.local.php`**: Archivo **NO versionado** que debe existir manualmente en producción (`api/config/config.local.php`).
+
+### 2. Configuración Manual (Producción)
+Si necesitas cambiar credenciales en producción, **NO edites `.env`** (es ignorado o inseguro en este entorno). Edita directamente:
+
+`api/config/config.local.php`
+
+```php
+return [
+  'env'   => 'production',
+  'debug' => false,
+  'db'    => [ /* Tus credenciales reales de IONOS */ ],
+  // ...
+];
 ```
 
-### 3. Database Migration
-Run the included SQL script to create all necessary tables (Auth, Outbox, Logs):
-`migration_auth_2026_01_14.sql`
-
-This script creates:
-- `usuarios_refresh_tokens`
-- `usuarios_access_token_blacklist`
-- `event_outbox`
-- `automation_runs`
-
-### 4. Running the Worker (Automation)
-To dispatch events to n8n, run the worker process. Ideally, configure via Supervisor or Cron (every minute):
-```bash
-php bin/dispatch_outbox.php
-```
+### 3. Logs y Debugging
+*   Los errores fatales se registran en `storage/logs/api.log`.
+*   Si recibes un **Error 500**, verifica primero los permisos de carpetas (deben ser `755`) y archivos (`644`).
 
 ---
 
-## 👨‍💻 Usage & Standards
+## ⚡ Estándares de Consumo
 
-### Standards
-- **Response Wrapper**: `{ data, meta, errors }`.
-- **Pagination**: Use `?page=1&limit=20`.
-- **Enums**: Always use numeric IDs for states (e.g., Póliza Status: 1=Vigente).
-
-### Making Requests
-**Request Headers:**
+**Headers Obligatorios:**
 ```http
 Content-Type: application/json
-Authorization: Bearer <YOUR_ACCESS_TOKEN>
+Accept: application/json
+Authorization: Bearer <TU_TOKEN_DE_ACCESO>
 ```
 
-**Example Response:**
+**Ejemplo de Respuesta Exitosa:**
 ```json
 {
-  "data": { "status": "ok" },
-  "meta": { "requestId": "a1b2c3d4", "page": 1, "total": 100 },
+  "data": {
+    "id": 150,
+    "nombre": "Juan Pérez",
+    "status": 1
+  },
+  "meta": {
+    "requestId": "req_123xyz...",
+    "timestamp": "2026-01-18T12:00:00Z"
+  },
   "errors": []
 }
 ```
 
 ---
 
-### 📝 Logs
-All activity is logged to `storage/logs/api.log` and the database `api_logs` table for full auditability.
-
----
-
-Built with ❤️ by the **Deepmind Advanced Coding Team**.
+<p align="center">
+  <sub>Built with ❤️ by <strong>Deepmind Advanced Coding Team</strong> for <strong>Arrendamiento Seguro</strong>.</sub>
+</p>

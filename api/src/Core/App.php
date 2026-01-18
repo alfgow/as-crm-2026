@@ -29,7 +29,7 @@ final class App {
     $tokenRepo = new TokenRepository($this->db);
     $apiLogRepo = new ApiLogRepository($this->db);
 
-    $health = new HealthController();
+    $health = new HealthController($this->db);
     $auth = new AuthController($this->config, $userRepo, $tokenRepo, $apiLogRepo, $this->logger);
     $users = new UsersController($this->config, $userRepo);
 

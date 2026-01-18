@@ -1,0 +1,43 @@
+<?php
+// ESTE ARCHIVO ES PARA PRODUCCION EN IONOS (o donde no funcione .env)
+// Renombrar a "config.local.php" en el servidor y editar con datos reales.
+
+return [
+  'env' => 'production',
+  'debug' => false, // IMPORTANTE: false en producción
+
+  'db' => [
+    'host' => 'dbxxx.hosting-data.io', // TU HOST DE IONOS
+    'name' => 'dbsxxxxx',              // TU NOMBRE DE BD
+    'user' => 'dbuxxxxx',              // TU USUARIO DE BD
+    'pass' => 'TU_PASSWORD_REAL',      // TU CONTRASEÑA
+    'port' => 3306,
+    'charset' => 'utf8mb4',
+  ],
+
+  'jwt' => [
+    'access_secret' => 'PON_AQUI_UNA_CLAVE_SUPER_LARGA_Y_ALEATORIA_MIN_32_CHARS',
+    'refresh_secret' => 'PON_AQUI_OTRA_CLAVE_DIFERENTE_ALETORIA_MIN_32_CHARS',
+    'access_ttl' => 900,       // 15 min
+    'refresh_ttl' => 2592000, // 30 días
+  ],
+
+  'cors' => [
+    // Dominios exactos que harán peticiones (Frontends)
+    'allow_origins' => [
+        'https://arrendamientoseguro.app', 
+        'https://www.arrendamientoseguro.app',
+        'https://next.arrendamientoseguro.app' // Agregado por si acaso es el front también
+    ],
+    'allow_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    'allow_headers' => ['Authorization', 'Content-Type', 'X-Request-Id'],
+  ],
+  
+  'n8n' => [
+    'events_webhook_url' => 'https://tu-n8n.com/webhook/...', // URL real del webhook de eventos
+    'hmac_secret' => 'CLAVE_HMAC_COMPARTIDA_CON_N8N',
+    'http_timeout' => 10,
+    'max_attempts' => 20,
+    'batch_size' => 20,
+  ],
+];

@@ -1,13 +1,15 @@
+Options -MultiViews -Indexes
 RewriteEngine On
+RewriteBase /
 
-# Asegurar que el Header Authorization llegue a PHP
+# Asegurar que el Header Authorization llegue a PHP (necesario para JWT)
 RewriteCond %{HTTP:Authorization} .
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-# Permitir que Apache sirva archivos existentes
+# Permitir que Apache sirva archivos existentes (imágenes, css, js)
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Redirigir todo a index.php
+# Redirigir todo lo demás a index.php
 RewriteRule ^ index.php [QSA,L]

@@ -1,5 +1,14 @@
 <?php
 
+// Estrategia para IONOS / Hosting Compartido:
+// Si existe un archivo 'config.local.php', usarlo prioritariamente.
+// Esto evita depender de variables de entorno (.env) que a veces fallan en estos hostings.
+$localConfigPath = __DIR__ . '/config.local.php';
+if (file_exists($localConfigPath)) {
+    return require $localConfigPath;
+}
+
+// Fallback: Usar variables de entorno (getenv)
 return [
   'env' => getenv('APP_ENV') ?: 'production',
   'debug' => (getenv('APP_DEBUG') === 'true'),
