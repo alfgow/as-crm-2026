@@ -15,7 +15,8 @@ final class InquilinosController {
   }
 
   public function index(Request $req, Response $res, array $ctx): void {
-    $all = $this->inquilinos->findAll();
+    $search = $req->getQuery()['search'] ?? null;
+    $all = $this->inquilinos->findAll($search);
     $res->json([
       'data' => $all,
       'meta' => ['requestId' => $req->getRequestId(), 'count' => count($all)],

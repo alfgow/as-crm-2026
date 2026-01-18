@@ -326,6 +326,8 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 ### 25. Listar Inquilinos (Básico)
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/inquilinos`
+- **Params**:
+  - `search` (Opcional): Texto para filtrar por nombre, email o celular. Ejemplo: `?search=Carlos`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 

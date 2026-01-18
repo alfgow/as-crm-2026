@@ -11,11 +11,23 @@ final class InquilinoRepository {
   }
 
   // --- Main List ---
-  public function findAll(): array {
+  public function findAll(?string $search = null): array {
     $sql = "SELECT id, nombre_inquilino, apellidop_inquilino, apellidom_inquilino, email, celular, status, fecha as fecha_registro
-            FROM inquilinos 
-            ORDER BY id DESC";
-    $st = $this->pdo->query($sql);
+            FROM inquilinos";
+            
+    $params = [];
+    if (!empty($search)) {
+        // Use CONCAT_WS for full name search, plus specific fields for email/phone
+        $sql .= " WHERE CONCAT_WS(' ', nombre_inquilino, apellidop_inquilino, apellidom_inquilino) LIKE :search
+                  OR email LIKE :search
+                  OR celular LIKE :search";
+        $params[':search'] = '%' . $search . '%';
+    }
+
+    $sql .= " ORDER BY id DESC";
+    
+    $st = $this->pdo->prepare($sql);
+    $st->execute($params);
     return $st->fetchAll();
   }
 
