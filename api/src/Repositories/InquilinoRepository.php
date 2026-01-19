@@ -18,10 +18,12 @@ final class InquilinoRepository {
     $params = [];
     if (!empty($search)) {
         // Use CONCAT_WS for full name search, plus specific fields for email/phone
-        $sql .= " WHERE CONCAT_WS(' ', nombre_inquilino, apellidop_inquilino, apellidom_inquilino) LIKE :search
-                  OR email LIKE :search
-                  OR celular LIKE :search";
-        $params[':search'] = '%' . $search . '%';
+        $sql .= " WHERE CONCAT_WS(' ', nombre_inquilino, apellidop_inquilino, apellidom_inquilino) LIKE :search1
+                  OR email LIKE :search2
+                  OR celular LIKE :search3";
+        $params[':search1'] = '%' . $search . '%';
+        $params[':search2'] = '%' . $search . '%';
+        $params[':search3'] = '%' . $search . '%';
     }
 
     $sql .= " ORDER BY id DESC";

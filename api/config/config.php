@@ -32,7 +32,7 @@ return [
   'cors' => [
     'allow_origins' => array_values(array_filter(array_map('trim', explode(',', getenv('CORS_ALLOW_ORIGINS') ?: '')))),
     'allow_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    'allow_headers' => ['Authorization', 'Content-Type', 'X-Request-Id'],
+    'allow_headers' => ['Authorization', 'Content-Type', 'X-Request-Id', 'X-Auth-Token'],
   ],
   'n8n' => [
     'events_webhook_url' => getenv('N8N_EVENTS_WEBHOOK_URL') ?: '',
