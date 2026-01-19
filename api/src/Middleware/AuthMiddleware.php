@@ -21,6 +21,7 @@ final class AuthMiddleware {
   public function handle(Request $req, Response $res): array {
     $token = $req->bearerToken();
     if (!$token) {
+      error_log("AuthMiddleware: Missing or malformed Bearer token. Header: " . ($req->getHeader('authorization') ?? 'NULL'));
       $res->json([
         'data' => null,
         'meta' => ['requestId' => $req->getRequestId()],
@@ -30,6 +31,7 @@ final class AuthMiddleware {
 
     $payload = Jwt::verify($token, $this->accessSecret);
     if (!$payload || empty($payload['sub'])) {
+      error_log("AuthMiddleware: Token verification failed for token: " . substr($token, 0, 15) . "...");
       $res->json([
         'data' => null,
         'meta' => ['requestId' => $req->getRequestId()],

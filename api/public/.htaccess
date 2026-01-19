@@ -2,9 +2,13 @@ Options -MultiViews -Indexes
 RewriteEngine On
 RewriteBase /
 
-# Asegurar que el Header Authorization llegue a PHP (necesario para JWT)
+# TRUCO MASTER: Capturar Authorization a la fuerza
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# Fallback: intentar pasarlo en otro header si el de arriba falla
 RewriteCond %{HTTP:Authorization} .
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteRule .* - [E=HTTP_X_AUTHORIZATION_TOKEN:%{HTTP:Authorization}]
 
 # Permitir que Apache sirva archivos existentes (imágenes, css, js)
 RewriteCond %{REQUEST_FILENAME} -f [OR]

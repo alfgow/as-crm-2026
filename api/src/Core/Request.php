@@ -41,7 +41,16 @@ final class Request {
       }
     }
     if (isset($_SERVER['CONTENT_TYPE'])) $h['content-type'] = $_SERVER['CONTENT_TYPE'];
-    if (isset($_SERVER['AUTHORIZATION'])) $h['authorization'] = $_SERVER['AUTHORIZATION'];
+    
+    // Explicit checks for Authorization in various server vars
+    $auth = $_SERVER['HTTP_AUTHORIZATION'] 
+         ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] 
+         ?? $_SERVER['HTTP_X_AUTHORIZATION_TOKEN']
+         ?? $_SERVER['HTTP_X_AUTH_TOKEN'] // <--- NUEVO: Header personalizado
+         ?? $_SERVER['AUTHORIZATION'] 
+         ?? null;
+         
+    if ($auth) $h['authorization'] = $auth;
     return $h;
   }
 
@@ -62,6 +71,7 @@ final class Request {
   public function getHeaders(): array { return $this->headers; }
   public function getJson(): ?array { return $this->jsonBody; }
   public function getRequestId(): string { return $this->requestId; }
+  public function getHeader(string $name): ?string { return $this->headers[strtolower($name)] ?? null; }
 
   public function bearerToken(): ?string {
     $auth = $this->headers['authorization'] ?? '';
