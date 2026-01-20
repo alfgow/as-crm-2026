@@ -108,4 +108,49 @@ final class ArrendadoresController {
           'errors' => []
       ]);
   }
+
+  public function byAsesor(Request $req, Response $res, array $params): void {
+      $asesorId = (int)($params['id'] ?? 0);
+
+      if ($asesorId <= 0) {
+          $res->json([
+              'data' => [],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid asesor id']]
+          ], 400);
+          return;
+      }
+
+      $items = $this->arrendadores->findByAsesorId($asesorId);
+
+      $res->json([
+          'data' => $items,
+          'meta' => ['requestId' => $req->getRequestId(), 'count' => count($items)],
+          'errors' => []
+      ]);
+  }
+
+  public function updateAsesor(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $asesorId = (int)($body['id_asesor'] ?? 0);
+
+      if ($id <= 0 || $asesorId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and id_asesor are required']]
+          ], 400);
+          return;
+      }
+
+      $this->arrendadores->update($id, ['id_asesor' => $asesorId]);
+      $updated = $this->arrendadores->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
 }
