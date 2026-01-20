@@ -102,4 +102,18 @@ final class InmuebleRepository {
     $sql = "DELETE FROM inmuebles WHERE id = :id";
     $this->pdo->prepare($sql)->execute([':id' => $id]);
   }
+
+  public function findByArrendadorId(int $arrendadorId): array {
+    $sql = "SELECT i.*, 
+                   a.nombre_arrendador, 
+                   ase.nombre_asesor 
+            FROM inmuebles i
+            LEFT JOIN arrendadores a ON i.id_arrendador = a.id
+            LEFT JOIN asesores ase ON i.id_asesor = ase.id
+            WHERE i.id_arrendador = :arrendador_id
+            ORDER BY i.id DESC";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':arrendador_id' => $arrendadorId]);
+    return $st->fetchAll();
+  }
 }
