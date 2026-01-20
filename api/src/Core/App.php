@@ -91,6 +91,10 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->show($req, $res, $params);
     });
+    $this->router->add('GET', '/api/v1/arrendadores/slug/{slug}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->showBySlug($req, $res, $params);
+    });
 
     $this->router->add('PUT', '/api/v1/arrendadores/{id}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);

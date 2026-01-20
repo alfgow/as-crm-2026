@@ -24,6 +24,14 @@ final class ArrendadorRepository {
     return $row ?: null;
   }
 
+  public function findBySlug(string $slug): ?array {
+    $sql = "SELECT * FROM arrendadores WHERE slug = :slug LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':slug' => $slug]);
+    $row = $st->fetch();
+    return $row ?: null;
+  }
+
   public function create(array $data): int {
     $fields = [
         'nombre_arrendador', 'nombre_representante', 'email', 'device_id', 'celular', 'telefono',
