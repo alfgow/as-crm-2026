@@ -5,6 +5,8 @@ use App\Core\Database;
 
 final class InmuebleRepository {
   private \PDO $pdo;
+  private const ARRENDADOR_PK_PREFIX = 'arr#';
+  private const INMUEBLE_SK_PREFIX = 'INM#';
 
   public function __construct(Database $db) {
     $this->pdo = $db->pdo();
@@ -115,5 +117,83 @@ final class InmuebleRepository {
     $st = $this->pdo->prepare($sql);
     $st->execute([':arrendador_id' => $arrendadorId]);
     return $st->fetchAll();
+  }
+
+  public function findByLegacyKeys(string $pk, ?string $sk = null): ?array {
+    $pk = trim($pk);
+    $sk = $sk !== null ? trim($sk) : null;
+
+    if ($sk === null && str_contains($pk, '|')) {
+      [$pk, $sk] = array_map('trim', explode('|', $pk, 2));
+    }
+
+    if ($sk === null) {
+      $legacyId = $this->parseNumericId($pk);
+      return $legacyId ? $this->findById($legacyId) : null;
+    }
+
+    $arrendadorId = $this->parseArrendadorPk($pk);
+    $inmuebleId = $this->parseInmuebleSk($sk);
+    if (!$inmuebleId) {
+      return null;
+    }
+
+    $inmueble = $this->findById($inmuebleId);
+    if (!$inmueble) {
+      return null;
+    }
+
+    if ($arrendadorId !== null && (int)$inmueble['id_arrendador'] !== $arrendadorId) {
+      return null;
+    }
+
+    return $inmueble;
+  }
+
+  public function withLegacyKeys(array $inmueble): array {
+    $id = (int)($inmueble['id'] ?? 0);
+    $arrendadorId = (int)($inmueble['id_arrendador'] ?? 0);
+    $pk = $arrendadorId > 0 ? self::ARRENDADOR_PK_PREFIX . $arrendadorId : null;
+    $sk = $id > 0 ? self::INMUEBLE_SK_PREFIX . $id : null;
+
+    $inmueble['pk'] = $pk;
+    $inmueble['sk'] = $sk;
+    $inmueble['id_virtual'] = ($pk && $sk) ? $pk . '|' . $sk : null;
+
+    return $inmueble;
+  }
+
+  private function parseArrendadorPk(string $pk): ?int {
+    if ($pk === '') {
+      return null;
+    }
+
+    if (str_starts_with($pk, self::ARRENDADOR_PK_PREFIX)) {
+      $pk = substr($pk, strlen(self::ARRENDADOR_PK_PREFIX));
+    }
+
+    return $this->parseNumericId($pk);
+  }
+
+  private function parseInmuebleSk(string $sk): ?int {
+    if ($sk === '') {
+      return null;
+    }
+
+    if (str_starts_with($sk, self::INMUEBLE_SK_PREFIX)) {
+      $sk = substr($sk, strlen(self::INMUEBLE_SK_PREFIX));
+    }
+
+    return $this->parseNumericId($sk);
+  }
+
+  private function parseNumericId(string $value): ?int {
+    $value = trim($value);
+    if ($value === '' || !ctype_digit($value)) {
+      return null;
+    }
+
+    $parsed = (int)$value;
+    return $parsed > 0 ? $parsed : null;
   }
 }

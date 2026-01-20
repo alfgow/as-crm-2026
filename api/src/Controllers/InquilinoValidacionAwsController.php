@@ -131,4 +131,125 @@ final class InquilinoValidacionAwsController {
       'errors' => [],
     ]);
   }
+
+  public function validarCheck(Request $req, Response $res, array $params): void {
+    $slug = trim((string)($params['slug'] ?? ''));
+    if ($slug === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'slug inválido']],
+      ], 400);
+      return;
+    }
+
+    $inquilino = $this->inquilinos->findBySlug($slug);
+    if (!$inquilino || empty($inquilino['id'])) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'not_found', 'message' => 'Inquilino no encontrado']],
+      ], 404);
+      return;
+    }
+
+    $query = $req->getQuery();
+    $body = $req->getJson() ?? [];
+    $check = trim((string)($query['check'] ?? $body['check'] ?? ''));
+
+    $allowed = [
+      'archivos',
+      'faces',
+      'ocr',
+      'parse',
+      'nombres',
+      'kv',
+      'match',
+      'save_match',
+      'save_face',
+      'status',
+      'ingresos_list',
+      'ingresos_ocr',
+      'resumen_full',
+      'verificamex',
+    ];
+
+    if ($check === '' || !in_array($check, $allowed, true)) {
+      $res->json([
+        'data' => [
+          'checks' => $allowed,
+          'mensaje' => 'check inválido o faltante',
+        ],
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'check inválido']],
+      ], 400);
+      return;
+    }
+
+    $idInquilino = (int)$inquilino['id'];
+    $archivos = $inquilino['archivos'] ?? [];
+    if ($archivos === []) {
+      $archivos = $this->inquilinos->findArchivosByInquilinoId($idInquilino);
+    }
+
+    $flags = $this->buildArchivoFlags($archivos);
+    $payload = [
+      'check' => $check,
+      'archivos' => $flags,
+      'timestamp' => date(DATE_ATOM),
+    ];
+
+    $resumen = sprintf('Validación %s ejecutada', $check);
+    $this->validaciones->guardarValidacionCheck($idInquilino, $check, 2, $payload, $resumen);
+
+    $res->json([
+      'data' => [
+        'ok' => true,
+        'check' => $check,
+        'resumen' => $resumen,
+        'payload' => $payload,
+      ],
+      'meta' => ['requestId' => $req->getRequestId()],
+      'errors' => [],
+    ]);
+  }
+
+  private function buildArchivoFlags(array $archivos): array {
+    $flags = [
+      'selfie' => false,
+      'ine_frontal' => false,
+      'ine_reverso' => false,
+      'pasaporte' => false,
+      'forma_migratoria' => false,
+      'comprobantes' => 0,
+    ];
+
+    foreach ($archivos as $archivo) {
+      $tipo = strtolower((string)($archivo['tipo'] ?? ''));
+      switch ($tipo) {
+        case 'selfie':
+          $flags['selfie'] = true;
+          break;
+        case 'ine_frontal':
+          $flags['ine_frontal'] = true;
+          break;
+        case 'ine_reverso':
+          $flags['ine_reverso'] = true;
+          break;
+        case 'pasaporte':
+          $flags['pasaporte'] = true;
+          break;
+        case 'forma_migratoria':
+        case 'forma_migratoria_frontal':
+        case 'forma_migratoria_reverso':
+          $flags['forma_migratoria'] = true;
+          break;
+        case 'comprobante_ingreso':
+          $flags['comprobantes']++;
+          break;
+      }
+    }
+
+    return $flags;
+  }
 }

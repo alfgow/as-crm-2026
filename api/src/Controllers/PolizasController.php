@@ -313,6 +313,128 @@ final class PolizasController {
       }
   }
 
+  public function contrato(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id inválido']]
+          ], 400);
+          return;
+      }
+
+      $poliza = $this->polizas->findContratoById($id);
+      if (!$poliza) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Poliza no encontrada']]
+          ], 404);
+          return;
+      }
+
+      $payload = $this->buildContratoPayload($poliza);
+
+      $res->json([
+          'data' => $payload,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function contratoByNumero(Request $req, Response $res, array $params): void {
+      $numero = (int)($params['numero'] ?? 0);
+      if ($numero <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'numero inválido']]
+          ], 400);
+          return;
+      }
+
+      $poliza = $this->polizas->findContratoByNumero($numero);
+      if (!$poliza) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Poliza no encontrada']]
+          ], 404);
+          return;
+      }
+
+      $payload = $this->buildContratoPayload($poliza);
+
+      $res->json([
+          'data' => $payload,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function guardarContrato(Request $req, Response $res, array $params): void {
+      $numero = (int)($params['numero'] ?? 0);
+      $body = $req->getJson() ?? [];
+      $tipoContrato = trim((string)($body['tipo_contrato'] ?? ''));
+
+      if ($numero <= 0 || $tipoContrato === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'numero y tipo_contrato son requeridos']]
+          ], 400);
+          return;
+      }
+
+      $poliza = $this->polizas->findContratoByNumero($numero);
+      if (!$poliza) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Poliza no encontrada']]
+          ], 404);
+          return;
+      }
+
+      $payload = $this->buildContratoPayload($poliza);
+      $payload['tipo_contrato'] = $tipoContrato;
+
+      $res->json([
+          'data' => $payload,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  private function buildContratoPayload(array $poliza): array {
+      $nombreInquilino = trim(sprintf(
+          '%s %s %s',
+          $poliza['nombre_inquilino'] ?? '',
+          $poliza['apellidop_inquilino'] ?? '',
+          $poliza['apellidom_inquilino'] ?? ''
+      ));
+      $nombreFiador = trim(sprintf(
+          '%s %s %s',
+          $poliza['fiador_nombre'] ?? '',
+          $poliza['fiador_apellidop'] ?? '',
+          $poliza['fiador_apellidom'] ?? ''
+      ));
+      $nombreObligado = trim(sprintf(
+          '%s %s %s',
+          $poliza['obligado_nombre'] ?? '',
+          $poliza['obligado_apellidop'] ?? '',
+          $poliza['obligado_apellidom'] ?? ''
+      ));
+
+      return [
+          'poliza' => $poliza,
+          'inquilino_nombre' => $nombreInquilino !== '' ? $nombreInquilino : null,
+          'fiador_nombre' => $nombreFiador !== '' ? $nombreFiador : null,
+          'obligado_nombre' => $nombreObligado !== '' ? $nombreObligado : null,
+      ];
+  }
+
   public function update(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();

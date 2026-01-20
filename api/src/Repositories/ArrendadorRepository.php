@@ -100,4 +100,75 @@ final class ArrendadorRepository {
     $st->execute([':asesor_id' => $asesorId]);
     return $st->fetchAll();
   }
+
+  public function findArchivosByArrendadorId(int $arrendadorId): array {
+    $sql = "SELECT * FROM arrendadores_archivos WHERE id_arrendador = :id ORDER BY id_archivo DESC";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':id' => $arrendadorId]);
+    return $st->fetchAll();
+  }
+
+  public function addArchivo(int $arrendadorId, array $data): ?array {
+    $sql = "INSERT INTO arrendadores_archivos (id_arrendador, s3_key, tipo)
+            VALUES (:id_arrendador, :s3_key, :tipo)";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([
+      ':id_arrendador' => $arrendadorId,
+      ':s3_key' => $data['s3_key'],
+      ':tipo' => $data['tipo'],
+    ]);
+
+    $id = (int)$this->pdo->lastInsertId();
+    return $this->findArchivoById($arrendadorId, $id);
+  }
+
+  public function deleteArchivo(int $arrendadorId, int $archivoId): bool {
+    $sql = "DELETE FROM arrendadores_archivos WHERE id_arrendador = :id AND id_archivo = :archivo_id";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([
+      ':id' => $arrendadorId,
+      ':archivo_id' => $archivoId,
+    ]);
+
+    return $st->rowCount() > 0;
+  }
+
+  public function updateArchivo(int $arrendadorId, int $archivoId, array $data): ?array {
+    $allowed = ['s3_key', 'tipo'];
+    $set = [];
+    $values = [
+      ':id_arrendador' => $arrendadorId,
+      ':id_archivo' => $archivoId,
+    ];
+
+    foreach ($allowed as $field) {
+      if (array_key_exists($field, $data)) {
+        $set[] = "$field = :$field";
+        $values[":$field"] = $data[$field];
+      }
+    }
+
+    if (empty($set)) {
+      return $this->findArchivoById($arrendadorId, $archivoId);
+    }
+
+    $sql = "UPDATE arrendadores_archivos
+            SET " . implode(', ', $set) . "
+            WHERE id_arrendador = :id_arrendador AND id_archivo = :id_archivo";
+    $st = $this->pdo->prepare($sql);
+    $st->execute($values);
+
+    return $this->findArchivoById($arrendadorId, $archivoId);
+  }
+
+  private function findArchivoById(int $arrendadorId, int $archivoId): ?array {
+    $sql = "SELECT * FROM arrendadores_archivos WHERE id_arrendador = :id AND id_archivo = :archivo_id LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([
+      ':id' => $arrendadorId,
+      ':archivo_id' => $archivoId,
+    ]);
+    $row = $st->fetch();
+    return $row ?: null;
+  }
 }

@@ -234,6 +234,10 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->deleteArchivo($req, $res, $params);
     });
+    $this->router->add('PUT', '/api/v1/arrendadores/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->updateArchivo($req, $res, $params);
+    });
 
     // Asesores CRUD
     $asesorRepo = new \App\Repositories\AsesorRepository($this->db);
@@ -286,6 +290,14 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $inmuebles->info($req, $res, $params);
     });
+    $this->router->add('GET', '/api/v1/inmuebles/legacy/{pk}/{sk}', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
+      $ctx = $authMw->handle($req, $res);
+      $inmuebles->showLegacy($req, $res, $params);
+    });
+    $this->router->add('GET', '/api/v1/inmuebles/legacy/{pk}/{sk}/info', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
+      $ctx = $authMw->handle($req, $res);
+      $inmuebles->infoLegacy($req, $res, $params);
+    });
 
     $this->router->add('PUT', '/api/v1/inmuebles/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
       $ctx = $authMw->handle($req, $res);
@@ -295,6 +307,11 @@ final class App {
     $this->router->add('DELETE', '/api/v1/inmuebles/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
       $ctx = $authMw->handle($req, $res);
       $inmuebles->destroy($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/inmuebles/guardar-ajax', function(Request $req, Response $res) use ($authMw, $inmuebles) {
+      $ctx = $authMw->handle($req, $res);
+      $inmuebles->guardarAjax($req, $res, $ctx);
     });
 
     $this->router->add('GET', '/api/v1/arrendadores/{id}/inmuebles', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
@@ -472,6 +489,21 @@ final class App {
       $polizas->show($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/polizas/{id}/contrato', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->contrato($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/polizas/numero/{numero}/contrato', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->contratoByNumero($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/polizas/numero/{numero}/contrato', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->guardarContrato($req, $res, $params);
+    });
+
     $this->router->add('PUT', '/api/v1/polizas/{id}', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
       $ctx = $authMw->handle($req, $res);
       $polizas->update($req, $res, $params);
@@ -491,6 +523,7 @@ final class App {
     $validacionAwsRepo = new \App\Repositories\ValidacionAwsRepository($this->db);
     $validacionAws = new \App\Controllers\ValidacionAwsController($inquilinoRepo, $validacionAwsRepo);
     $inquilinoValidacionAws = new \App\Controllers\InquilinoValidacionAwsController($inquilinoRepo, $validacionAwsRepo);
+    $inquilinoArchivos = new \App\Controllers\InquilinoArchivosController($this->config, $inquilinoRepo, $mediaRepo);
     $iaRepo = new \App\Repositories\IARepository($this->db);
     $iaController = new \App\Controllers\IAController($iaRepo);
     $iaHistorial = new \App\Controllers\IAHistorialController($iaRepo);
@@ -583,6 +616,21 @@ final class App {
     $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}/validacion-aws/archivos', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
       $ctx = $authMw->handle($req, $res);
       $inquilinoValidacionAws->obtenerArchivosPorSlug($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}/validacion-aws', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinoValidacionAws->validarCheck($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/inquilinos/slug/{slug}/validacion-aws', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinoValidacionAws->validarCheck($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}/archivos-presignados', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoArchivos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinoArchivos->presignBySlug($req, $res, $params);
     });
 
     $this->router->add('GET', '/api/v1/inquilinos/{id}/validaciones', function(Request $req, Response $res, array $params) use ($authMw, $validaciones) {
