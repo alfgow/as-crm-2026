@@ -91,6 +91,14 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->show($req, $res, $params);
     });
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/detalle', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->showDetalle($req, $res, $params);
+    });
+    $this->router->add('GET', '/api/v1/arrendadores/slug/{slug}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->showBySlug($req, $res, $params);
+    });
 
     $this->router->add('PUT', '/api/v1/arrendadores/{id}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
@@ -100,6 +108,40 @@ final class App {
     $this->router->add('DELETE', '/api/v1/arrendadores/{id}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->destroy($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/asesores/{id}/arrendadores', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->byAsesor($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/arrendadores/{id}/asesor', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->updateAsesor($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/arrendadores/{id}/datos-personales', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->updateDatosPersonales($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/arrendadores/{id}/info-bancaria', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->updateInfoBancaria($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/arrendadores/{id}/comentarios', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->updateComentarios($req, $res, $params);
+    });
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->archivos($req, $res, $params);
+    });
+    $this->router->add('POST', '/api/v1/arrendadores/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->addArchivo($req, $res, $params);
+    });
+    $this->router->add('DELETE', '/api/v1/arrendadores/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->deleteArchivo($req, $res, $params);
     });
 
     // Asesores CRUD
@@ -160,6 +202,11 @@ final class App {
       $inmuebles->destroy($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/inmuebles', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
+      $ctx = $authMw->handle($req, $res);
+      $inmuebles->byArrendador($req, $res, $params);
+    });
+
     // Inquilinos CRUD
     $inquilinoRepo = new \App\Repositories\InquilinoRepository($this->db);
     $inquilinos = new \App\Controllers\InquilinosController($this->config, $inquilinoRepo);
@@ -179,9 +226,67 @@ final class App {
       $inquilinos->show($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->showBySlug($req, $res, $params);
+    });
+
     $this->router->add('PUT', '/api/v1/inquilinos/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->update($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/status', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateStatus($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/inquilinos/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->archivos($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/asesor', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateAsesor($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/direccion', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateDireccion($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/trabajo', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateTrabajo($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/fiador', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateFiador($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/historial-vivienda', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateHistorial($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/validaciones', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateValidaciones($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/inquilinos/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->addArchivo($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/inquilinos/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->deleteArchivo($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateArchivo($req, $res, $params);
     });
 
     $this->router->add('DELETE', '/api/v1/inquilinos/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
