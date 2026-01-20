@@ -66,6 +66,105 @@ final class InquilinoRepository {
     return $main;
   }
 
+  public function findBySlug(string $slug): ?array {
+    $sql = "SELECT id FROM inquilinos WHERE slug = :slug LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':slug' => $slug]);
+    $row = $st->fetch();
+
+    if (!$row || empty($row['id'])) {
+      return null;
+    }
+
+    return $this->findById((int)$row['id']);
+  }
+
+  public function findArchivosByInquilinoId(int $idInquilino): array {
+    $stmt = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id");
+    $stmt->execute([':id' => $idInquilino]);
+    return $stmt->fetchAll();
+  }
+
+  public function addArchivo(int $idInquilino, array $data): array {
+    $fields = [
+      'id_inquilino',
+      'tipo',
+      's3_key',
+      'mime_type',
+      'size',
+      'original_name',
+      'token',
+      'categoria',
+    ];
+
+    $payload = array_merge($data, ['id_inquilino' => $idInquilino]);
+    $columns = [];
+    $placeholders = [];
+    $values = [];
+
+    foreach ($fields as $field) {
+      if (array_key_exists($field, $payload)) {
+        $columns[] = $field;
+        $placeholders[] = ":$field";
+        $values[":$field"] = $payload[$field];
+      }
+    }
+
+    $sql = "INSERT INTO inquilinos_archivos (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute($values);
+
+    $id = (int)$this->pdo->lastInsertId();
+    $fetch = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id = :id LIMIT 1");
+    $fetch->execute([':id' => $id]);
+    $row = $fetch->fetch();
+
+    return $row ?: [];
+  }
+
+  public function deleteArchivo(int $idInquilino, int $archivoId): bool {
+    $stmt = $this->pdo->prepare("DELETE FROM inquilinos_archivos WHERE id = :id AND id_inquilino = :id_inquilino");
+    $stmt->execute([':id' => $archivoId, ':id_inquilino' => $idInquilino]);
+    return $stmt->rowCount() > 0;
+  }
+
+  public function updateArchivo(int $idInquilino, int $archivoId, array $data): array {
+    $fields = [
+      'tipo',
+      's3_key',
+      'mime_type',
+      'size',
+      'original_name',
+      'token',
+      'categoria',
+    ];
+
+    $set = [];
+    $values = [
+      ':id' => $archivoId,
+      ':id_inquilino' => $idInquilino,
+    ];
+
+    foreach ($fields as $field) {
+      if (array_key_exists($field, $data)) {
+        $set[] = "$field = :$field";
+        $values[":$field"] = $data[$field];
+      }
+    }
+
+    if (!empty($set)) {
+      $sql = "UPDATE inquilinos_archivos SET " . implode(', ', $set) . " WHERE id = :id AND id_inquilino = :id_inquilino";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute($values);
+    }
+
+    $fetch = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id = :id AND id_inquilino = :id_inquilino LIMIT 1");
+    $fetch->execute([':id' => $archivoId, ':id_inquilino' => $idInquilino]);
+    $row = $fetch->fetch();
+
+    return $row ?: [];
+  }
+
   private function fetchOne(string $table, int $idInquilino) {
       $st = $this->pdo->prepare("SELECT * FROM $table WHERE id_inquilino = :id LIMIT 1");
       $st->execute([':id' => $idInquilino]);
