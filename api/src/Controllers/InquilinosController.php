@@ -110,4 +110,50 @@ final class InquilinosController {
       $this->inquilinos->delete($id);
       $res->json(['data' => ['success' => true, 'id' => $id], 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
   }
+
+  public function showBySlug(Request $req, Response $res, array $params): void {
+      $slug = trim((string)($params['slug'] ?? ''));
+
+      if ($slug === '') {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'Slug is required']]], 400);
+          return;
+      }
+
+      $item = $this->inquilinos->findBySlug($slug);
+
+      if (!$item) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]], 404);
+          return;
+      }
+
+      $res->json(['data' => $item, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
+  }
+
+  public function updateStatus(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $status = trim((string)($body['status'] ?? ''));
+
+      if ($id <= 0 || $status === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and status are required']]
+          ], 400);
+          return;
+      }
+
+      if (!in_array($status, ['1', '2', '3', '4'], true)) {
+          $status = '1';
+      }
+
+      $this->inquilinos->update($id, ['status' => $status]);
+      $updated = $this->inquilinos->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
 }

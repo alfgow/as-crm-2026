@@ -82,4 +82,14 @@ final class ArrendadorRepository {
     $st = $this->pdo->prepare($sql);
     $st->execute([':id' => $id]);
   }
+
+  public function findByAsesorId(int $asesorId): array {
+    $sql = "SELECT *
+            FROM arrendadores
+            WHERE id_asesor = :asesor_id
+            ORDER BY id DESC";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':asesor_id' => $asesorId]);
+    return $st->fetchAll();
+  }
 }

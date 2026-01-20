@@ -108,4 +108,25 @@ final class ArrendadoresController {
           'errors' => []
       ]);
   }
+
+  public function byAsesor(Request $req, Response $res, array $params): void {
+      $asesorId = (int)($params['id'] ?? 0);
+
+      if ($asesorId <= 0) {
+          $res->json([
+              'data' => [],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid asesor id']]
+          ], 400);
+          return;
+      }
+
+      $items = $this->arrendadores->findByAsesorId($asesorId);
+
+      $res->json([
+          'data' => $items,
+          'meta' => ['requestId' => $req->getRequestId(), 'count' => count($items)],
+          'errors' => []
+      ]);
+  }
 }

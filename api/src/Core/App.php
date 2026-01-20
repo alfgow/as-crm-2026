@@ -102,6 +102,11 @@ final class App {
       $arrendadores->destroy($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/asesores/{id}/arrendadores', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->byAsesor($req, $res, $params);
+    });
+
     // Asesores CRUD
     $asesorRepo = new \App\Repositories\AsesorRepository($this->db);
     $asesores = new \App\Controllers\AsesoresController($this->config, $asesorRepo);
@@ -160,6 +165,11 @@ final class App {
       $inmuebles->destroy($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/inmuebles', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
+      $ctx = $authMw->handle($req, $res);
+      $inmuebles->byArrendador($req, $res, $params);
+    });
+
     // Inquilinos CRUD
     $inquilinoRepo = new \App\Repositories\InquilinoRepository($this->db);
     $inquilinos = new \App\Controllers\InquilinosController($this->config, $inquilinoRepo);
@@ -179,9 +189,19 @@ final class App {
       $inquilinos->show($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->showBySlug($req, $res, $params);
+    });
+
     $this->router->add('PUT', '/api/v1/inquilinos/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->update($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/status', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateStatus($req, $res, $params);
     });
 
     $this->router->add('DELETE', '/api/v1/inquilinos/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
