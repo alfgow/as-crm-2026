@@ -110,4 +110,273 @@ final class InquilinosController {
       $this->inquilinos->delete($id);
       $res->json(['data' => ['success' => true, 'id' => $id], 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
   }
+
+  public function showBySlug(Request $req, Response $res, array $params): void {
+      $slug = trim((string)($params['slug'] ?? ''));
+
+      if ($slug === '') {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'Slug is required']]], 400);
+          return;
+      }
+
+      $item = $this->inquilinos->findBySlug($slug);
+
+      if (!$item) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]], 404);
+          return;
+      }
+
+      $res->json(['data' => $item, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
+  }
+
+  public function updateStatus(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $status = trim((string)($body['status'] ?? ''));
+
+      if ($id <= 0 || $status === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and status are required']]
+          ], 400);
+          return;
+      }
+
+      if (!in_array($status, ['1', '2', '3', '4'], true)) {
+          $status = '1';
+      }
+
+      $this->inquilinos->update($id, ['status' => $status]);
+      $updated = $this->inquilinos->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function archivos(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => [],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid inquilino id']]
+          ], 400);
+          return;
+      }
+
+      $item = $this->inquilinos->findById($id);
+      if (!$item) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]
+          ], 404);
+          return;
+      }
+
+      $archivos = $this->inquilinos->findArchivosByInquilinoId($id);
+
+      $res->json([
+          'data' => $archivos,
+          'meta' => ['requestId' => $req->getRequestId(), 'count' => count($archivos)],
+          'errors' => []
+      ]);
+  }
+
+  public function updateAsesor(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $asesorId = (int)($body['id_asesor'] ?? 0);
+
+      if ($id <= 0 || $asesorId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and id_asesor are required']]
+          ], 400);
+          return;
+      }
+
+      $this->inquilinos->update($id, ['id_asesor' => $asesorId]);
+      $updated = $this->inquilinos->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateDireccion(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $direccion = $body['direccion'] ?? null;
+
+      if ($id <= 0 || !is_array($direccion) || $direccion === []) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and direccion are required']]
+          ], 400);
+          return;
+      }
+
+      $this->inquilinos->updateDireccion($id, $direccion);
+      $updated = $this->inquilinos->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateTrabajo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $trabajo = $body['trabajo'] ?? null;
+
+      if ($id <= 0 || !is_array($trabajo) || $trabajo === []) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and trabajo are required']]
+          ], 400);
+          return;
+      }
+
+      $this->inquilinos->updateTrabajo($id, $trabajo);
+      $updated = $this->inquilinos->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateFiador(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $fiador = $body['fiador'] ?? null;
+
+      if ($id <= 0 || !is_array($fiador) || $fiador === []) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and fiador are required']]
+          ], 400);
+          return;
+      }
+
+      $this->inquilinos->updateFiador($id, $fiador);
+      $updated = $this->inquilinos->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateHistorial(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $historial = $body['historial_vivienda'] ?? null;
+
+      if ($id <= 0 || !is_array($historial) || $historial === []) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and historial_vivienda are required']]
+          ], 400);
+          return;
+      }
+
+      $this->inquilinos->updateHistorial($id, $historial);
+      $updated = $this->inquilinos->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function addArchivo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $tipo = trim((string)($body['tipo'] ?? ''));
+      $s3Key = trim((string)($body['s3_key'] ?? ''));
+
+      if ($id <= 0 || $tipo === '' || $s3Key === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id, tipo, and s3_key are required']]
+          ], 400);
+          return;
+      }
+
+      $item = $this->inquilinos->findById($id);
+      if (!$item) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]
+          ], 404);
+          return;
+      }
+
+      $archivo = $this->inquilinos->addArchivo($id, [
+          'tipo' => $tipo,
+          's3_key' => $s3Key,
+          'mime_type' => $body['mime_type'] ?? null,
+          'size' => $body['size'] ?? null,
+          'original_name' => $body['original_name'] ?? null,
+          'token' => $body['token'] ?? null,
+          'categoria' => $body['categoria'] ?? null,
+      ]);
+
+      $res->json([
+          'data' => $archivo,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ], 201);
+  }
+
+  public function deleteArchivo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $archivoId = (int)($params['archivoId'] ?? 0);
+
+      if ($id <= 0 || $archivoId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and archivoId are required']]
+          ], 400);
+          return;
+      }
+
+      $deleted = $this->inquilinos->deleteArchivo($id, $archivoId);
+      if (!$deleted) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Archivo not found']]
+          ], 404);
+          return;
+      }
+
+      $res->json([
+          'data' => ['success' => true, 'id' => $archivoId],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
 }
