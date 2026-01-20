@@ -189,6 +189,11 @@ final class App {
       $inquilinos->show($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->showBySlug($req, $res, $params);
+    });
+
     $this->router->add('PUT', '/api/v1/inquilinos/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->update($req, $res, $params);

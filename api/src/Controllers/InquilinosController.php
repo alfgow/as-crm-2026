@@ -110,4 +110,22 @@ final class InquilinosController {
       $this->inquilinos->delete($id);
       $res->json(['data' => ['success' => true, 'id' => $id], 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
   }
+
+  public function showBySlug(Request $req, Response $res, array $params): void {
+      $slug = trim((string)($params['slug'] ?? ''));
+
+      if ($slug === '') {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'Slug is required']]], 400);
+          return;
+      }
+
+      $item = $this->inquilinos->findBySlug($slug);
+
+      if (!$item) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]], 404);
+          return;
+      }
+
+      $res->json(['data' => $item, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
+  }
 }
