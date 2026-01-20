@@ -102,6 +102,11 @@ final class App {
       $arrendadores->destroy($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/asesores/{id}/arrendadores', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->byAsesor($req, $res, $params);
+    });
+
     // Asesores CRUD
     $asesorRepo = new \App\Repositories\AsesorRepository($this->db);
     $asesores = new \App\Controllers\AsesoresController($this->config, $asesorRepo);
