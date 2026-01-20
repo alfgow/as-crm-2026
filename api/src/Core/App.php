@@ -160,6 +160,11 @@ final class App {
       $inmuebles->destroy($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/inmuebles', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
+      $ctx = $authMw->handle($req, $res);
+      $inmuebles->byArrendador($req, $res, $params);
+    });
+
     // Inquilinos CRUD
     $inquilinoRepo = new \App\Repositories\InquilinoRepository($this->db);
     $inquilinos = new \App\Controllers\InquilinosController($this->config, $inquilinoRepo);
