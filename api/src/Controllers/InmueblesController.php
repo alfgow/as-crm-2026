@@ -115,4 +115,25 @@ final class InmueblesController {
           'errors' => []
       ]);
   }
+
+  public function byArrendador(Request $req, Response $res, array $params): void {
+      $arrendadorId = (int)($params['id'] ?? 0);
+
+      if ($arrendadorId <= 0) {
+          $res->json([
+              'data' => [],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      $items = $this->inmuebles->findByArrendadorId($arrendadorId);
+
+      $res->json([
+          'data' => $items,
+          'meta' => ['requestId' => $req->getRequestId(), 'count' => count($items)],
+          'errors' => []
+      ]);
+  }
 }
