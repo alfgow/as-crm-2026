@@ -41,4 +41,21 @@ return [
     'max_attempts' => (int)(getenv('OUTBOX_MAX_ATTEMPTS') ?: 20),
     'batch_size' => (int)(getenv('OUTBOX_BATCH_SIZE') ?: 20),
   ],
+  'media' => [
+    'presign_base_url' => getenv('MEDIA_PRESIGN_BASE_URL') ?: '',
+  ],
+  'google' => [
+    'api_key' => getenv('GOOGLE_API_KEY') ?: '',
+    'cx' => getenv('GOOGLE_CX') ?: '',
+  ],
+  'prospect_access' => [
+    'jwt_secret' => getenv('PROSPECT_JWT_SECRET') ?: (getenv('JWT_ACCESS_SECRET') ?: ''),
+    'frontend_public_base' => getenv('PROSPECT_FRONTEND_PUBLIC_BASE') ?: 'https://arrendamientoseguro.app',
+  ],
+  'api_auth' => [
+    'expected_audience' => getenv('API_EXPECTED_AUDIENCE') ?: 'n8n-integrations',
+    'access_ttl' => (int)(getenv('API_ACCESS_TOKEN_TTL') ?: 3600),
+    'refresh_ttl' => (int)(getenv('API_REFRESH_TOKEN_TTL') ?: 2592000),
+    'jwt_secret' => getenv('API_JWT_SECRET') ?: (getenv('JWT_ACCESS_SECRET') ?: ''),
+  ],
 ];

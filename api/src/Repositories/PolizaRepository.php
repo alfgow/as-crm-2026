@@ -47,6 +47,25 @@ final class PolizaRepository {
     return $row ?: null;
   }
 
+  public function findByNumero(int $numero): ?array {
+    $sql = "SELECT p.*,
+                   a.nombre_arrendador,
+                   i.nombre_inquilino,
+                   ase.nombre_asesor,
+                   inm.direccion_inmueble
+            FROM polizas p
+            LEFT JOIN arrendadores a ON p.id_arrendador = a.id
+            LEFT JOIN inquilinos i ON p.id_inquilino = i.id
+            LEFT JOIN asesores ase ON p.id_asesor = ase.id
+            LEFT JOIN inmuebles inm ON p.id_inmueble = inm.id
+            WHERE p.numero_poliza = :numero
+            LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':numero' => $numero]);
+    $row = $st->fetch();
+    return $row ?: null;
+  }
+
   public function create(array $data): int {
     $fields = [
       'tipo_poliza', 'id_asesor', 'id_arrendador', 'id_inquilino', 'id_obligado', 'id_fiador', 
@@ -104,6 +123,53 @@ final class PolizaRepository {
     $sql = "DELETE FROM polizas WHERE id_poliza = :id";
     $this->pdo->prepare($sql)->execute([':id' => $id]);
   }
+
+  public function findVencimientosProximos(): array {
+    $mesActual = (int)date('n');
+    $anioActual = (int)date('Y');
+
+    $mesSiguiente = $mesActual + 1;
+    $anioSiguiente = $anioActual;
+    if ($mesSiguiente > 12) {
+      $mesSiguiente = 1;
+      $anioSiguiente++;
+    }
+
+    return $this->findVencimientosPorMesAnio($mesSiguiente, $anioSiguiente);
+  }
+
+  public function findVencimientosPorMesAnio(int $mes, int $anio): array {
+    $sql = "SELECT p.*,
+                   a.nombre_arrendador,
+                   i.nombre_inquilino,
+                   ase.nombre_asesor,
+                   inm.direccion_inmueble
+            FROM polizas p
+            LEFT JOIN arrendadores a ON p.id_arrendador = a.id
+            LEFT JOIN inquilinos i ON p.id_inquilino = i.id
+            LEFT JOIN asesores ase ON p.id_asesor = ase.id
+            LEFT JOIN inmuebles inm ON p.id_inmueble = inm.id
+            WHERE p.estado = :estado
+              AND p.mes_vencimiento = :mes
+              AND p.year_vencimiento = :anio
+            ORDER BY p.fecha_poliza ASC";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([
+      ':estado' => '1',
+      ':mes' => $mes,
+      ':anio' => $anio,
+    ]);
+    return $st->fetchAll();
+  }
+
+  public function getUltimaPolizaEmitida(): string {
+    $sql = "SELECT numero_poliza FROM polizas ORDER BY id_poliza DESC LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute();
+    $row = $st->fetch();
+    return (string)($row['numero_poliza'] ?? '0');
+  }
+
   public function getNextNumeroPoliza(): int {
     $sql = "SELECT MAX(numero_poliza) as max_num FROM polizas";
     $st = $this->pdo->query($sql);

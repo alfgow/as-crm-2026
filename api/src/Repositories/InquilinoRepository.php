@@ -66,6 +66,190 @@ final class InquilinoRepository {
     return $main;
   }
 
+  public function findBySlug(string $slug): ?array {
+    $sql = "SELECT id FROM inquilinos WHERE slug = :slug LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':slug' => $slug]);
+    $row = $st->fetch();
+
+    if (!$row || empty($row['id'])) {
+      return null;
+    }
+
+    return $this->findById((int)$row['id']);
+  }
+
+  public function countNuevos(): int {
+    $sql = "SELECT COUNT(*) AS total FROM inquilinos WHERE status = 1 OR LOWER(CAST(status AS CHAR)) = 'nuevo'";
+    $st = $this->pdo->query($sql);
+    $row = $st ? $st->fetch() : null;
+    return (int)($row['total'] ?? 0);
+  }
+
+  public function findNuevosConSelfie(int $limit = 8): array {
+    $limit = max(1, $limit);
+    $sql = 'SELECT i.*, (
+              SELECT s3_key FROM inquilinos_archivos
+              WHERE id_inquilino = i.id AND tipo = "selfie"
+              ORDER BY created_at DESC, id DESC
+              LIMIT 1
+            ) AS selfie_key
+            FROM inquilinos i
+            WHERE i.status = 1 OR LOWER(CAST(i.status AS CHAR)) = "nuevo"
+            ORDER BY i.updated_at DESC, i.id DESC
+            LIMIT :limit';
+
+    $st = $this->pdo->prepare($sql);
+    $st->bindValue(':limit', $limit, \PDO::PARAM_INT);
+    $st->execute();
+    $rows = $st->fetchAll();
+
+    return array_map(static function (array $row): array {
+      return [
+        'id' => (int)($row['id'] ?? 0),
+        'nombre_inquilino' => (string)($row['nombre_inquilino'] ?? ''),
+        'apellidop_inquilino' => (string)($row['apellidop_inquilino'] ?? ''),
+        'apellidom_inquilino' => (string)($row['apellidom_inquilino'] ?? ''),
+        'tipo' => (string)($row['tipo'] ?? 'inquilino'),
+        'email' => (string)($row['email'] ?? ''),
+        'celular' => (string)($row['celular'] ?? ''),
+        'slug' => (string)($row['slug'] ?? ''),
+        'selfie_key' => $row['selfie_key'] ?? null,
+      ];
+    }, $rows ?: []);
+  }
+
+  public function findArchivosByInquilinoId(int $idInquilino): array {
+    $stmt = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id");
+    $stmt->execute([':id' => $idInquilino]);
+    return $stmt->fetchAll();
+  }
+
+  public function findArchivosIdentidad(int $idInquilino): array {
+    $tipos = ['selfie', 'ine_frontal', 'ine_reverso', 'pasaporte', 'forma_migratoria'];
+    $placeholders = implode(', ', array_fill(0, count($tipos), '?'));
+    $sql = "SELECT tipo, s3_key FROM inquilinos_archivos
+            WHERE id_inquilino = ?
+              AND tipo IN ($placeholders)
+            ORDER BY created_at DESC, id DESC";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute(array_merge([$idInquilino], $tipos));
+    $rows = $stmt->fetchAll();
+
+    $archivos = [];
+    foreach ($rows as $row) {
+      $tipo = (string)($row['tipo'] ?? '');
+      if ($tipo !== '' && !array_key_exists($tipo, $archivos)) {
+        $archivos[$tipo] = $row['s3_key'] ?? null;
+      }
+    }
+
+    return $archivos;
+  }
+
+  public function findArchivosByTipos(int $idInquilino, array $tipos): array {
+    if ($tipos === []) {
+      return [];
+    }
+    $placeholders = implode(', ', array_fill(0, count($tipos), '?'));
+    $sql = "SELECT * FROM inquilinos_archivos
+            WHERE id_inquilino = ?
+              AND tipo IN ($placeholders)";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute(array_merge([$idInquilino], $tipos));
+    $rows = $stmt->fetchAll();
+
+    $result = [];
+    foreach ($rows as $row) {
+      $tipo = (string)($row['tipo'] ?? '');
+      if ($tipo !== '' && !array_key_exists($tipo, $result)) {
+        $result[$tipo] = $row['s3_key'] ?? null;
+      }
+    }
+
+    return $result;
+  }
+
+  public function addArchivo(int $idInquilino, array $data): array {
+    $fields = [
+      'id_inquilino',
+      'tipo',
+      's3_key',
+      'mime_type',
+      'size',
+      'original_name',
+      'token',
+      'categoria',
+    ];
+
+    $payload = array_merge($data, ['id_inquilino' => $idInquilino]);
+    $columns = [];
+    $placeholders = [];
+    $values = [];
+
+    foreach ($fields as $field) {
+      if (array_key_exists($field, $payload)) {
+        $columns[] = $field;
+        $placeholders[] = ":$field";
+        $values[":$field"] = $payload[$field];
+      }
+    }
+
+    $sql = "INSERT INTO inquilinos_archivos (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute($values);
+
+    $id = (int)$this->pdo->lastInsertId();
+    $fetch = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id = :id LIMIT 1");
+    $fetch->execute([':id' => $id]);
+    $row = $fetch->fetch();
+
+    return $row ?: [];
+  }
+
+  public function deleteArchivo(int $idInquilino, int $archivoId): bool {
+    $stmt = $this->pdo->prepare("DELETE FROM inquilinos_archivos WHERE id = :id AND id_inquilino = :id_inquilino");
+    $stmt->execute([':id' => $archivoId, ':id_inquilino' => $idInquilino]);
+    return $stmt->rowCount() > 0;
+  }
+
+  public function updateArchivo(int $idInquilino, int $archivoId, array $data): array {
+    $fields = [
+      'tipo',
+      's3_key',
+      'mime_type',
+      'size',
+      'original_name',
+      'token',
+      'categoria',
+    ];
+
+    $set = [];
+    $values = [
+      ':id' => $archivoId,
+      ':id_inquilino' => $idInquilino,
+    ];
+
+    foreach ($fields as $field) {
+      if (array_key_exists($field, $data)) {
+        $set[] = "$field = :$field";
+        $values[":$field"] = $data[$field];
+      }
+    }
+
+    if (!empty($set)) {
+      $sql = "UPDATE inquilinos_archivos SET " . implode(', ', $set) . " WHERE id = :id AND id_inquilino = :id_inquilino";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute($values);
+    }
+
+    $fetch = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id = :id AND id_inquilino = :id_inquilino LIMIT 1");
+    $fetch->execute([':id' => $archivoId, ':id_inquilino' => $idInquilino]);
+    $row = $fetch->fetch();
+
+    return $row ?: [];
+  }
+
   private function fetchOne(string $table, int $idInquilino) {
       $st = $this->pdo->prepare("SELECT * FROM $table WHERE id_inquilino = :id LIMIT 1");
       $st->execute([':id' => $idInquilino]);
@@ -153,6 +337,10 @@ final class InquilinoRepository {
     // Update Historial
     public function updateHistorial(int $idInquilino, array $data): void {
         $this->upsertSubTable('inquilinos_historial_vivienda', $idInquilino, $data);
+    }
+
+    public function updateValidaciones(int $idInquilino, array $data): void {
+        $this->upsertSubTable('inquilinos_validaciones', $idInquilino, $data);
     }
 
     private function upsertSubTable(string $table, int $idInquilino, array $data): void {

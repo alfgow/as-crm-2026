@@ -83,6 +83,36 @@ final class InmueblesController {
       ]);
   }
 
+  public function info(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid inmueble id']]
+          ], 400);
+          return;
+      }
+
+      $item = $this->inmuebles->findById($id);
+
+      if (!$item) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Inmueble not found']]
+          ], 404);
+          return;
+      }
+
+      $res->json([
+          'data' => $item,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
   public function update(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();
@@ -112,6 +142,27 @@ final class InmueblesController {
       $res->json([
           'data' => ['success' => true, 'id' => $id],
           'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function byArrendador(Request $req, Response $res, array $params): void {
+      $arrendadorId = (int)($params['id'] ?? 0);
+
+      if ($arrendadorId <= 0) {
+          $res->json([
+              'data' => [],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      $items = $this->inmuebles->findByArrendadorId($arrendadorId);
+
+      $res->json([
+          'data' => $items,
+          'meta' => ['requestId' => $req->getRequestId(), 'count' => count($items)],
           'errors' => []
       ]);
   }
