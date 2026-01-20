@@ -209,11 +209,6 @@ final class App {
       $inquilinos->archivos($req, $res, $params);
     });
 
-    $this->router->add('PUT', '/api/v1/inquilinos/{id}/asesor', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
-      $ctx = $authMw->handle($req, $res);
-      $inquilinos->updateAsesor($req, $res, $params);
-    });
-
     $this->router->add('DELETE', '/api/v1/inquilinos/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->destroy($req, $res, $params);
