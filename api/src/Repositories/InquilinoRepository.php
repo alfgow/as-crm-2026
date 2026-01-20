@@ -79,6 +79,12 @@ final class InquilinoRepository {
     return $this->findById((int)$row['id']);
   }
 
+  public function findArchivosByInquilinoId(int $idInquilino): array {
+    $stmt = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id");
+    $stmt->execute([':id' => $idInquilino]);
+    return $stmt->fetchAll();
+  }
+
   private function fetchOne(string $table, int $idInquilino) {
       $st = $this->pdo->prepare("SELECT * FROM $table WHERE id_inquilino = :id LIMIT 1");
       $st->execute([':id' => $idInquilino]);

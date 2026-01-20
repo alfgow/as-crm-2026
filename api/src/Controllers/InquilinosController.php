@@ -156,4 +156,35 @@ final class InquilinosController {
           'errors' => []
       ]);
   }
+
+  public function archivos(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => [],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid inquilino id']]
+          ], 400);
+          return;
+      }
+
+      $item = $this->inquilinos->findById($id);
+      if (!$item) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]
+          ], 404);
+          return;
+      }
+
+      $archivos = $this->inquilinos->findArchivosByInquilinoId($id);
+
+      $res->json([
+          'data' => $archivos,
+          'meta' => ['requestId' => $req->getRequestId(), 'count' => count($archivos)],
+          'errors' => []
+      ]);
+  }
 }
