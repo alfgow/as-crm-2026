@@ -168,8 +168,34 @@ final class InquilinoRepository {
         $this->upsertSubTable('inquilinos_historial_vivienda', $idInquilino, $data);
     }
 
-    public function updateValidaciones(int $idInquilino, array $data): void {
+  public function updateValidaciones(int $idInquilino, array $data): void {
         $this->upsertSubTable('inquilinos_validaciones', $idInquilino, $data);
+    }
+
+    public function findArchivosByInquilinoId(int $idInquilino): array {
+        $stmt = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id");
+        $stmt->execute([':id' => $idInquilino]);
+        return $stmt->fetchAll();
+    }
+
+    public function findArchivosByTipos(int $idInquilino, array $tipos): array {
+        if (empty($tipos)) {
+            return [];
+        }
+
+        $placeholders = [];
+        $params = [':id' => $idInquilino];
+        foreach ($tipos as $index => $tipo) {
+            $placeholder = ':tipo' . $index;
+            $placeholders[] = $placeholder;
+            $params[$placeholder] = $tipo;
+        }
+
+        $sql = "SELECT s3_key FROM inquilinos_archivos WHERE id_inquilino = :id AND tipo IN (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        return $rows ?: [];
     }
 
     private function upsertSubTable(string $table, int $idInquilino, array $data): void {
