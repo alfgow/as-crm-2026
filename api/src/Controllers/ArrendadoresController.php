@@ -106,6 +106,41 @@ final class ArrendadoresController {
       ]);
   }
 
+  public function showDetalle(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      $item = $this->arrendadores->findById($id);
+
+      if (!$item) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $archivos = $this->arrendadores->findArchivosByArrendadorId($id);
+
+      $res->json([
+          'data' => [
+              'arrendador' => $item,
+              'archivos' => $archivos,
+          ],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
   public function update(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();
