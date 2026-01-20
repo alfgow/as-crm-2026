@@ -388,6 +388,16 @@ final class App {
       $inquilinos->updateArchivo($req, $res, $params);
     });
 
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/status', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateStatus($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/inquilinos/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->archivos($req, $res, $params);
+    });
+
     $this->router->add('DELETE', '/api/v1/inquilinos/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->destroy($req, $res, $params);
