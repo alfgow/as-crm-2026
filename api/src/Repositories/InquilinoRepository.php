@@ -66,6 +66,25 @@ final class InquilinoRepository {
     return $main;
   }
 
+  public function findBySlug(string $slug): ?array {
+    $sql = "SELECT id FROM inquilinos WHERE slug = :slug LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':slug' => $slug]);
+    $row = $st->fetch();
+
+    if (!$row || empty($row['id'])) {
+      return null;
+    }
+
+    return $this->findById((int)$row['id']);
+  }
+
+  public function findArchivosByInquilinoId(int $idInquilino): array {
+    $stmt = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id");
+    $stmt->execute([':id' => $idInquilino]);
+    return $stmt->fetchAll();
+  }
+
   private function fetchOne(string $table, int $idInquilino) {
       $st = $this->pdo->prepare("SELECT * FROM $table WHERE id_inquilino = :id LIMIT 1");
       $st->execute([':id' => $idInquilino]);
