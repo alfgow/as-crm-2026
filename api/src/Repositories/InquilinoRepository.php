@@ -168,6 +168,10 @@ final class InquilinoRepository {
         $this->upsertSubTable('inquilinos_historial_vivienda', $idInquilino, $data);
     }
 
+    public function updateValidaciones(int $idInquilino, array $data): void {
+        $this->upsertSubTable('inquilinos_validaciones', $idInquilino, $data);
+    }
+
     private function upsertSubTable(string $table, int $idInquilino, array $data): void {
         // Check existence
         $exists = $this->fetchOne($table, $idInquilino);
