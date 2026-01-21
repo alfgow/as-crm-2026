@@ -87,12 +87,27 @@ final class App {
       $apiClients->index($req, $res, $ctx);
     });
 
+    $this->router->add('GET', '/api/v1/integrations/clients', function(Request $req, Response $res) use ($authMw, $apiClients) {
+      $ctx = $authMw->handle($req, $res);
+      $apiClients->index($req, $res, $ctx);
+    });
+
     $this->router->add('POST', '/api/v1/api-clients', function(Request $req, Response $res) use ($authMw, $apiClients) {
       $ctx = $authMw->handle($req, $res);
       $apiClients->store($req, $res, $ctx);
     });
 
+    $this->router->add('POST', '/api/v1/integrations/clients', function(Request $req, Response $res) use ($authMw, $apiClients) {
+      $ctx = $authMw->handle($req, $res);
+      $apiClients->store($req, $res, $ctx);
+    });
+
     $this->router->add('POST', '/api/v1/api-clients/{id}/rotate-secret', function(Request $req, Response $res, array $params) use ($authMw, $apiClients) {
+      $ctx = $authMw->handle($req, $res);
+      $apiClients->rotateSecret($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/integrations/clients/{id}/rotate-secret', function(Request $req, Response $res, array $params) use ($authMw, $apiClients) {
       $ctx = $authMw->handle($req, $res);
       $apiClients->rotateSecret($req, $res, $params);
     });

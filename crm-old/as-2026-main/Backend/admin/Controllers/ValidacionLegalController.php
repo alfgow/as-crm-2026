@@ -277,4 +277,24 @@ class ValidacionLegalController
             echo "Error interno: " . $e->getMessage();
         }
     }
+
+    public function historialPorSlugJson(string $slug): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $inquilinoModel = new InquilinoModel();
+            $inquilino = $inquilinoModel->obtenerPorSlug($slug);
+            if (!$inquilino || empty($inquilino['id'])) {
+                http_response_code(404);
+                echo json_encode(['ok' => false, 'error' => 'Inquilino no encontrado']);
+                return;
+            }
+
+            $this->historialJson((int) $inquilino['id']);
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+        }
+    }
 }

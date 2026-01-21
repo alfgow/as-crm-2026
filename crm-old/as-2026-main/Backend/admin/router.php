@@ -316,6 +316,60 @@ if ($isApi) {
             (new \App\Controllers\InquilinoController())->editarStatus();
             exit;
 
+        case $apiUri === '/validaciones/status' && $method === 'GET':
+            require __DIR__ . '/Controllers/ValidacionLegalController.php';
+            (new \App\Controllers\ValidacionLegalController())->status((int) ($_GET['id'] ?? 0));
+            exit;
+
+        case preg_match('#^/inquilino/([^/]+)/validar-identidad$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ValidacionIdentidadApiController.php';
+            (new \App\Controllers\Api\ValidacionIdentidadApiController())->show($matches[1]);
+            exit;
+
+        case preg_match('#^/inquilino/([^/]+)/validar-identidad$#', $apiUri, $matches) && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/ValidacionIdentidadApiController.php';
+            (new \App\Controllers\Api\ValidacionIdentidadApiController())->procesar($matches[1]);
+            exit;
+
+        case preg_match('#^/inquilino/([^/]+)/validar-identidad/resultado$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ValidacionIdentidadApiController.php';
+            (new \App\Controllers\Api\ValidacionIdentidadApiController())->resultado($matches[1]);
+            exit;
+
+        case preg_match('#^/validaciones/demandas/run/(\\d+)$#', $apiUri, $matches) && $method === 'POST':
+            require __DIR__ . '/Controllers/ValidacionLegalController.php';
+            (new \App\Controllers\ValidacionLegalController())->run($matches[1]);
+            exit;
+
+        case preg_match('#^/validaciones/demandas/ultimo/(\\d+)$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/ValidacionLegalController.php';
+            (new \App\Controllers\ValidacionLegalController())->ultimo($matches[1]);
+            exit;
+
+        case preg_match('#^/inquilino/(\\d+)/toggle-demandas$#', $apiUri, $matches) && $method === 'POST':
+            require __DIR__ . '/Controllers/ValidacionLegalController.php';
+            (new \App\Controllers\ValidacionLegalController())->toggleDemandas((int) $matches[1]);
+            exit;
+
+        case preg_match('#^/validaciones/demandas/historial/(\\d+)$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/ValidacionLegalController.php';
+            (new \App\Controllers\ValidacionLegalController())->historialJson((int) $matches[1]);
+            exit;
+
+        case preg_match('#^/inquilino/([^/]+)/validaciones/demandas$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/ValidacionLegalController.php';
+            (new \App\Controllers\ValidacionLegalController())->historialPorSlugJson($matches[1]);
+            exit;
+
+        case preg_match('#^/inquilino/([a-z0-9\\-]+)/validar$#i', $apiUri, $matches)
+            && (
+                $method === 'POST'
+                || ($method === 'GET' && isset($_GET['check']))
+            ):
+            require __DIR__ . '/Controllers/InquilinoValidacionAWSController.php';
+            (new \App\Controllers\InquilinoValidacionAWSController())->validar($matches[1]);
+            exit;
+
         case $apiUri === '/polizas' && $method === 'GET':
             require __DIR__ . '/Controllers/PolizaController.php';
             (new \App\Controllers\PolizaController(true))->index();
