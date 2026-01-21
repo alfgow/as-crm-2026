@@ -196,6 +196,56 @@ if ($isApi) {
             (new \App\Controllers\ArrendadorController(true))->cambiarArchivo();
             exit;
 
+        case $apiUri === '/inmuebles' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->index();
+            exit;
+
+        case $apiUri === '/inmueble/crear' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->store();
+            exit;
+
+        case $apiUri === '/inmuebles/store' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->store();
+            exit;
+
+        case $apiUri === '/inmuebles/update' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->update();
+            exit;
+
+        case $apiUri === '/inmuebles/delete' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->delete();
+            exit;
+
+        case $apiUri === '/inmueble/eliminar' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->delete();
+            exit;
+
+        case $apiUri === '/inmueble/guardar-ajax' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->guardarAjax();
+            exit;
+
+        case preg_match('#^/inmuebles/por-arrendador/([^/]+)$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->inmueblesPorArrendador($matches[1]);
+            exit;
+
+        case preg_match('#^/inmuebles/info/([^/]+)(?:/([^/]+))?$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->info($matches[1], $matches[2] ?? null);
+            exit;
+
+        case preg_match('#^/inmuebles/([^/]+)(?:/([^/]+))?$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->detalle($matches[1], $matches[2] ?? null);
+            exit;
+
         case $apiUri === '/polizas' && $method === 'GET':
             require __DIR__ . '/Controllers/PolizaController.php';
             (new \App\Controllers\PolizaController(true))->index();
