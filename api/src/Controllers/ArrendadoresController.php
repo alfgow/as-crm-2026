@@ -76,6 +76,228 @@ final class ArrendadoresController {
       ]);
   }
 
+  public function showBySlug(Request $req, Response $res, array $params): void {
+      $slug = trim((string)($params['slug'] ?? ''));
+
+      if ($slug === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'slug is required']]
+          ], 400);
+          return;
+      }
+
+      $item = $this->arrendadores->findBySlug($slug);
+
+      if (!$item) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $res->json([
+          'data' => $item,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function showDetalle(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      $item = $this->arrendadores->findById($id);
+
+      if (!$item) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $archivos = $this->arrendadores->findArchivosByArrendadorId($id);
+
+      $res->json([
+          'data' => [
+              'arrendador' => $item,
+              'archivos' => $archivos,
+          ],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function archivos(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $archivos = $this->arrendadores->findArchivosByArrendadorId($id);
+
+      $res->json([
+          'data' => $archivos,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function addArchivo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $tipo = trim((string)($body['tipo'] ?? ''));
+      $s3Key = trim((string)($body['s3_key'] ?? ''));
+
+      if ($id <= 0 || $tipo === '' || $s3Key === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id, tipo, and s3_key are required']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $archivo = $this->arrendadores->addArchivo($id, [
+          'tipo' => $tipo,
+          's3_key' => $s3Key,
+      ]);
+
+      $res->json([
+          'data' => $archivo,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ], 201);
+  }
+
+  public function deleteArchivo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $archivoId = (int)($params['archivoId'] ?? 0);
+
+      if ($id <= 0 || $archivoId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and archivoId are required']]
+          ], 400);
+          return;
+      }
+
+      $deleted = $this->arrendadores->deleteArchivo($id, $archivoId);
+      if (!$deleted) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Archivo not found']]
+          ], 404);
+          return;
+      }
+
+      $res->json([
+          'data' => ['success' => true, 'id' => $archivoId],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateArchivo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $archivoId = (int)($params['archivoId'] ?? 0);
+      $body = $req->getJson();
+
+      if ($id <= 0 || $archivoId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador or archivo id']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $allowed = ['tipo', 's3_key'];
+      $payload = [];
+      foreach ($allowed as $field) {
+          if (array_key_exists($field, $body)) {
+              $value = $body[$field];
+              $payload[$field] = is_string($value) ? trim($value) : $value;
+          }
+      }
+
+      if (empty($payload)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'No data to update']]
+          ], 400);
+          return;
+      }
+
+      $archivo = $this->arrendadores->updateArchivo($id, $archivoId, $payload);
+      if (!$archivo) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Archivo not found']]
+          ], 404);
+          return;
+      }
+
+      $res->json([
+          'data' => $archivo,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
   public function update(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();
@@ -105,6 +327,27 @@ final class ArrendadoresController {
       $res->json([
           'data' => ['success' => true, 'id' => $id],
           'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function byAsesor(Request $req, Response $res, array $params): void {
+      $asesorId = (int)($params['id'] ?? 0);
+
+      if ($asesorId <= 0) {
+          $res->json([
+              'data' => [],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid asesor id']]
+          ], 400);
+          return;
+      }
+
+      $items = $this->arrendadores->findByAsesorId($asesorId);
+
+      $res->json([
+          'data' => $items,
+          'meta' => ['requestId' => $req->getRequestId(), 'count' => count($items)],
           'errors' => []
       ]);
   }
