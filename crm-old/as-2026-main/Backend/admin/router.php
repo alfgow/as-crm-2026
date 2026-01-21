@@ -101,6 +101,26 @@ if ($isApi) {
             (new \App\Controllers\Api\ApiClientApiController())->rotateSecret();
             exit;
 
+        case $apiUri === '/blog' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->index();
+            exit;
+
+        case $apiUri === '/blog/store' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->store();
+            exit;
+
+        case $apiUri === '/blog/update' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->update();
+            exit;
+
+        case $apiUri === '/blog/delete' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->delete();
+            exit;
+
         case $apiUri === '/prospectos/code' && $method === 'POST':
             require __DIR__ . '/Controllers/ProspectAccessController.php';
             (new \App\Controllers\ProspectAccessController(true))->issue();
