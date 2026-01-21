@@ -81,6 +81,66 @@ if ($isApi) {
             (new \App\Controllers\Api\AuthApiController())->refreshToken();
             exit;
 
+        case $apiUri === '/dashboard' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/DashboardApiController.php';
+            (new \App\Controllers\Api\DashboardApiController())->index();
+            exit;
+
+        case $apiUri === '/integrations/clients' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ApiClientApiController.php';
+            (new \App\Controllers\Api\ApiClientApiController())->index();
+            exit;
+
+        case $apiUri === '/integrations/clients' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/ApiClientApiController.php';
+            (new \App\Controllers\Api\ApiClientApiController())->store();
+            exit;
+
+        case $apiUri === '/integrations/clients/rotate-secret' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/ApiClientApiController.php';
+            (new \App\Controllers\Api\ApiClientApiController())->rotateSecret();
+            exit;
+
+        case $apiUri === '/blog' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->index();
+            exit;
+
+        case $apiUri === '/blog/store' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->store();
+            exit;
+
+        case $apiUri === '/blog/update' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->update();
+            exit;
+
+        case $apiUri === '/blog/delete' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/BlogApiController.php';
+            (new \App\Controllers\Api\BlogApiController())->delete();
+            exit;
+
+        case $apiUri === '/asesores' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->index();
+            exit;
+
+        case $apiUri === '/asesores/store' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->store();
+            exit;
+
+        case $apiUri === '/asesores/update' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->update();
+            exit;
+
+        case $apiUri === '/asesores/delete' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->delete();
+            exit;
+
         case $apiUri === '/prospectos/code' && $method === 'POST':
             require __DIR__ . '/Controllers/ProspectAccessController.php';
             (new \App\Controllers\ProspectAccessController(true))->issue();
@@ -94,6 +154,96 @@ if ($isApi) {
         case $apiUri === '/arrendadores' && $method === 'GET':
             require __DIR__ . '/Controllers/ArrendadorController.php';
             (new \App\Controllers\ArrendadorController(true))->index();
+            exit;
+
+        case preg_match('#^/arrendadores/por-asesor/(\d+)$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ArrendadorApiController.php';
+            (new \App\Controllers\Api\ArrendadorApiController())->arrendadoresPorAsesor((int) $matches[1]);
+            exit;
+
+        case preg_match('#^/arrendadores/([a-z0-9-]+)$#i', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ArrendadorApiController.php';
+            (new \App\Controllers\Api\ArrendadorApiController())->detalle($matches[1]);
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-datos-personales' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarDatosPersonales();
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-info-bancaria' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarInfoBancaria();
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-comentarios' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarComentarios();
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-asesor' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarAsesor();
+            exit;
+
+        case $apiUri === '/arrendador/eliminar-archivo' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->eliminarArchivo();
+            exit;
+
+        case $apiUri === '/arrendador/cambiar-archivo' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->cambiarArchivo();
+            exit;
+
+        case $apiUri === '/inmuebles' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->index();
+            exit;
+
+        case $apiUri === '/inmueble/crear' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->store();
+            exit;
+
+        case $apiUri === '/inmuebles/store' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->store();
+            exit;
+
+        case $apiUri === '/inmuebles/update' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->update();
+            exit;
+
+        case $apiUri === '/inmuebles/delete' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->delete();
+            exit;
+
+        case $apiUri === '/inmueble/eliminar' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->delete();
+            exit;
+
+        case $apiUri === '/inmueble/guardar-ajax' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->guardarAjax();
+            exit;
+
+        case preg_match('#^/inmuebles/por-arrendador/([^/]+)$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->inmueblesPorArrendador($matches[1]);
+            exit;
+
+        case preg_match('#^/inmuebles/info/([^/]+)(?:/([^/]+))?$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->info($matches[1], $matches[2] ?? null);
+            exit;
+
+        case preg_match('#^/inmuebles/([^/]+)(?:/([^/]+))?$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InmuebleApiController.php';
+            (new \App\Controllers\Api\InmuebleApiController())->detalle($matches[1], $matches[2] ?? null);
             exit;
 
         case $apiUri === '/polizas' && $method === 'GET':
