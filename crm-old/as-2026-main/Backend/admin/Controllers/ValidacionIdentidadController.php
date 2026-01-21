@@ -35,7 +35,9 @@ class ValidacionIdentidadController
     public function __construct()
     {
         // Aplica verificación de sesión a todo el controlador
-        AuthMiddleware::verificarSesion();
+        if (!defined('REQUEST_IS_API') || REQUEST_IS_API === false) {
+            AuthMiddleware::verificarSesion();
+        }
     }
 
     /**
