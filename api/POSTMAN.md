@@ -487,9 +487,511 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   }
   ```
 
+## Autenticación API (Clientes)
+
+### 37. API Login (Clientes API)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/auth/api/login`
+- **Headers**: `Content-Type: application/json`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "client_id": "<client_id>",
+    "client_secret": "<client_secret>",
+    "audience": "api.arrendamientoseguro.local",
+    "scopes": ["read", "write"]
+  }
+  ```
+
+### 38. API Refresh (Clientes API)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/auth/api/refresh`
+- **Headers**: `Content-Type: application/json`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "refresh_token": "<refresh_token>"
+  }
+  ```
+
+## Integraciones / API Clients
+
+### 39. Listar API Clients
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/api-clients`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 40. Crear API Client
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/api-clients`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "name": "Cliente Integración",
+    "scopes": ["read", "write"],
+    "rate_limit": 60
+  }
+  ```
+
+### 41. Rotar Secret API Client
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/api-clients/{{client_id}}/rotate-secret`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 42. Listar Integrations Clients (Alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/integrations/clients`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 43. Crear Integrations Client (Alias)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/integrations/clients`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 44. Rotar Secret Integrations Client (Alias)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/integrations/clients/{{client_id}}/rotate-secret`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Prospectos
+
+### 45. Ver Código de Prospecto
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/prospectos/code`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 46. Generar Código / Magic Link
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/prospectos/code`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 47. Enviar Emails a Prospectos
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/prospectos/send-emails`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+## Media / Presign
+
+### 48. Presign Single
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/media/presign`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 49. Presign Many
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/media/presign-many`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+## Blog
+
+### 50. Obtener Blog por Slug
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/blog/slug/{{slug}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Arrendadores (Endpoints adicionales)
+
+### 51. Arrendadores por Asesor
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/asesores/{{id_asesor}}/arrendadores`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 52. Arrendador por Slug
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/arrendadores/slug/{{slug}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 53. Actualizar Asesor de Arrendador
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/asesor`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 54. Actualizar Datos Personales Arrendador
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/datos-personales`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 55. Actualizar Info Bancaria Arrendador
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/info-bancaria`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 56. Actualizar Comentarios Arrendador
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/comentarios`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 57. Listar Archivos Arrendador
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 58. Subir Archivo Arrendador
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 59. Reemplazar Archivo Arrendador
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos/{{archivo_id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 60. Eliminar Archivo Arrendador
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos/{{archivo_id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Inmuebles (Endpoints adicionales)
+
+### 61. Inmuebles por Arrendador
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/inmuebles`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 62. Inmueble Info
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inmuebles/{{id_inmueble}}/info`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 63. Inmueble Legacy (pk/sk)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inmuebles/legacy/{{pk}}/{{sk}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 64. Inmueble Legacy Info (pk/sk)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inmuebles/legacy/{{pk}}/{{sk}}/info`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 65. Guardar Inmueble vía AJAX
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inmuebles/guardar-ajax`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Inquilinos (Endpoints adicionales)
+
+### 66. Inquilino por Slug
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 67. Actualizar Datos Personales Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/datos-personales`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 68. Actualizar Status Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/status`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 69. Actualizar Asesor Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/asesor`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 70. Actualizar Dirección Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/direccion`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 71. Actualizar Trabajo Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/trabajo`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 72. Actualizar Fiador Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/fiador`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 73. Actualizar Historial Vivienda Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/historial-vivienda`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 74. Subir Archivo Inquilino
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 75. Reemplazar Archivo Inquilino
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos/{{archivo_id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 76. Eliminar Archivo Inquilino
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos/{{archivo_id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 77. Archivos Presignados por Slug
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/archivos-presignados`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Pólizas (Endpoints adicionales)
+
+### 78. Buscar Pólizas
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/polizas/buscar`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 79. Póliza por Número
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 80. Actualizar Póliza por Número
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### 81. Renta de Póliza
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/polizas/{{numero}}/renta`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 82. Renovar Póliza
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/polizas/{{numero}}/renovar`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 83. Contrato por ID (omitido PDF)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/polizas/{{id}}/contrato`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 84. Contrato por Número (omitido PDF)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/contrato`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 85. Guardar Contrato por Número (omitido PDF)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/contrato`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Financieros
+
+### 86. Listar Financieros
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/financieros`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 87. Registro de Venta
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/financieros/registro-venta`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Dashboard / Vencimientos
+
+### 88. Dashboard
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/dashboard`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 89. Vencimientos
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/vencimientos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Validaciones legales / identidad / AWS / IA
+
+### 90. Status Validaciones Legal
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/status`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 91. Ejecutar Validación Legal
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/run`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 92. Último Reporte Legal
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/ultimo`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 93. Historial Legal
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/historial`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 94. Historial Legal (JSON)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/historial-json`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 95. Toggle Demandas
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/toggle-demandas`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 96. Historial Legal por Slug
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validaciones-legal/historial`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 97. Validación Identidad por Slug
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-identidad`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 98. Procesar Validación Identidad
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/validacion-identidad/procesar`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 99. Resultado Validación Identidad
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-identidad/resultado`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 100. Validación AWS (manual)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/ia/validar/{{slug}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 101. Validación AWS (checks)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-aws`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Query**:
+  - `check`: `archivos|faces|ocr|parse|kv|match|status|resumen_full`
+
+### 102. Validación AWS (checks POST)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-aws`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 103. Archivos Validación AWS
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/validacion-aws/archivos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 104. Archivos AWS por Slug
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-aws/archivos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 105. Ingresos PDF Simple (AWS)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validacion-aws/ingresos-pdf-simple`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106. IA - Vista
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 107. IA - Chat
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/ia/chat`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 108. IA - Historial
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/historial`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 109. IA - Ver Historial
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/historial/{{id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ## Integración y Eventos (Automatización)
 
-### 37. Emitir Evento (Interno)
+### 110. Emitir Evento (Interno)
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/events/emit`
 - **Description**: Endpoint para registrar un evento de negocio en la Outbox.
@@ -513,7 +1015,7 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   }
   ```
 
-### 38. Callback Automatización (n8n → API)
+### 111. Callback Automatización (n8n → API)
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/automations/callbacks/{{correlation_id}}`
 - **Description**: Endpoint llamado por n8n al finalizar (éxito o fallo) para actualizar la bitácora y el estado del evento.
