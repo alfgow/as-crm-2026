@@ -81,6 +81,11 @@ if ($isApi) {
             (new \App\Controllers\Api\AuthApiController())->refreshToken();
             exit;
 
+        case $apiUri === '/dashboard' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/DashboardApiController.php';
+            (new \App\Controllers\Api\DashboardApiController())->index();
+            exit;
+
         case $apiUri === '/prospectos/code' && $method === 'POST':
             require __DIR__ . '/Controllers/ProspectAccessController.php';
             (new \App\Controllers\ProspectAccessController(true))->issue();
