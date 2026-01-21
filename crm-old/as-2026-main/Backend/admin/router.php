@@ -156,6 +156,46 @@ if ($isApi) {
             (new \App\Controllers\ArrendadorController(true))->index();
             exit;
 
+        case preg_match('#^/arrendadores/por-asesor/(\d+)$#', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ArrendadorApiController.php';
+            (new \App\Controllers\Api\ArrendadorApiController())->arrendadoresPorAsesor((int) $matches[1]);
+            exit;
+
+        case preg_match('#^/arrendadores/([a-z0-9-]+)$#i', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ArrendadorApiController.php';
+            (new \App\Controllers\Api\ArrendadorApiController())->detalle($matches[1]);
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-datos-personales' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarDatosPersonales();
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-info-bancaria' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarInfoBancaria();
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-comentarios' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarComentarios();
+            exit;
+
+        case $apiUri === '/arrendador/actualizar-asesor' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->actualizarAsesor();
+            exit;
+
+        case $apiUri === '/arrendador/eliminar-archivo' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->eliminarArchivo();
+            exit;
+
+        case $apiUri === '/arrendador/cambiar-archivo' && $method === 'POST':
+            require __DIR__ . '/Controllers/ArrendadorController.php';
+            (new \App\Controllers\ArrendadorController(true))->cambiarArchivo();
+            exit;
+
         case $apiUri === '/polizas' && $method === 'GET':
             require __DIR__ . '/Controllers/PolizaController.php';
             (new \App\Controllers\PolizaController(true))->index();
