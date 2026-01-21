@@ -246,6 +246,76 @@ if ($isApi) {
             (new \App\Controllers\Api\InmuebleApiController())->detalle($matches[1], $matches[2] ?? null);
             exit;
 
+        case ($apiUri === '/inquilino' || $apiUri === '/inquilino/index') && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InquilinoApiController.php';
+            (new \App\Controllers\Api\InquilinoApiController())->index();
+            exit;
+
+        case preg_match('#^/inquilino/([a-z0-9\-]+)$#i', $apiUri, $matches) && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/InquilinoApiController.php';
+            (new \App\Controllers\Api\InquilinoApiController())->mostrar($matches[1]);
+            exit;
+
+        case $apiUri === '/inquilino/editar_datos_personales' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarDatosPersonales();
+            exit;
+
+        case $apiUri === '/inquilino/editar_domicilio' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarDomicilio();
+            exit;
+
+        case $apiUri === '/inquilino/editar_trabajo' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarTrabajo();
+            exit;
+
+        case $apiUri === '/inquilino/editar_fiador' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarFiador();
+            exit;
+
+        case $apiUri === '/inquilino/editar_historial_vivienda' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarHistorialVivienda();
+            exit;
+
+        case $apiUri === '/inquilino/editar_asesor' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarAsesor();
+            exit;
+
+        case $apiUri === '/inquilino/subir-archivo' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->subirArchivo();
+            exit;
+
+        case $apiUri === '/inquilino/reemplazar_archivo' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->reemplazarArchivo();
+            exit;
+
+        case $apiUri === '/inquilino/eliminar_archivo' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->eliminarArchivo();
+            exit;
+
+        case $apiUri === '/inquilino/eliminar' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->eliminar();
+            exit;
+
+        case $apiUri === '/inquilino/editar-validaciones' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarValidaciones();
+            exit;
+
+        case $apiUri === '/inquilino/editar-status' && $method === 'POST':
+            require __DIR__ . '/Controllers/InquilinoController.php';
+            (new \App\Controllers\InquilinoController())->editarStatus();
+            exit;
+
         case $apiUri === '/polizas' && $method === 'GET':
             require __DIR__ . '/Controllers/PolizaController.php';
             (new \App\Controllers\PolizaController(true))->index();

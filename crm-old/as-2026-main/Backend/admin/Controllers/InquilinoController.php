@@ -30,7 +30,9 @@ class InquilinoController
     public function __construct()
     {
         // Verificación de sesión en cada request del controlador
-        AuthMiddleware::verificarSesion();
+        if (!defined('REQUEST_IS_API') || REQUEST_IS_API === false) {
+            AuthMiddleware::verificarSesion();
+        }
         $this->model = new InquilinoModel();
         $this->asesorModel = new AsesorModel();
     }
