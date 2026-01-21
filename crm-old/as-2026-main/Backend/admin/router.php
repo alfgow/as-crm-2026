@@ -121,6 +121,26 @@ if ($isApi) {
             (new \App\Controllers\Api\BlogApiController())->delete();
             exit;
 
+        case $apiUri === '/asesores' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->index();
+            exit;
+
+        case $apiUri === '/asesores/store' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->store();
+            exit;
+
+        case $apiUri === '/asesores/update' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->update();
+            exit;
+
+        case $apiUri === '/asesores/delete' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/AsesorApiController.php';
+            (new \App\Controllers\Api\AsesorApiController())->delete();
+            exit;
+
         case $apiUri === '/prospectos/code' && $method === 'POST':
             require __DIR__ . '/Controllers/ProspectAccessController.php';
             (new \App\Controllers\ProspectAccessController(true))->issue();
