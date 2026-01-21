@@ -81,6 +81,26 @@ if ($isApi) {
             (new \App\Controllers\Api\AuthApiController())->refreshToken();
             exit;
 
+        case $apiUri === '/dashboard' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/DashboardApiController.php';
+            (new \App\Controllers\Api\DashboardApiController())->index();
+            exit;
+
+        case $apiUri === '/integrations/clients' && $method === 'GET':
+            require __DIR__ . '/Controllers/Api/ApiClientApiController.php';
+            (new \App\Controllers\Api\ApiClientApiController())->index();
+            exit;
+
+        case $apiUri === '/integrations/clients' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/ApiClientApiController.php';
+            (new \App\Controllers\Api\ApiClientApiController())->store();
+            exit;
+
+        case $apiUri === '/integrations/clients/rotate-secret' && $method === 'POST':
+            require __DIR__ . '/Controllers/Api/ApiClientApiController.php';
+            (new \App\Controllers\Api\ApiClientApiController())->rotateSecret();
+            exit;
+
         case $apiUri === '/prospectos/code' && $method === 'POST':
             require __DIR__ . '/Controllers/ProspectAccessController.php';
             (new \App\Controllers\ProspectAccessController(true))->issue();
