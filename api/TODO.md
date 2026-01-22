@@ -7,6 +7,7 @@
 - [ ] Corregir error 500 en `GET /inquilinos/slug/{slug}/validacion-identidad` por método faltante `InquilinoRepository::findArchivosIdentidad()`.
 - [ ] Revisar `POST /validacion-identidad/procesar`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 - [ ] Corregir error 500 en `GET /inquilinos/slug/{slug}/validacion-identidad/resultado` por método faltante `InquilinoRepository::findArchivosIdentidad()`.
+- [ ] Revisar `GET /validacion-aws/manual`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 
 ## Inmuebles
 - [ ] `PUT /inmuebles/{id}` debe devolver el registro actualizado en `data` para consumo en frontend.
