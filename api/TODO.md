@@ -16,4 +16,5 @@
 - [ ] Documentar comportamiento de `POST /polizas/{numero}/renovar` respecto a si concluye automáticamente la póliza anterior.
 - [ ] Confirmar y documentar que `POST /polizas/{numero}/renovar` crea una nueva póliza (según respuesta observada con `201 Created`).
 - [ ] Normalizar endpoints de pólizas para usar consistentemente `numero` en lugar de `id` (evitar mezcla de identificadores).
+- [ ] Eliminar `GET /polizas/{id}/contrato` y dejar solo `GET /polizas/numero/{numero}/contrato` (evitar duplicidad y uso de `id`).
 - [ ] Migrar `GET /polizas/{id}/contrato` a número de póliza (usar `numero_poliza` en lugar de `id`).
