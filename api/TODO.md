@@ -17,4 +17,10 @@
 - [ ] Confirmar y documentar que `POST /polizas/{numero}/renovar` crea una nueva póliza (según respuesta observada con `201 Created`).
 - [ ] Normalizar endpoints de pólizas para usar consistentemente `numero` en lugar de `id` (evitar mezcla de identificadores).
 - [ ] Eliminar `GET /polizas/{id}/contrato` y dejar solo `GET /polizas/numero/{numero}/contrato` (evitar duplicidad y uso de `id`).
+
+## Dashboard
+- [ ] Corregir error 500 en `GET /dashboard` por métodos faltantes (`InquilinoRepository::countNuevos()` y `findNuevosConSelfie()`).
+
+## Financieros
+- [ ] Revisar y definir endpoints faltantes para operaciones financieras (ej. CRUD de ventas, reportes por periodo/canal, exportaciones).
 - [ ] Migrar `GET /polizas/{id}/contrato` a número de póliza (usar `numero_poliza` en lugar de `id`).
