@@ -13,3 +13,5 @@
 
 ## Pólizas
 - [ ] Ajustar/clarificar endpoint de búsqueda para aceptar `q` o requerir `numero` explícitamente (actualmente responde `numero requerido`).
+- [ ] Documentar comportamiento de `POST /polizas/{numero}/renovar` respecto a si concluye automáticamente la póliza anterior.
+- [ ] Normalizar endpoints de pólizas para usar consistentemente `numero` en lugar de `id` (evitar mezcla de identificadores).
