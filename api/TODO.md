@@ -3,6 +3,7 @@
 ## Inquilinos
 - [ ] `PUT /inquilinos/{id}` debe devolver el registro actualizado en `data` para consumo en frontend.
 - [ ] Agregar endpoint de borrado masivo de inquilinos (ej. `POST /inquilinos/delete-bulk` con lista de IDs).
+- [ ] Revisar `PUT /inquilinos/{id}/validaciones-legal/toggle-demandas`: no alterna el `nuevo_estado` (permanece en `2` tras múltiples llamadas).
 
 ## Inmuebles
 - [ ] `PUT /inmuebles/{id}` debe devolver el registro actualizado en `data` para consumo en frontend.
