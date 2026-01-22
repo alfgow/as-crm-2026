@@ -10,3 +10,6 @@
 
 ## Asesores
 - [ ] Agregar endpoint de borrado masivo de asesores (ej. `POST /asesores/delete-bulk` con lista de IDs).
+
+## Pólizas
+- [ ] Ajustar/clarificar endpoint de búsqueda para aceptar `q` o requerir `numero` explícitamente (actualmente responde `numero requerido`).
