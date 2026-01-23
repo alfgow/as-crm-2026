@@ -105,6 +105,19 @@ final class InmuebleRepository {
     $this->pdo->prepare($sql)->execute([':id' => $id]);
   }
 
+  public function deleteBulk(array $ids): int {
+    if (empty($ids)) {
+      return 0;
+    }
+
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $sql = "DELETE FROM inmuebles WHERE id IN ($placeholders)";
+    $st = $this->pdo->prepare($sql);
+    $st->execute($ids);
+
+    return $st->rowCount();
+  }
+
   public function findByArrendadorId(int $arrendadorId): array {
     $sql = "SELECT i.*, 
                    a.nombre_arrendador, 

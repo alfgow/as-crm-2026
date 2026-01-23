@@ -187,6 +187,18 @@ final class InmueblesController {
               'meta' => ['requestId' => $req->getRequestId()],
               'errors' => [['code' => 'bad_request', 'message' => 'No data to update']]
           ], 400);
+          return;
+      }
+
+      $inmueble = $this->inmuebles->findById($id);
+
+      if (!$inmueble) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Inmueble not found']]
+          ], 404);
+          return;
       }
 
       $this->inmuebles->update($id, $body);
@@ -205,6 +217,39 @@ final class InmueblesController {
 
       $res->json([
           'data' => ['success' => true, 'id' => $id],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function deleteBulk(Request $req, Response $res): void {
+      $body = $req->getJson();
+      $ids = $body['ids'] ?? [];
+
+      if (!is_array($ids)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'ids must be an array']]
+          ], 400);
+          return;
+      }
+
+      $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn ($id) => $id > 0)));
+
+      if (empty($ids)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'ids is required']]
+          ], 400);
+          return;
+      }
+
+      $deleted = $this->inmuebles->deleteBulk($ids);
+
+      $res->json([
+          'data' => ['success' => true, 'deleted' => $deleted, 'ids' => $ids],
           'meta' => ['requestId' => $req->getRequestId()],
           'errors' => []
       ]);
