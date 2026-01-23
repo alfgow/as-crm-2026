@@ -15,6 +15,16 @@ final class ValidacionAwsController {
     $this->validaciones = $validaciones;
   }
 
+  public function manual(Request $req, Response $res): void {
+    $slug = $this->getSlugFromRequest($req);
+    $this->validar($req, $res, ['slug' => $slug]);
+  }
+
+  public function procesar(Request $req, Response $res): void {
+    $slug = $this->getSlugFromRequest($req);
+    $this->validar($req, $res, ['slug' => $slug]);
+  }
+
   public function validar(Request $req, Response $res, array $params): void {
     $slug = trim((string)($params['slug'] ?? ''));
     if ($slug === '') {
@@ -119,5 +129,11 @@ final class ValidacionAwsController {
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);
+  }
+
+  private function getSlugFromRequest(Request $req): string {
+    $query = $req->getQuery();
+    $body = $req->getJson() ?? [];
+    return trim((string)($query['slug'] ?? $body['slug'] ?? ''));
   }
 }
