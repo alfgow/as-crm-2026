@@ -786,21 +786,27 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 78. Archivos Presignados por ID
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos-presignados`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ## Pólizas (Endpoints adicionales)
 
-### 78. Buscar Pólizas
+### 79. Buscar Pólizas
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/polizas/buscar`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 79. Renta de Póliza
+### 80. Renta de Póliza
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/polizas/{{numero}}/renta`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 80. Renovar Póliza
+### 81. Renovar Póliza
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/polizas/{{numero}}/renovar`
 - **Headers**:
@@ -810,13 +816,13 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   - Responde con `201 Created` cuando la nueva póliza se genera correctamente.
   - **No concluye automáticamente** la póliza anterior; si se requiere, debe actualizarse manualmente su estado.
 
-### 81. Contrato por Número (omitido PDF)
+### 82. Contrato por Número (omitido PDF)
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/contrato`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 82. Guardar Contrato por Número (omitido PDF)
+### 83. Guardar Contrato por Número (omitido PDF)
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/contrato`
 - **Headers**:

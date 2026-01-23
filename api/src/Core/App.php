@@ -753,6 +753,11 @@ final class App {
       $inquilinoArchivos->presignBySlug($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/inquilinos/{id}/archivos-presignados', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoArchivos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinoArchivos->presignById($req, $res, $params);
+    });
+
     $this->router->add('GET', '/api/v1/inquilinos/{id}/validaciones', function(Request $req, Response $res, array $params) use ($authMw, $validaciones) {
       $ctx = $authMw->handle($req, $res);
       $validaciones->show($req, $res, $params);

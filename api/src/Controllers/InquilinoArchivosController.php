@@ -39,6 +39,34 @@ final class InquilinoArchivosController {
       return;
     }
 
+    $this->respondWithPresigned($req, $res, $inquilino);
+  }
+
+  public function presignById(Request $req, Response $res, array $params): void {
+    $id = (int)($params['id'] ?? 0);
+    if ($id <= 0) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'id inválido']],
+      ], 400);
+      return;
+    }
+
+    $inquilino = $this->inquilinos->findById($id);
+    if (!$inquilino || empty($inquilino['id'])) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'not_found', 'message' => 'Inquilino no encontrado']],
+      ], 404);
+      return;
+    }
+
+    $this->respondWithPresigned($req, $res, $inquilino);
+  }
+
+  private function respondWithPresigned(Request $req, Response $res, array $inquilino): void {
     $archivos = $inquilino['archivos'] ?? [];
     if (empty($archivos)) {
       $res->json([
