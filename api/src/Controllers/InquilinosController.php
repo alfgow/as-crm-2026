@@ -80,8 +80,14 @@ final class InquilinosController {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();
 
+      if ($id <= 0) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'Invalid inquilino id']]], 400);
+          return;
+      }
+
       if (empty($body)) {
           $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'No data to update']]], 400);
+          return;
       }
       
       // Update Main
@@ -102,6 +108,10 @@ final class InquilinosController {
       }
 
       $updated = $this->inquilinos->findById($id);
+      if (!$updated) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]], 404);
+          return;
+      }
       $res->json(['data' => $updated, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
   }
 
@@ -178,6 +188,39 @@ final class InquilinosController {
       $id = (int)($params['id'] ?? 0);
       $this->inquilinos->delete($id);
       $res->json(['data' => ['success' => true, 'id' => $id], 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
+  }
+
+  public function deleteBulk(Request $req, Response $res): void {
+      $body = $req->getJson();
+      $ids = $body['ids'] ?? [];
+
+      if (!is_array($ids)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'ids must be an array']]
+          ], 400);
+          return;
+      }
+
+      $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn ($id) => $id > 0)));
+
+      if (empty($ids)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'ids is required']]
+          ], 400);
+          return;
+      }
+
+      $deleted = $this->inquilinos->deleteBulk($ids);
+
+      $res->json([
+          'data' => ['success' => true, 'deleted' => $deleted, 'ids' => $ids],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
   }
 
   public function showBySlug(Request $req, Response $res, array $params): void {

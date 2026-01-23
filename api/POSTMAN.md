@@ -920,6 +920,13 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/validacion-identidad/procesar`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "slug": "{{slug}}",
+    "tipo": "identidad"
+  }
+  ```
 
 ### 99. Resultado Validación Identidad
 - **Method**: `GET`
@@ -933,6 +940,24 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 100a. Validación AWS Manual (endpoint directo)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/validacion-aws/manual?slug={{slug}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 100b. Validación AWS Procesar
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/validacion-aws/procesar`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "slug": "{{slug}}"
+  }
+  ```
+
 ### 101. Validación AWS (checks)
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-aws`
@@ -944,12 +969,6 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 ### 102. Validación AWS (checks POST)
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-aws`
-- **Headers**:
-  - `Authorization`: `Bearer <Token>`
-
-### 103. Archivos Validación AWS
-- **Method**: `GET`
-- **URL**: `{{base_url}}/api/v1/validacion-aws/archivos`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
@@ -971,11 +990,30 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 106a. IA - Modelos
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/modelos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106b. IA - Modelos Disponibles
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/modelos-disponibles`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ### 107. IA - Chat
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/ia/chat`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "prompt": "Buscar inquilino Juan Perez",
+    "model": "direct"
+  }
+  ```
 
 ### 108. IA - Historial
 - **Method**: `GET`
