@@ -435,12 +435,18 @@ final class App {
       $inquilinos->destroy($req, $res, $params);
     });
 
+    $this->router->add('POST', '/api/v1/inquilinos/delete-bulk', function(Request $req, Response $res) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->deleteBulk($req, $res, []);
+    });
+
     // Polizas CRUD
     $polizaRepo = new \App\Repositories\PolizaRepository($this->db);
     $polizas = new \App\Controllers\PolizasController($this->config, $polizaRepo, $inmuebleRepo);
 
     $financieroRepo = new \App\Repositories\FinancieroRepository($this->db);
     $financiero = new \App\Controllers\FinancieroController($financieroRepo);
+    $iaVentas = new \App\Controllers\IAVentasController($financieroRepo);
     $dashboard = new \App\Controllers\DashboardController($inquilinoRepo, $polizaRepo);
     $vencimientos = new \App\Controllers\VencimientosController($polizaRepo);
 
@@ -598,9 +604,34 @@ final class App {
       $validacionAws->validar($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/validacion-aws/manual', function(Request $req, Response $res) use ($authMw, $validacionAws) {
+      $ctx = $authMw->handle($req, $res);
+      $validacionAws->manual($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/validacion-aws/procesar', function(Request $req, Response $res) use ($authMw, $validacionAws) {
+      $ctx = $authMw->handle($req, $res);
+      $validacionAws->procesar($req, $res);
+    });
+
+    $this->router->add('GET', '/api/v1/ia/ventas', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->index($req, $res);
+    });
+
     $this->router->add('GET', '/api/v1/ia', function(Request $req, Response $res) use ($authMw, $iaController) {
       $ctx = $authMw->handle($req, $res);
       $iaController->index($req, $res);
+    });
+
+    $this->router->add('GET', '/api/v1/ia/modelos', function(Request $req, Response $res) use ($authMw, $iaController) {
+      $ctx = $authMw->handle($req, $res);
+      $iaController->modelos($req, $res);
+    });
+
+    $this->router->add('GET', '/api/v1/ia/modelos-disponibles', function(Request $req, Response $res) use ($authMw, $iaController) {
+      $ctx = $authMw->handle($req, $res);
+      $iaController->modelosDisponibles($req, $res);
     });
 
     $this->router->add('POST', '/api/v1/ia/chat', function(Request $req, Response $res) use ($authMw, $iaController) {
@@ -621,11 +652,6 @@ final class App {
     $this->router->add('POST', '/api/v1/inquilinos/{id}/validacion-aws/ingresos-pdf-simple', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
       $ctx = $authMw->handle($req, $res);
       $inquilinoValidacionAws->validarIngresosPDFSimple($req, $res, $params);
-    });
-
-    $this->router->add('GET', '/api/v1/validacion-aws/archivos', function(Request $req, Response $res) use ($authMw, $inquilinoValidacionAws) {
-      $ctx = $authMw->handle($req, $res);
-      $inquilinoValidacionAws->obtenerArchivos($req, $res);
     });
 
     $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}/validacion-aws/archivos', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {

@@ -150,6 +150,19 @@ final class InquilinoRepository {
      $this->pdo->prepare($sql)->execute([':id' => $id]);
   }
 
+  public function deleteBulk(array $ids): int {
+    if (empty($ids)) {
+      return 0;
+    }
+
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $sql = "DELETE FROM inquilinos WHERE id IN ($placeholders)";
+    $st = $this->pdo->prepare($sql);
+    $st->execute($ids);
+
+    return $st->rowCount();
+  }
+
     // --- Sub-Entity Updates (Simplified) ---
     // Update Direccion
     public function updateDireccion(int $idInquilino, array $data): void {
@@ -196,6 +209,23 @@ final class InquilinoRepository {
         $stmt->execute($params);
         $rows = $stmt->fetchAll(\PDO::FETCH_COLUMN);
         return $rows ?: [];
+    }
+
+    public function findArchivosIdentidad(int $idInquilino): array {
+        $tipos = ['selfie', 'ine_frontal', 'ine_reverso', 'pasaporte'];
+        $placeholders = [];
+        $params = [':id' => $idInquilino];
+
+        foreach ($tipos as $index => $tipo) {
+            $placeholder = ':tipo' . $index;
+            $placeholders[] = $placeholder;
+            $params[$placeholder] = $tipo;
+        }
+
+        $sql = "SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id AND tipo IN (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     private function upsertSubTable(string $table, int $idInquilino, array $data): void {
