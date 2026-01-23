@@ -1,0 +1,3 @@
+api/src/Controllers/InquilinosController.php
+api/src/Core/App.php
+api/src/Repositories/InquilinoRepository.php

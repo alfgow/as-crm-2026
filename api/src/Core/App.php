@@ -435,6 +435,11 @@ final class App {
       $inquilinos->destroy($req, $res, $params);
     });
 
+    $this->router->add('POST', '/api/v1/inquilinos/delete-bulk', function(Request $req, Response $res) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->deleteBulk($req, $res, []);
+    });
+
     // Polizas CRUD
     $polizaRepo = new \App\Repositories\PolizaRepository($this->db);
     $polizas = new \App\Controllers\PolizasController($this->config, $polizaRepo, $inmuebleRepo);
