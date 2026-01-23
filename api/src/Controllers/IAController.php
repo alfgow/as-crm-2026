@@ -24,6 +24,11 @@ final class IAController {
   }
 
   public function modelos(Request $req, Response $res): void {
+    $res->json($this->modelosPayload($req));
+  }
+
+  public function modelosDisponibles(Request $req, Response $res): void {
+    $res->json($this->modelosPayload($req));
     $res->json([
       'data' => [
         'modelos' => [
@@ -142,5 +147,21 @@ final class IAController {
   private function normalize(string $value): string {
     $value = mb_strtolower($value, 'UTF-8');
     return strtr($value, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n']);
+  }
+
+  private function modelosPayload(Request $req): array {
+    return [
+      'data' => [
+        'modelos' => [
+          [
+            'key' => 'direct',
+            'label' => 'Directo (reglas)',
+            'status' => 'ready',
+          ],
+        ],
+      ],
+      'meta' => ['requestId' => $req->getRequestId()],
+      'errors' => [],
+    ];
   }
 }
