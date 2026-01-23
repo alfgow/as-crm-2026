@@ -635,6 +635,14 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $iaVentas->proceso($req, $res);
     });
+    $this->router->add('GET', '/api/v1/ia/ventas/proceso/periodo', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->procesoPeriodo($req, $res);
+    });
+    $this->router->add('GET', '/api/v1/ia/ventas/proceso/usuario', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->procesoUsuario($req, $res);
+    });
     $this->router->add('GET', '/api/v1/ia/ventas/canal/periodo', function(Request $req, Response $res) use ($authMw, $iaVentas) {
       $ctx = $authMw->handle($req, $res);
       $iaVentas->canalPeriodo($req, $res);
@@ -697,6 +705,14 @@ final class App {
     $this->router->add('GET', '/ia/ventas/proceso', function(Request $req, Response $res) use ($authMw, $iaVentas) {
       $ctx = $authMw->handle($req, $res);
       $iaVentas->proceso($req, $res);
+    });
+    $this->router->add('GET', '/ia/ventas/proceso/periodo', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->procesoPeriodo($req, $res);
+    });
+    $this->router->add('GET', '/ia/ventas/proceso/usuario', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->procesoUsuario($req, $res);
     });
     $this->router->add('GET', '/ia/ventas/canal/periodo', function(Request $req, Response $res) use ($authMw, $iaVentas) {
       $ctx = $authMw->handle($req, $res);
