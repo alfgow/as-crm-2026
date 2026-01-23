@@ -5,16 +5,17 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\InquilinoRepository;
 use App\Repositories\MediaRepository;
+use App\Services\MediaPresignService;
 
 final class InquilinoArchivosController {
-  private array $config;
   private InquilinoRepository $inquilinos;
   private MediaRepository $media;
+  private MediaPresignService $presign;
 
-  public function __construct(array $config, InquilinoRepository $inquilinos, MediaRepository $media) {
-    $this->config = $config;
+  public function __construct(InquilinoRepository $inquilinos, MediaRepository $media, MediaPresignService $presign) {
     $this->inquilinos = $inquilinos;
     $this->media = $media;
+    $this->presign = $presign;
   }
 
   public function presignBySlug(Request $req, Response $res, array $params): void {
@@ -71,7 +72,7 @@ final class InquilinoArchivosController {
     $validKeys = $this->media->filterValidKeys($keys, 'inquilinos');
     $items = [];
     foreach ($validKeys as $key) {
-      $url = $this->buildPresignedUrl('inquilinos', $key);
+      $url = $this->presign->buildPresignedUrl('inquilinos', $key);
       if (!$url) {
         continue;
       }
@@ -96,14 +97,4 @@ final class InquilinoArchivosController {
     ]);
   }
 
-  private function buildPresignedUrl(string $bucket, string $key): ?string {
-    $base = rtrim($this->config['media']['presign_base_url'] ?? '', '/');
-    if ($base === '') {
-      return null;
-    }
-
-    $encodedKey = rawurlencode($key);
-    $encodedBucket = rawurlencode($bucket);
-    return $base . '/' . $encodedBucket . '/' . $encodedKey;
-  }
 }
