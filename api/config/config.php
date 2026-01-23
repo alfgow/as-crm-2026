@@ -43,6 +43,19 @@ return [
   ],
   'media' => [
     'presign_base_url' => getenv('MEDIA_PRESIGN_BASE_URL') ?: '',
+    'presign_expires_seconds' => (int)(getenv('MEDIA_PRESIGN_EXPIRES_SECONDS') ?: 900),
+    's3' => [
+      'access_key' => getenv('MEDIA_S3_ACCESS_KEY') ?: (getenv('AWS_ACCESS_KEY_ID') ?: ''),
+      'secret_key' => getenv('MEDIA_S3_SECRET_KEY') ?: (getenv('AWS_SECRET_ACCESS_KEY') ?: ''),
+      'session_token' => getenv('MEDIA_S3_SESSION_TOKEN') ?: (getenv('AWS_SESSION_TOKEN') ?: ''),
+      'region' => getenv('MEDIA_S3_REGION') ?: (getenv('AWS_REGION') ?: ''),
+      'endpoint' => getenv('MEDIA_S3_ENDPOINT') ?: '',
+      'buckets' => [
+        'inquilinos' => getenv('MEDIA_S3_BUCKET_INQUILINOS') ?: '',
+        'arrendadores' => getenv('MEDIA_S3_BUCKET_ARRENDADORES') ?: '',
+        'blog' => getenv('MEDIA_S3_BUCKET_BLOG') ?: '',
+      ],
+    ],
   ],
   'google' => [
     'api_key' => getenv('GOOGLE_API_KEY') ?: '',

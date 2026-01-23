@@ -133,7 +133,8 @@ final class App {
 
     // Media presign
     $mediaRepo = new \App\Repositories\MediaRepository($this->db);
-    $media = new \App\Controllers\MediaController($this->config, $mediaRepo);
+    $mediaPresign = new \App\Services\MediaPresignService($this->config);
+    $media = new \App\Controllers\MediaController($mediaRepo, $mediaPresign);
 
     $this->router->add('GET', '/api/v1/media/presign', function(Request $req, Response $res) use ($authMw, $media) {
       $ctx = $authMw->handle($req, $res);
@@ -537,7 +538,7 @@ final class App {
     $validacionAwsRepo = new \App\Repositories\ValidacionAwsRepository($this->db);
     $validacionAws = new \App\Controllers\ValidacionAwsController($inquilinoRepo, $validacionAwsRepo);
     $inquilinoValidacionAws = new \App\Controllers\InquilinoValidacionAwsController($inquilinoRepo, $validacionAwsRepo);
-    $inquilinoArchivos = new \App\Controllers\InquilinoArchivosController($this->config, $inquilinoRepo, $mediaRepo);
+    $inquilinoArchivos = new \App\Controllers\InquilinoArchivosController($inquilinoRepo, $mediaRepo, $mediaPresign);
     $iaRepo = new \App\Repositories\IARepository($this->db);
     $iaController = new \App\Controllers\IAController($iaRepo);
     $iaHistorial = new \App\Controllers\IAHistorialController($iaRepo);
