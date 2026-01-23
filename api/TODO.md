@@ -11,6 +11,7 @@
 - [ ] Revisar `POST /validacion-aws/procesar`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 - [ ] Eliminar `GET /validacion-aws/archivos` y usar `GET /inquilinos/slug/{slug}/validacion-aws/archivos` (consulta exitosa por slug).
 - [ ] Revisar `POST /ia/chat`: requiere `prompt` (no `message`) y actualmente falla con `SQLSTATE[HY093]: Invalid parameter number` al enviar `prompt`.
+- [ ] Revisar `GET /ia/modelos`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 
 ## Inmuebles
 - [ ] `PUT /inmuebles/{id}` debe devolver el registro actualizado en `data` para consumo en frontend.
