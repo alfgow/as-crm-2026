@@ -265,6 +265,92 @@ final class IAVentasController {
     ]);
   }
 
+  public function procesoPeriodo(Request $req, Response $res): void {
+    $rango = $this->obtenerRangoFechas($req, $res);
+    if (!$rango) {
+      return;
+    }
+    [$inicio, $fin] = $rango;
+
+    $ventas = $this->financieros->listarVentasPorPeriodo($inicio, $fin);
+    $procesos = [];
+    foreach ($ventas as $venta) {
+      $proceso = (string)($venta['canal_venta'] ?? 'Sin canal');
+      if (!isset($procesos[$proceso])) {
+        $procesos[$proceso] = [
+          'proceso' => $proceso,
+          'total_bruto' => 0.0,
+          'total_neto' => 0.0,
+          'polizas' => 0,
+        ];
+      }
+      $procesos[$proceso]['total_bruto'] += (float)($venta['monto_venta'] ?? 0);
+      $procesos[$proceso]['total_neto'] += (float)($venta['ganancia_neta'] ?? 0);
+      $procesos[$proceso]['polizas'] += 1;
+    }
+
+    $res->json([
+      'data' => [
+        'periodo' => ['inicio' => $inicio, 'fin' => $fin],
+        'agrupado_por' => 'canal_venta',
+        'procesos' => array_values($procesos),
+      ],
+      'meta' => ['requestId' => $req->getRequestId(), 'count' => count($procesos)],
+      'errors' => [],
+    ]);
+  }
+
+  public function procesoUsuario(Request $req, Response $res): void {
+    $periodo = $this->obtenerPeriodo($req, $res);
+    if (!$periodo) {
+      return;
+    }
+    [$anio, $mes] = $periodo;
+
+    $query = $req->getQuery();
+    $usuario = trim((string)($query['usuario'] ?? ''));
+    if ($usuario === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'usuario es requerido']],
+      ], 400);
+      return;
+    }
+
+    $ventas = $this->financieros->listarVentasPorAnioMes($anio, $mes);
+    $procesos = [];
+    foreach ($ventas as $venta) {
+      $usuarioVenta = (string)($venta['comision_asesor'] ?? '');
+      if ($usuarioVenta !== $usuario) {
+        continue;
+      }
+      $proceso = (string)($venta['canal_venta'] ?? 'Sin canal');
+      if (!isset($procesos[$proceso])) {
+        $procesos[$proceso] = [
+          'proceso' => $proceso,
+          'total_bruto' => 0.0,
+          'total_neto' => 0.0,
+          'polizas' => 0,
+        ];
+      }
+      $procesos[$proceso]['total_bruto'] += (float)($venta['monto_venta'] ?? 0);
+      $procesos[$proceso]['total_neto'] += (float)($venta['ganancia_neta'] ?? 0);
+      $procesos[$proceso]['polizas'] += 1;
+    }
+
+    $res->json([
+      'data' => [
+        'periodo' => ['anio' => $anio, 'mes' => $mes],
+        'usuario' => $usuario,
+        'agrupado_por' => 'canal_venta',
+        'procesos' => array_values($procesos),
+      ],
+      'meta' => ['requestId' => $req->getRequestId(), 'count' => count($procesos)],
+      'errors' => [],
+    ]);
+  }
+
   public function canalPeriodo(Request $req, Response $res): void {
     $rango = $this->obtenerRangoFechas($req, $res);
     if (!$rango) {

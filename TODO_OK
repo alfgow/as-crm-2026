@@ -37,3 +37,6 @@ Tareas completadas:
 - Habilitado GET /ia/ventas/usuario y /api/v1/ia/ventas/usuario con agrupación por comision_asesor (anio/mes).
 - Habilitado GET /ia/ventas/proceso y /api/v1/ia/ventas/proceso con agrupación por canal_venta (anio/mes).
 - Habilitado GET /ia/ventas/canal/periodo y /api/v1/ia/ventas/canal/periodo con sumatorias por canal en rango (inicio/fin).
+- Agregados endpoints /ia/ventas/proceso/periodo y /api/v1/ia/ventas/proceso/periodo con agregación por canal_venta en rango de fechas.
+- Agregados endpoints /ia/ventas/proceso/usuario y /api/v1/ia/ventas/proceso/usuario con filtro por usuario en periodo (anio/mes).
+- Documentados endpoints financieros faltantes (CRUD de ventas, reportes por periodo/canal, exportación) en POSTMAN.md.

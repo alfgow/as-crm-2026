@@ -835,6 +835,62 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/financieros/registro-venta`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Description**: Vista informativa; el alta de ventas se gestiona en el frontend.
+
+### 84a. Ventas - Crear (pendiente backend)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/financieros/ventas`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "fecha_venta": "2026-01-15",
+    "canal_venta": "Arrendamiento Seguro",
+    "concepto_venta": "Póliza Clásica",
+    "monto_venta": 15000,
+    "comision_asesor": "Nombre Asesor",
+    "ganancia_neta": 4500
+  }
+  ```
+- **Description**: Endpoint propuesto para alta de ventas (pendiente implementar).
+
+### 84b. Ventas - Actualizar (pendiente backend)
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/financieros/ventas/{{id_venta}}`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Endpoint propuesto para editar ventas (pendiente implementar).
+
+### 84c. Ventas - Eliminar (pendiente backend)
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/financieros/ventas/{{id_venta}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Endpoint propuesto para borrar ventas (pendiente implementar).
+
+### 84d. Ventas - Reporte por periodo (pendiente backend)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/financieros/ventas/periodo?inicio=2026-01-01&fin=2026-01-31`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Reporte agregado por rango de fechas (pendiente implementar).
+
+### 84e. Ventas - Reporte por canal (pendiente backend)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/financieros/ventas/canal?anio=2026&mes=1`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Reporte agregado por canal para un mes (pendiente implementar).
+
+### 84f. Ventas - Exportación (pendiente backend)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/financieros/ventas/export?inicio=2026-01-01&fin=2026-01-31`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Exportación a CSV/XLSX (pendiente implementar).
 
 ## Dashboard / Vencimientos
 
@@ -990,6 +1046,60 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 ### 106c. IA - Ventas
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/ia/ventas?anio=2026&mes=1`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106d. IA - Ventas Total por Periodo
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/total?anio=2026&mes=1`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106e. IA - Ventas por Canal
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/canal?anio=2026&mes=1`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106f. IA - Ventas por Modelo
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/modelo?anio=2026&mes=1`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106g. IA - Ventas por Fecha
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/fecha?inicio=2026-01-01&fin=2026-01-31`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106h. IA - Ventas por Usuario
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/usuario?anio=2026&mes=1`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106i. IA - Ventas por Proceso
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/proceso?anio=2026&mes=1`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106j. IA - Ventas por Proceso (Periodo)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/proceso/periodo?inicio=2026-01-01&fin=2026-01-31`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106k. IA - Ventas por Proceso (Usuario)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/proceso/usuario?anio=2026&mes=1&usuario=Nombre%20Asesor`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 106l. IA - Ventas por Canal (Periodo)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/canal/periodo?inicio=2026-01-01&fin=2026-01-31`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
