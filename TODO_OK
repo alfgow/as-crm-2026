@@ -21,3 +21,8 @@ Tareas completadas:
 - Ajustada búsqueda de pólizas para aceptar q o numero.
 - Corregido GET /dashboard agregando conteo y listado de inquilinos nuevos con selfie.
 - Validado que PUT /inmuebles/{id} devuelve el registro actualizado.
+- Habilitado alias sin versión para GET /ia/modelos y /ia/modelos-disponibles.
+- Habilitado alias sin versión para GET /ia/ventas y agregados endpoints /ia/ventas/total y /ia/ventas/canal.
+- Agregadas rutas versionadas /api/v1/ia/ventas/total y /api/v1/ia/ventas/canal.
+- Implementados handlers de resumen total por periodo en IAVentasController.
+- Implementados handlers de sumatorias por canal en IAVentasController.

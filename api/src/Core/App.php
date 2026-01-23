@@ -626,6 +626,14 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $iaVentas->index($req, $res);
     });
+    $this->router->add('GET', '/api/v1/ia/ventas/total', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->total($req, $res);
+    });
+    $this->router->add('GET', '/api/v1/ia/ventas/canal', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->canal($req, $res);
+    });
 
     $this->router->add('GET', '/api/v1/ia', function(Request $req, Response $res) use ($authMw, $iaController) {
       $ctx = $authMw->handle($req, $res);
@@ -655,6 +663,27 @@ final class App {
     $this->router->add('GET', '/api/v1/ia/historial/{id}', function(Request $req, Response $res, array $params) use ($authMw, $iaHistorial) {
       $ctx = $authMw->handle($req, $res);
       $iaHistorial->ver($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/ia/ventas', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->index($req, $res);
+    });
+    $this->router->add('GET', '/ia/ventas/total', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->total($req, $res);
+    });
+    $this->router->add('GET', '/ia/ventas/canal', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->canal($req, $res);
+    });
+    $this->router->add('GET', '/ia/modelos', function(Request $req, Response $res) use ($authMw, $iaController) {
+      $ctx = $authMw->handle($req, $res);
+      $iaController->modelos($req, $res);
+    });
+    $this->router->add('GET', '/ia/modelos-disponibles', function(Request $req, Response $res) use ($authMw, $iaController) {
+      $ctx = $authMw->handle($req, $res);
+      $iaController->modelosDisponibles($req, $res);
     });
 
     $this->router->add('POST', '/api/v1/inquilinos/{id}/validacion-aws/ingresos-pdf-simple', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
