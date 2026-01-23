@@ -39,4 +39,31 @@ final class IAVentasController {
       'errors' => [],
     ]);
   }
+
+  public function modelo(Request $req, Response $res): void {
+    $query = $req->getQuery();
+    $anio = (int)($query['anio'] ?? date('Y'));
+
+    if ($anio <= 0) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'anio inválido']],
+      ], 400);
+      return;
+    }
+
+    $totalAnual = $this->financieros->obtenerIngresosAnuales((string)$anio);
+    $porMes = $this->financieros->obtenerIngresosPorMes((string)$anio);
+
+    $res->json([
+      'data' => [
+        'anio' => $anio,
+        'total_anual' => $totalAnual,
+        'ingresos_por_mes' => $porMes,
+      ],
+      'meta' => ['requestId' => $req->getRequestId(), 'count' => count($porMes)],
+      'errors' => [],
+    ]);
+  }
 }

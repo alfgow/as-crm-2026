@@ -1008,6 +1008,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 106d. IA - Ventas Modelo
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/ia/ventas/modelo?anio=2026`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ### 107. IA - Chat
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/ia/chat`

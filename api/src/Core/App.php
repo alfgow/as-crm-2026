@@ -627,6 +627,11 @@ final class App {
       $iaVentas->index($req, $res);
     });
 
+    $this->router->add('GET', '/api/v1/ia/ventas/modelo', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->modelo($req, $res);
+    });
+
     $this->router->add('GET', '/api/v1/ia', function(Request $req, Response $res) use ($authMw, $iaController) {
       $ctx = $authMw->handle($req, $res);
       $iaController->index($req, $res);
