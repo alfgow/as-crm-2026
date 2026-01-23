@@ -29,6 +29,19 @@ final class IAController {
 
   public function modelosDisponibles(Request $req, Response $res): void {
     $res->json($this->modelosPayload($req));
+    $res->json([
+      'data' => [
+        'modelos' => [
+          [
+            'key' => 'direct',
+            'label' => 'Directo (reglas)',
+            'status' => 'ready',
+          ],
+        ],
+      ],
+      'meta' => ['requestId' => $req->getRequestId()],
+      'errors' => [],
+    ]);
   }
 
   public function chat(Request $req, Response $res): void {
