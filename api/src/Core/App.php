@@ -493,6 +493,11 @@ final class App {
       $polizas->updateByNumero($req, $res, $params);
     });
 
+    $this->router->add('DELETE', '/api/v1/polizas/numero/{numero}', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->destroyByNumero($req, $res, $params);
+    });
+
     $this->router->add('GET', '/api/v1/polizas/buscar', function(Request $req, Response $res) use ($authMw, $polizas) {
       $ctx = $authMw->handle($req, $res);
       $polizas->buscar($req, $res);
@@ -513,16 +518,6 @@ final class App {
       $polizas->store($req, $res, $ctx);
     });
 
-    $this->router->add('GET', '/api/v1/polizas/{id}', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
-      $ctx = $authMw->handle($req, $res);
-      $polizas->show($req, $res, $params);
-    });
-
-    $this->router->add('GET', '/api/v1/polizas/{id}/contrato', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
-      $ctx = $authMw->handle($req, $res);
-      $polizas->contrato($req, $res, $params);
-    });
-
     $this->router->add('GET', '/api/v1/polizas/numero/{numero}/contrato', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
       $ctx = $authMw->handle($req, $res);
       $polizas->contratoByNumero($req, $res, $params);
@@ -531,16 +526,6 @@ final class App {
     $this->router->add('POST', '/api/v1/polizas/numero/{numero}/contrato', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
       $ctx = $authMw->handle($req, $res);
       $polizas->guardarContrato($req, $res, $params);
-    });
-
-    $this->router->add('PUT', '/api/v1/polizas/{id}', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
-      $ctx = $authMw->handle($req, $res);
-      $polizas->update($req, $res, $params);
-    });
-
-    $this->router->add('DELETE', '/api/v1/polizas/{id}', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
-      $ctx = $authMw->handle($req, $res);
-      $polizas->destroy($req, $res, $params);
     });
 
     // Validaciones CRUD

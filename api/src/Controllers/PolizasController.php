@@ -476,4 +476,37 @@ final class PolizasController {
       $this->polizas->delete($id);
       $res->json(['data' => ['success' => true, 'id' => $id], 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
   }
+
+  public function destroyByNumero(Request $req, Response $res, array $params): void {
+      $numero = (int)($params['numero'] ?? 0);
+      if ($numero <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'numero inválido']]
+          ], 400);
+          return;
+      }
+
+      $poliza = $this->polizas->findByNumero($numero);
+      if (!$poliza) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Poliza no encontrada']]
+          ], 404);
+          return;
+      }
+
+      $id = (int)($poliza['id_poliza'] ?? 0);
+      if ($id > 0) {
+          $this->polizas->delete($id);
+      }
+
+      $res->json([
+          'data' => ['success' => true, 'numero' => $numero, 'id' => $id],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
 }

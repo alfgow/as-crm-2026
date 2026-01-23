@@ -26,3 +26,8 @@ Tareas completadas:
 - Agregadas rutas versionadas /api/v1/ia/ventas/total y /api/v1/ia/ventas/canal.
 - Implementados handlers de resumen total por periodo en IAVentasController.
 - Implementados handlers de sumatorias por canal en IAVentasController.
+- Documentado que POST /polizas/{numero}/renovar no concluye automáticamente la póliza anterior.
+- Confirmado y documentado que POST /polizas/{numero}/renovar crea una nueva póliza con 201 Created.
+- Normalizados endpoints de pólizas para usar numero en lugar de id (incluye DELETE por numero).
+- Eliminado GET /polizas/{id}/contrato para dejar solo el endpoint por numero.
+- Migrado contrato de póliza a numero_poliza en documentación y rutas.
