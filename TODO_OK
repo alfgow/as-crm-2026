@@ -8,3 +8,16 @@ api/src/Controllers/IAController.php
 api/src/Controllers/IAVentasController.php
 api/POSTMAN.md
 api/TODO.md
+api/src/Controllers/AsesoresController.php
+api/src/Controllers/InmueblesController.php
+api/src/Controllers/PolizasController.php
+api/src/Repositories/AsesorRepository.php
+api/src/Repositories/InmuebleRepository.php
+api/src/Repositories/InquilinoRepository.php
+
+Tareas completadas:
+- Añadido borrado masivo para inmuebles.
+- Añadido borrado masivo para asesores.
+- Ajustada búsqueda de pólizas para aceptar q o numero.
+- Corregido GET /dashboard agregando conteo y listado de inquilinos nuevos con selfie.
+- Validado que PUT /inmuebles/{id} devuelve el registro actualizado.

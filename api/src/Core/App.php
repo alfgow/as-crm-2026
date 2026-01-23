@@ -282,6 +282,10 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $asesores->destroy($req, $res, $params);
     });
+    $this->router->add('POST', '/api/v1/asesores/delete-bulk', function(Request $req, Response $res) use ($authMw, $asesores) {
+      $ctx = $authMw->handle($req, $res);
+      $asesores->deleteBulk($req, $res);
+    });
 
     // Inmuebles CRUD
     $inmuebleRepo = new \App\Repositories\InmuebleRepository($this->db);
@@ -322,6 +326,10 @@ final class App {
     $this->router->add('DELETE', '/api/v1/inmuebles/{id}', function(Request $req, Response $res, array $params) use ($authMw, $inmuebles) {
       $ctx = $authMw->handle($req, $res);
       $inmuebles->destroy($req, $res, $params);
+    });
+    $this->router->add('POST', '/api/v1/inmuebles/delete-bulk', function(Request $req, Response $res) use ($authMw, $inmuebles) {
+      $ctx = $authMw->handle($req, $res);
+      $inmuebles->deleteBulk($req, $res);
     });
 
     $this->router->add('POST', '/api/v1/inmuebles/guardar-ajax', function(Request $req, Response $res) use ($authMw, $inmuebles) {

@@ -108,4 +108,37 @@ final class AsesoresController {
           'errors' => []
       ]);
   }
+
+  public function deleteBulk(Request $req, Response $res): void {
+      $body = $req->getJson();
+      $ids = $body['ids'] ?? [];
+
+      if (!is_array($ids)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'ids must be an array']]
+          ], 400);
+          return;
+      }
+
+      $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn ($id) => $id > 0)));
+
+      if (empty($ids)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'ids is required']]
+          ], 400);
+          return;
+      }
+
+      $deleted = $this->asesores->deleteBulk($ids);
+
+      $res->json([
+          'data' => ['success' => true, 'deleted' => $deleted, 'ids' => $ids],
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
 }

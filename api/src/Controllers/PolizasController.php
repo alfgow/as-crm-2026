@@ -184,13 +184,14 @@ final class PolizasController {
 
   public function buscar(Request $req, Response $res): void {
       $query = $req->getQuery();
-      $numero = isset($query['numero']) ? (int)$query['numero'] : 0;
+      $numeroParam = $query['numero'] ?? $query['q'] ?? null;
+      $numero = $numeroParam !== null ? (int)$numeroParam : 0;
 
       if ($numero <= 0) {
           $res->json([
               'data' => null,
               'meta' => ['requestId' => $req->getRequestId()],
-              'errors' => [['code' => 'bad_request', 'message' => 'numero requerido']]
+              'errors' => [['code' => 'bad_request', 'message' => 'numero o q requerido']]
           ], 400);
           return;
       }

@@ -71,4 +71,17 @@ final class AsesorRepository {
     $sql = "DELETE FROM asesores WHERE id = :id";
     $this->pdo->prepare($sql)->execute([':id' => $id]);
   }
+
+  public function deleteBulk(array $ids): int {
+    if (empty($ids)) {
+      return 0;
+    }
+
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $sql = "DELETE FROM asesores WHERE id IN ($placeholders)";
+    $st = $this->pdo->prepare($sql);
+    $st->execute($ids);
+
+    return $st->rowCount();
+  }
 }

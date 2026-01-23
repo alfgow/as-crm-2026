@@ -79,6 +79,39 @@ final class InquilinoRepository {
     return $this->findById((int)$row['id']);
   }
 
+  public function countNuevos(int $dias = 30): int {
+    $fechaLimite = (new \DateTimeImmutable(sprintf('-%d days', $dias)))->format('Y-m-d H:i:s');
+    $sql = "SELECT COUNT(*) AS total
+            FROM inquilinos
+            WHERE fecha >= :fecha_limite";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':fecha_limite' => $fechaLimite]);
+    $row = $st->fetch();
+
+    return (int)($row['total'] ?? 0);
+  }
+
+  public function findNuevosConSelfie(int $dias = 30): array {
+    $fechaLimite = (new \DateTimeImmutable(sprintf('-%d days', $dias)))->format('Y-m-d H:i:s');
+    $sql = "SELECT DISTINCT i.id,
+                   i.nombre_inquilino,
+                   i.apellidop_inquilino,
+                   i.apellidom_inquilino,
+                   i.email,
+                   i.celular,
+                   i.status,
+                   i.fecha AS fecha_registro,
+                   a.s3_key AS selfie_s3_key
+            FROM inquilinos i
+            INNER JOIN inquilinos_archivos a
+              ON a.id_inquilino = i.id AND a.tipo = 'selfie'
+            WHERE i.fecha >= :fecha_limite
+            ORDER BY i.fecha DESC";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':fecha_limite' => $fechaLimite]);
+    return $st->fetchAll();
+  }
+
   private function fetchOne(string $table, int $idInquilino) {
       $st = $this->pdo->prepare("SELECT * FROM $table WHERE id_inquilino = :id LIMIT 1");
       $st->execute([':id' => $idInquilino]);
