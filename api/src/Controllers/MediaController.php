@@ -4,14 +4,15 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\MediaRepository;
+use App\Services\MediaPresignService;
 
 final class MediaController {
-  private array $config;
   private MediaRepository $media;
+  private MediaPresignService $presign;
 
-  public function __construct(array $config, MediaRepository $media) {
-    $this->config = $config;
+  public function __construct(MediaRepository $media, MediaPresignService $presign) {
     $this->media = $media;
+    $this->presign = $presign;
   }
 
   public function presign(Request $req, Response $res): void {
@@ -37,7 +38,7 @@ final class MediaController {
       return;
     }
 
-    $url = $this->buildPresignedUrl($bucket, $key);
+    $url = $this->presign->buildPresignedUrl($bucket, $key);
     if (!$url) {
       $res->json([
         'data' => null,
@@ -84,7 +85,7 @@ final class MediaController {
 
     $items = [];
     foreach ($validKeys as $key) {
-      $url = $this->buildPresignedUrl($bucket, $key);
+      $url = $this->presign->buildPresignedUrl($bucket, $key);
       if ($url) {
         $items[] = ['key' => $key, 'url' => $url];
       }
@@ -102,14 +103,4 @@ final class MediaController {
     ]);
   }
 
-  private function buildPresignedUrl(string $bucket, string $key): ?string {
-    $base = rtrim($this->config['media']['presign_base_url'] ?? '', '/');
-    if ($base === '') {
-      return null;
-    }
-
-    $encodedKey = rawurlencode($key);
-    $encodedBucket = rawurlencode($bucket);
-    return $base . '/' . $encodedBucket . '/' . $encodedKey;
-  }
 }
