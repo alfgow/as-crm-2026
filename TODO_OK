@@ -14,6 +14,7 @@ api/src/Controllers/PolizasController.php
 api/src/Repositories/AsesorRepository.php
 api/src/Repositories/InmuebleRepository.php
 api/src/Repositories/InquilinoRepository.php
+api/src/Repositories/FinancieroRepository.php
 
 Tareas completadas:
 - Añadido borrado masivo para inmuebles.
@@ -31,3 +32,8 @@ Tareas completadas:
 - Normalizados endpoints de pólizas para usar numero en lugar de id (incluye DELETE por numero).
 - Eliminado GET /polizas/{id}/contrato para dejar solo el endpoint por numero.
 - Migrado contrato de póliza a numero_poliza en documentación y rutas.
+- Habilitado GET /ia/ventas/modelo y /api/v1/ia/ventas/modelo con resumen por concepto_venta (anio/mes).
+- Habilitado GET /ia/ventas/fecha y /api/v1/ia/ventas/fecha con resumen por fecha (inicio/fin en formato YYYY-MM-DD).
+- Habilitado GET /ia/ventas/usuario y /api/v1/ia/ventas/usuario con agrupación por comision_asesor (anio/mes).
+- Habilitado GET /ia/ventas/proceso y /api/v1/ia/ventas/proceso con agrupación por canal_venta (anio/mes).
+- Habilitado GET /ia/ventas/canal/periodo y /api/v1/ia/ventas/canal/periodo con sumatorias por canal en rango (inicio/fin).

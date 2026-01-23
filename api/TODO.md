@@ -1,13 +1,8 @@
 # TODOs de API (pendientes detectados en pruebas)
 
 ## Inquilinos
-- [ ] Revisar `GET /ia/ventas/modelo`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
-- [ ] Revisar `GET /ia/ventas/fecha`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
-- [ ] Revisar `GET /ia/ventas/usuario`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
-- [ ] Revisar `GET /ia/ventas/proceso`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 - [ ] Revisar `GET /ia/ventas/proceso/periodo`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 - [ ] Revisar `GET /ia/ventas/proceso/usuario`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
-- [ ] Revisar `GET /ia/ventas/canal/periodo`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 
 ## Inmuebles
 
