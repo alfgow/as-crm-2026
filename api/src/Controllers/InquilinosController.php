@@ -80,8 +80,14 @@ final class InquilinosController {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();
 
+      if ($id <= 0) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'Invalid inquilino id']]], 400);
+          return;
+      }
+
       if (empty($body)) {
           $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'No data to update']]], 400);
+          return;
       }
       
       // Update Main
@@ -102,6 +108,10 @@ final class InquilinosController {
       }
 
       $updated = $this->inquilinos->findById($id);
+      if (!$updated) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]], 404);
+          return;
+      }
       $res->json(['data' => $updated, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
   }
 
