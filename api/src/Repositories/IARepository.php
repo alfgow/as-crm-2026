@@ -11,12 +11,17 @@ final class IARepository {
   }
 
   public function registrarInteraccion(array $data): bool {
+    $prompt = isset($data['prompt']) ? (string)$data['prompt'] : '';
+    $respuesta = array_key_exists('respuesta', $data) ? (string)$data['respuesta'] : null;
     $modeloKey = mb_substr((string)($data['modelo_key'] ?? ''), 0, 20);
     $modeloId = mb_substr((string)($data['modelo_id'] ?? ''), 0, 200);
     $ip = isset($data['ip']) ? mb_substr((string)$data['ip'], 0, 45) : null;
     $userAgent = isset($data['user_agent']) ? mb_substr((string)$data['user_agent'], 0, 255) : null;
     $durMs = isset($data['duration_ms']) ? (int)$data['duration_ms'] : 0;
-    $contexto = isset($data['contexto']) ? (string)$data['contexto'] : null;
+    $contexto = $data['contexto'] ?? null;
+    if (is_array($contexto)) {
+      $contexto = json_encode($contexto, JSON_UNESCAPED_UNICODE);
+    }
 
     $sql = "INSERT INTO ia_interacciones
             (usuario_id, modelo_key, modelo_id, prompt, respuesta, duration_ms, ip, user_agent, contexto)
@@ -26,8 +31,8 @@ final class IARepository {
       ':usuario_id' => $data['usuario_id'] ?? null,
       ':modelo_key' => $modeloKey,
       ':modelo_id' => $modeloId,
-      ':prompt' => $data['prompt'],
-      ':respuesta' => $data['respuesta'] ?? null,
+      ':prompt' => $prompt,
+      ':respuesta' => $respuesta,
       ':duration_ms' => $durMs,
       ':ip' => $ip,
       ':user_agent' => $userAgent,

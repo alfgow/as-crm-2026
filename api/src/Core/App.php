@@ -603,6 +603,16 @@ final class App {
       $validacionAws->validar($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/validacion-aws/manual', function(Request $req, Response $res) use ($authMw, $validacionAws) {
+      $ctx = $authMw->handle($req, $res);
+      $validacionAws->manual($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/validacion-aws/procesar', function(Request $req, Response $res) use ($authMw, $validacionAws) {
+      $ctx = $authMw->handle($req, $res);
+      $validacionAws->procesar($req, $res);
+    });
+
     $this->router->add('GET', '/api/v1/ia', function(Request $req, Response $res) use ($authMw, $iaController) {
       $ctx = $authMw->handle($req, $res);
       $iaController->index($req, $res);
@@ -626,11 +636,6 @@ final class App {
     $this->router->add('POST', '/api/v1/inquilinos/{id}/validacion-aws/ingresos-pdf-simple', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
       $ctx = $authMw->handle($req, $res);
       $inquilinoValidacionAws->validarIngresosPDFSimple($req, $res, $params);
-    });
-
-    $this->router->add('GET', '/api/v1/validacion-aws/archivos', function(Request $req, Response $res) use ($authMw, $inquilinoValidacionAws) {
-      $ctx = $authMw->handle($req, $res);
-      $inquilinoValidacionAws->obtenerArchivos($req, $res);
     });
 
     $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}/validacion-aws/archivos', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {

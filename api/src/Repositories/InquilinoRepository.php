@@ -211,6 +211,23 @@ final class InquilinoRepository {
         return $rows ?: [];
     }
 
+    public function findArchivosIdentidad(int $idInquilino): array {
+        $tipos = ['selfie', 'ine_frontal', 'ine_reverso', 'pasaporte'];
+        $placeholders = [];
+        $params = [':id' => $idInquilino];
+
+        foreach ($tipos as $index => $tipo) {
+            $placeholder = ':tipo' . $index;
+            $placeholders[] = $placeholder;
+            $params[$placeholder] = $tipo;
+        }
+
+        $sql = "SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id AND tipo IN (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     private function upsertSubTable(string $table, int $idInquilino, array $data): void {
         // Check existence
         $exists = $this->fetchOne($table, $idInquilino);
