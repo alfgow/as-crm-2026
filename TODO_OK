@@ -5,5 +5,6 @@ api/src/Controllers/ValidacionLegalController.php
 api/src/Controllers/ValidacionAwsController.php
 api/src/Repositories/IARepository.php
 api/src/Controllers/IAController.php
+api/src/Controllers/IAVentasController.php
 api/POSTMAN.md
 api/TODO.md

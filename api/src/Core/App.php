@@ -446,6 +446,7 @@ final class App {
 
     $financieroRepo = new \App\Repositories\FinancieroRepository($this->db);
     $financiero = new \App\Controllers\FinancieroController($financieroRepo);
+    $iaVentas = new \App\Controllers\IAVentasController($financieroRepo);
     $dashboard = new \App\Controllers\DashboardController($inquilinoRepo, $polizaRepo);
     $vencimientos = new \App\Controllers\VencimientosController($polizaRepo);
 
@@ -613,6 +614,11 @@ final class App {
       $validacionAws->procesar($req, $res);
     });
 
+    $this->router->add('GET', '/api/v1/ia/ventas', function(Request $req, Response $res) use ($authMw, $iaVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $iaVentas->index($req, $res);
+    });
+
     $this->router->add('GET', '/api/v1/ia', function(Request $req, Response $res) use ($authMw, $iaController) {
       $ctx = $authMw->handle($req, $res);
       $iaController->index($req, $res);
@@ -621,6 +627,11 @@ final class App {
     $this->router->add('GET', '/api/v1/ia/modelos', function(Request $req, Response $res) use ($authMw, $iaController) {
       $ctx = $authMw->handle($req, $res);
       $iaController->modelos($req, $res);
+    });
+
+    $this->router->add('GET', '/api/v1/ia/modelos-disponibles', function(Request $req, Response $res) use ($authMw, $iaController) {
+      $ctx = $authMw->handle($req, $res);
+      $iaController->modelosDisponibles($req, $res);
     });
 
     $this->router->add('POST', '/api/v1/ia/chat', function(Request $req, Response $res) use ($authMw, $iaController) {
