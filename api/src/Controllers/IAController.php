@@ -23,6 +23,22 @@ final class IAController {
     ]);
   }
 
+  public function modelos(Request $req, Response $res): void {
+    $res->json([
+      'data' => [
+        'modelos' => [
+          [
+            'key' => 'direct',
+            'label' => 'Directo (reglas)',
+            'status' => 'ready',
+          ],
+        ],
+      ],
+      'meta' => ['requestId' => $req->getRequestId()],
+      'errors' => [],
+    ]);
+  }
+
   public function chat(Request $req, Response $res): void {
     $body = $req->getJson() ?? [];
     $prompt = trim((string)($body['prompt'] ?? ''));

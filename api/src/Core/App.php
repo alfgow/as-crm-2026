@@ -618,6 +618,11 @@ final class App {
       $iaController->index($req, $res);
     });
 
+    $this->router->add('GET', '/api/v1/ia/modelos', function(Request $req, Response $res) use ($authMw, $iaController) {
+      $ctx = $authMw->handle($req, $res);
+      $iaController->modelos($req, $res);
+    });
+
     $this->router->add('POST', '/api/v1/ia/chat', function(Request $req, Response $res) use ($authMw, $iaController) {
       $ctx = $authMw->handle($req, $res);
       $iaController->chat($req, $res);
