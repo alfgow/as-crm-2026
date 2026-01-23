@@ -1,17 +1,6 @@
 # TODOs de API (pendientes detectados en pruebas)
 
 ## Inquilinos
-- [ ] `PUT /inquilinos/{id}` debe devolver el registro actualizado en `data` para consumo en frontend.
-- [ ] Agregar endpoint de borrado masivo de inquilinos (ej. `POST /inquilinos/delete-bulk` con lista de IDs).
-- [ ] Revisar `PUT /inquilinos/{id}/validaciones-legal/toggle-demandas`: no alterna el `nuevo_estado` (permanece en `2` tras múltiples llamadas).
-- [ ] Corregir error 500 en `GET /inquilinos/slug/{slug}/validacion-identidad` por método faltante `InquilinoRepository::findArchivosIdentidad()`.
-- [ ] Revisar `POST /validacion-identidad/procesar`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
-- [ ] Corregir error 500 en `GET /inquilinos/slug/{slug}/validacion-identidad/resultado` por método faltante `InquilinoRepository::findArchivosIdentidad()`.
-- [ ] Revisar `GET /validacion-aws/manual`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
-- [ ] Revisar `POST /validacion-aws/procesar`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
-- [ ] Eliminar `GET /validacion-aws/archivos` y usar `GET /inquilinos/slug/{slug}/validacion-aws/archivos` (consulta exitosa por slug).
-- [ ] Revisar `POST /ia/chat`: requiere `prompt` (no `message`) y actualmente falla con `SQLSTATE[HY093]: Invalid parameter number` al enviar `prompt`.
-- [ ] Revisar `GET /ia/modelos`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 - [ ] Revisar `GET /ia/modelos-disponibles`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 - [ ] Revisar `GET /ia/ventas`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.
 - [ ] Revisar `GET /ia/ventas/modelo`: el endpoint no está disponible (404); confirmar ruta/método y documentar el request esperado.

@@ -192,7 +192,13 @@ final class ValidacionLegalController {
     }
 
     $body = $req->getJson();
-    $estado = (int)($body['proceso_inv_demandas'] ?? 2);
+    if (array_key_exists('proceso_inv_demandas', $body)) {
+      $estado = (int)$body['proceso_inv_demandas'];
+    } else {
+      $validaciones = $this->validaciones->obtenerValidaciones($id);
+      $actual = (int)($validaciones['proceso_inv_demandas'] ?? 2);
+      $estado = $actual === 1 ? 2 : 1;
+    }
     $this->validaciones->actualizarProcesoDemandas($id, $estado);
 
     $res->json([

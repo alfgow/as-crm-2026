@@ -1,0 +1,9 @@
+api/src/Controllers/InquilinosController.php
+api/src/Core/App.php
+api/src/Repositories/InquilinoRepository.php
+api/src/Controllers/ValidacionLegalController.php
+api/src/Controllers/ValidacionAwsController.php
+api/src/Repositories/IARepository.php
+api/src/Controllers/IAController.php
+api/POSTMAN.md
+api/TODO.md
