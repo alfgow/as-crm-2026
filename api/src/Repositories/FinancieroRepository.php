@@ -85,4 +85,39 @@ final class FinancieroRepository {
     $stmt->execute([':y' => $anio, ':m' => $mes]);
     return $stmt->fetchAll();
   }
+
+  public function listarVentasPorPeriodo(string $inicio, string $fin): array {
+    $sql = "SELECT
+              id_venta,
+              DATE(fecha_venta) AS fecha,
+              fecha_venta,
+              canal_venta,
+              concepto_venta,
+              monto_venta,
+              comision_asesor,
+              ganancia_neta
+            FROM ventasvillanuevagarcia
+            WHERE DATE(fecha_venta) BETWEEN :inicio AND :fin
+            ORDER BY fecha_venta DESC";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':inicio' => $inicio, ':fin' => $fin]);
+    return $stmt->fetchAll();
+  }
+
+  public function obtenerSumatoriasPorCanalRango(string $inicio, string $fin): array {
+    $sql = "SELECT
+              COALESCE(SUM(CASE WHEN canal_venta = 'Arrendamiento Seguro'
+                THEN ganancia_neta ELSE 0 END),0) AS total_arrendamiento,
+              COALESCE(SUM(CASE WHEN canal_venta <> 'Arrendamiento Seguro'
+                THEN ganancia_neta ELSE 0 END),0) AS total_inmobiliaria
+            FROM ventasvillanuevagarcia
+            WHERE DATE(fecha_venta) BETWEEN :inicio AND :fin";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':inicio' => $inicio, ':fin' => $fin]);
+    $row = $stmt->fetch() ?: ['total_arrendamiento' => 0, 'total_inmobiliaria' => 0];
+    return [
+      'total_arrendamiento' => (float)$row['total_arrendamiento'],
+      'total_inmobiliaria' => (float)$row['total_inmobiliaria'],
+    ];
+  }
 }
