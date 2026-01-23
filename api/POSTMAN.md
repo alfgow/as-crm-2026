@@ -435,15 +435,15 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   // Estado: 1=Vigente, 2=Concluida...
   ```
 
-### 32. Obtener Póliza por ID
+### 32. Obtener Póliza por Número
 - **Method**: `GET`
-- **URL**: `{{base_url}}/api/v1/polizas/{{id_poliza}}`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 33. Actualizar Póliza
+### 33. Actualizar Póliza por Número
 - **Method**: `PUT`
-- **URL**: `{{base_url}}/api/v1/polizas/{{id_poliza}}`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}`
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
@@ -456,9 +456,9 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   // Estado: 1=Vigente, 2=Concluida, 3=Término Anticipado, 4=Incumplimiento
   ```
 
-### 34. Eliminar Póliza
+### 34. Eliminar Póliza por Número
 - **Method**: `DELETE`
-- **URL**: `{{base_url}}/api/v1/polizas/{{id_poliza}}`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
@@ -794,44 +794,29 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 79. Póliza por Número
-- **Method**: `GET`
-- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}`
-- **Headers**:
-  - `Authorization`: `Bearer <Token>`
-
-### 80. Actualizar Póliza por Número
-- **Method**: `PUT`
-- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}`
-- **Headers**:
-  - `Content-Type`: `application/json`
-  - `Authorization`: `Bearer <Token>`
-
-### 81. Renta de Póliza
+### 79. Renta de Póliza
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/polizas/{{numero}}/renta`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 82. Renovar Póliza
+### 80. Renovar Póliza
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/polizas/{{numero}}/renovar`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Notas**:
+  - La renovación clona la póliza base y genera un **nuevo** `numero_poliza`.
+  - Responde con `201 Created` cuando la nueva póliza se genera correctamente.
+  - **No concluye automáticamente** la póliza anterior; si se requiere, debe actualizarse manualmente su estado.
 
-### 83. Contrato por ID (omitido PDF)
-- **Method**: `GET`
-- **URL**: `{{base_url}}/api/v1/polizas/{{id}}/contrato`
-- **Headers**:
-  - `Authorization`: `Bearer <Token>`
-
-### 84. Contrato por Número (omitido PDF)
+### 81. Contrato por Número (omitido PDF)
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/contrato`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 85. Guardar Contrato por Número (omitido PDF)
+### 82. Guardar Contrato por Número (omitido PDF)
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/contrato`
 - **Headers**:
@@ -839,13 +824,13 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 
 ## Financieros
 
-### 86. Listar Financieros
+### 83. Listar Financieros
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/financieros`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 87. Registro de Venta
+### 84. Registro de Venta
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/financieros/registro-venta`
 - **Headers**:
@@ -853,13 +838,13 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 
 ## Dashboard / Vencimientos
 
-### 88. Dashboard
+### 85. Dashboard
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/dashboard`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 89. Vencimientos
+### 86. Vencimientos
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/vencimientos`
 - **Headers**:
@@ -867,13 +852,13 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 
 ## Validaciones legales / identidad / AWS / IA
 
-### 90. Status Validaciones Legal
+### 87. Status Validaciones Legal
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/status`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
-### 91. Ejecutar Validación Legal
+### 88. Ejecutar Validación Legal
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validaciones-legal/run`
 - **Headers**:
