@@ -120,4 +120,87 @@ final class FinancieroRepository {
       'total_inmobiliaria' => (float)$row['total_inmobiliaria'],
     ];
   }
+
+  public function crearVenta(array $data): int {
+    $sql = "INSERT INTO ventasvillanuevagarcia (
+              fecha_venta,
+              canal_venta,
+              concepto_venta,
+              monto_venta,
+              comision_asesor,
+              ganancia_neta
+            ) VALUES (
+              :fecha_venta,
+              :canal_venta,
+              :concepto_venta,
+              :monto_venta,
+              :comision_asesor,
+              :ganancia_neta
+            )";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([
+      ':fecha_venta' => $data['fecha_venta'],
+      ':canal_venta' => $data['canal_venta'],
+      ':concepto_venta' => $data['concepto_venta'],
+      ':monto_venta' => $data['monto_venta'],
+      ':comision_asesor' => $data['comision_asesor'],
+      ':ganancia_neta' => $data['ganancia_neta'],
+    ]);
+
+    return (int)$this->pdo->lastInsertId();
+  }
+
+  public function buscarVentaPorId(int $id): ?array {
+    $sql = "SELECT
+              id_venta,
+              fecha_venta,
+              canal_venta,
+              concepto_venta,
+              monto_venta,
+              comision_asesor,
+              ganancia_neta
+            FROM ventasvillanuevagarcia
+            WHERE id_venta = :id
+            LIMIT 1";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+  }
+
+  public function actualizarVenta(int $id, array $data): bool {
+    $fields = [
+      'fecha_venta',
+      'canal_venta',
+      'concepto_venta',
+      'monto_venta',
+      'comision_asesor',
+      'ganancia_neta',
+    ];
+
+    $set = [];
+    $values = [':id' => $id];
+    foreach ($fields as $field) {
+      if (array_key_exists($field, $data)) {
+        $set[] = "$field = :$field";
+        $values[":$field"] = $data[$field];
+      }
+    }
+
+    if (!$set) {
+      return false;
+    }
+
+    $sql = "UPDATE ventasvillanuevagarcia SET " . implode(', ', $set) . " WHERE id_venta = :id";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute($values);
+    return $stmt->rowCount() > 0;
+  }
+
+  public function eliminarVenta(int $id): bool {
+    $sql = "DELETE FROM ventasvillanuevagarcia WHERE id_venta = :id";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':id' => $id]);
+    return $stmt->rowCount() > 0;
+  }
 }

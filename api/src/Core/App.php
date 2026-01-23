@@ -469,6 +469,36 @@ final class App {
       $financiero->registroVenta($req, $res);
     });
 
+    $this->router->add('POST', '/api/v1/financieros/ventas', function(Request $req, Response $res) use ($authMw, $financiero) {
+      $ctx = $authMw->handle($req, $res);
+      $financiero->crearVenta($req, $res);
+    });
+
+    $this->router->add('PUT', '/api/v1/financieros/ventas/{id_venta}', function(Request $req, Response $res, array $params) use ($authMw, $financiero) {
+      $ctx = $authMw->handle($req, $res);
+      $financiero->actualizarVenta($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/financieros/ventas/{id_venta}', function(Request $req, Response $res, array $params) use ($authMw, $financiero) {
+      $ctx = $authMw->handle($req, $res);
+      $financiero->eliminarVenta($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/financieros/ventas/periodo', function(Request $req, Response $res) use ($authMw, $financiero) {
+      $ctx = $authMw->handle($req, $res);
+      $financiero->ventasPorPeriodo($req, $res);
+    });
+
+    $this->router->add('GET', '/api/v1/financieros/ventas/canal', function(Request $req, Response $res) use ($authMw, $financiero) {
+      $ctx = $authMw->handle($req, $res);
+      $financiero->ventasPorCanal($req, $res);
+    });
+
+    $this->router->add('GET', '/api/v1/financieros/ventas/export', function(Request $req, Response $res) use ($authMw, $financiero) {
+      $ctx = $authMw->handle($req, $res);
+      $financiero->exportarVentas($req, $res);
+    });
+
     $this->router->add('GET', '/api/v1/dashboard', function(Request $req, Response $res) use ($authMw, $dashboard) {
       $ctx = $authMw->handle($req, $res);
       $dashboard->index($req, $res);

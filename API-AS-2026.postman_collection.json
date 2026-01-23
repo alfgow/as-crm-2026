@@ -4384,6 +4384,241 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Ventas - Crear",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_venta\": \"2026-01-15\",\n  \"canal_venta\": \"Arrendamiento Seguro\",\n  \"concepto_venta\": \"Póliza Clásica\",\n  \"monto_venta\": 15000,\n  \"comision_asesor\": \"Nombre Asesor\",\n  \"ganancia_neta\": 4500\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/financieros/ventas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "financieros",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas - Actualizar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"monto_venta\": 16000,\n  \"ganancia_neta\": 4800\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/financieros/ventas/{{id_venta}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "financieros",
+                "ventas",
+                "{{id_venta}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas - Eliminar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/financieros/ventas/{{id_venta}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "financieros",
+                "ventas",
+                "{{id_venta}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas - Reporte por periodo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/financieros/ventas/periodo?inicio=2026-01-01&fin=2026-01-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "financieros",
+                "ventas",
+                "periodo"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "fin",
+                  "value": "2026-01-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas - Reporte por canal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/financieros/ventas/canal?anio=2026&mes=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "financieros",
+                "ventas",
+                "canal"
+              ],
+              "query": [
+                {
+                  "key": "anio",
+                  "value": "2026"
+                },
+                {
+                  "key": "mes",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas - Exportación",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/financieros/ventas/export?inicio=2026-01-01&fin=2026-01-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "financieros",
+                "ventas",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "fin",
+                  "value": "2026-01-31"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
