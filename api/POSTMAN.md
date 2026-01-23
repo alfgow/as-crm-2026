@@ -843,7 +843,7 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   - `Authorization`: `Bearer <Token>`
 - **Description**: Vista informativa; el alta de ventas se gestiona en el frontend.
 
-### 84a. Ventas - Crear (pendiente backend)
+### 84a. Ventas - Crear
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/financieros/ventas`
 - **Headers**:
@@ -860,43 +860,43 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     "ganancia_neta": 4500
   }
   ```
-- **Description**: Endpoint propuesto para alta de ventas (pendiente implementar).
+- **Description**: Alta de venta registrada en la tabla de ventas.
 
-### 84b. Ventas - Actualizar (pendiente backend)
+### 84b. Ventas - Actualizar
 - **Method**: `PUT`
 - **URL**: `{{base_url}}/api/v1/financieros/ventas/{{id_venta}}`
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
-- **Description**: Endpoint propuesto para editar ventas (pendiente implementar).
+- **Description**: Actualiza datos de la venta por ID.
 
-### 84c. Ventas - Eliminar (pendiente backend)
+### 84c. Ventas - Eliminar
 - **Method**: `DELETE`
 - **URL**: `{{base_url}}/api/v1/financieros/ventas/{{id_venta}}`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
-- **Description**: Endpoint propuesto para borrar ventas (pendiente implementar).
+- **Description**: Elimina una venta por ID.
 
-### 84d. Ventas - Reporte por periodo (pendiente backend)
+### 84d. Ventas - Reporte por periodo
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/financieros/ventas/periodo?inicio=2026-01-01&fin=2026-01-31`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
-- **Description**: Reporte agregado por rango de fechas (pendiente implementar).
+- **Description**: Reporte de ventas y totales por rango de fechas.
 
-### 84e. Ventas - Reporte por canal (pendiente backend)
+### 84e. Ventas - Reporte por canal
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/financieros/ventas/canal?anio=2026&mes=1`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
-- **Description**: Reporte agregado por canal para un mes (pendiente implementar).
+- **Description**: Reporte agregado por canal para un mes.
 
-### 84f. Ventas - Exportación (pendiente backend)
+### 84f. Ventas - Exportación
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/financieros/ventas/export?inicio=2026-01-01&fin=2026-01-31`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
-- **Description**: Exportación a CSV/XLSX (pendiente implementar).
+- **Description**: Exportación en CSV por rango de fechas.
 
 ## Dashboard / Vencimientos
 
