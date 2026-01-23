@@ -12,18 +12,24 @@ final class InmuebleRepository {
     $this->pdo = $db->pdo();
   }
 
-  public function findAll(): array {
-    // Joins opcionales para traer nombres, pero el requerimiento básico es el registro
-    // Podemos hacer un fetch simple o un join básico para 'enriquecer' la respuesta
-    // Por simplicidad y rendimiento inicial, hacemos select de la tabla.
+  public function findAll(?string $search = null): array {
     $sql = "SELECT i.*, 
                    a.nombre_arrendador, 
                    ase.nombre_asesor 
             FROM inmuebles i
             LEFT JOIN arrendadores a ON i.id_arrendador = a.id
-            LEFT JOIN asesores ase ON i.id_asesor = ase.id
-            ORDER BY i.id DESC";
-    $st = $this->pdo->query($sql);
+            LEFT JOIN asesores ase ON i.id_asesor = ase.id";
+
+    $params = [];
+    if ($search) {
+        $sql .= " WHERE i.direccion_inmueble LIKE :search";
+        $params[':search'] = "%$search%";
+    }
+            
+    $sql .= " ORDER BY i.id DESC";
+    
+    $st = $this->pdo->prepare($sql);
+    $st->execute($params);
     return $st->fetchAll();
   }
 

@@ -15,7 +15,8 @@ final class InmueblesController {
   }
 
   public function index(Request $req, Response $res, array $ctx): void {
-    $all = $this->inmuebles->findAll();
+    $search = $req->getQuery()['search'] ?? null;
+    $all = $this->inmuebles->findAll($search);
 
     $res->json([
       'data' => $all,
