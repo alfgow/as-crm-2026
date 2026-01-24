@@ -128,14 +128,16 @@ final class FinancieroRepository {
               concepto_venta,
               monto_venta,
               comision_asesor,
-              ganancia_neta
+              ganancia_neta,
+              id_usuario
             ) VALUES (
               :fecha_venta,
               :canal_venta,
               :concepto_venta,
               :monto_venta,
               :comision_asesor,
-              :ganancia_neta
+              :ganancia_neta,
+              :id_usuario
             )";
     $stmt = $this->pdo->prepare($sql);
     $stmt->execute([
@@ -145,6 +147,7 @@ final class FinancieroRepository {
       ':monto_venta' => $data['monto_venta'],
       ':comision_asesor' => $data['comision_asesor'],
       ':ganancia_neta' => $data['ganancia_neta'],
+      ':id_usuario' => $data['id_usuario'],
     ]);
 
     return (int)$this->pdo->lastInsertId();
@@ -158,7 +161,8 @@ final class FinancieroRepository {
               concepto_venta,
               monto_venta,
               comision_asesor,
-              ganancia_neta
+              ganancia_neta,
+              id_usuario
             FROM ventasvillanuevagarcia
             WHERE id_venta = :id
             LIMIT 1";
@@ -176,6 +180,7 @@ final class FinancieroRepository {
       'monto_venta',
       'comision_asesor',
       'ganancia_neta',
+      'id_usuario',
     ];
 
     $set = [];

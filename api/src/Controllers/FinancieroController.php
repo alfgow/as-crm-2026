@@ -153,6 +153,7 @@ final class FinancieroController {
       'monto_venta',
       'comision_asesor',
       'ganancia_neta',
+      'id_usuario',
     ];
 
     foreach ($fields as $field) {
@@ -173,12 +174,16 @@ final class FinancieroController {
         continue;
       }
 
-      if (in_array($field, ['monto_venta', 'ganancia_neta'], true)) {
+      if (in_array($field, ['monto_venta', 'ganancia_neta', 'id_usuario'], true)) {
         if (!is_numeric($value)) {
           $errors[] = ['field' => $field, 'message' => 'debe ser numérico'];
           continue;
         }
-        $data[$field] = (float)$value;
+        if ($field === 'id_usuario') {
+          $data[$field] = (int)$value;
+        } else {
+          $data[$field] = (float)$value;
+        }
         continue;
       }
 
