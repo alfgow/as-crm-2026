@@ -77,6 +77,6 @@ final class Request {
     $auth = $this->headers['authorization'] ?? '';
     if (!$auth) return null;
     if (preg_match('/Bearer\s+(.+)/i', $auth, $m)) return trim($m[1]);
-    return null;
+    return trim($auth);
   }
 }
