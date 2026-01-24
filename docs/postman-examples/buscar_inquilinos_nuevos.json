@@ -1,0 +1,42 @@
+{
+  "name": "Buscar Inquilinos Nuevos por Nombre",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": {
+      "raw": "{{base_url}}/api/v1/inquilinos?status=1&search=juan",
+      "host": [
+        "{{base_url}}"
+      ],
+      "path": [
+        "api",
+        "v1",
+        "inquilinos"
+      ],
+      "query": [
+        {
+          "key": "status",
+          "value": "1",
+          "description": "Filtrar por status Nuevo"
+        },
+        {
+          "key": "search",
+          "value": "juan",
+          "description": "Buscar por nombre, email o celular"
+        }
+      ]
+    },
+    "description": "Combina filtro por status y búsqueda por texto. Lista inquilinos nuevos (status=1) que contengan 'juan' en nombre, email o celular."
+  },
+  "response": [],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access}}",
+        "type": "string"
+      }
+    ]
+  }
+}

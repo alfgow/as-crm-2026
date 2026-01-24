@@ -11,19 +11,40 @@ final class InquilinoRepository {
   }
 
   // --- Main List ---
-  public function findAll(?string $search = null): array {
+  /**
+   * Obtiene todos los inquilinos con filtros opcionales
+   * 
+   * @param string|null $search Término de búsqueda para nombre, email o celular
+   * @param string|null $status Filtro por status: '1' (Nuevo), '2' (En Proceso), '3' (Aprobado), '4' (Rechazado)
+   * @return array Lista de inquilinos
+   */
+  public function findAll(?string $search = null, ?string $status = null): array {
     $sql = "SELECT id, nombre_inquilino, apellidop_inquilino, apellidom_inquilino, email, celular, status, fecha as fecha_registro
             FROM inquilinos";
             
     $params = [];
+    $conditions = [];
+    
+    // Filtro de búsqueda por texto
     if (!empty($search)) {
         // Use CONCAT_WS for full name search, plus specific fields for email/phone
-        $sql .= " WHERE CONCAT_WS(' ', nombre_inquilino, apellidop_inquilino, apellidom_inquilino) LIKE :search1
-                  OR email LIKE :search2
-                  OR celular LIKE :search3";
+        $conditions[] = "(CONCAT_WS(' ', nombre_inquilino, apellidop_inquilino, apellidom_inquilino) LIKE :search1
+                         OR email LIKE :search2
+                         OR celular LIKE :search3)";
         $params[':search1'] = '%' . $search . '%';
         $params[':search2'] = '%' . $search . '%';
         $params[':search3'] = '%' . $search . '%';
+    }
+    
+    // Filtro por status
+    if (!empty($status)) {
+        $conditions[] = "status = :status";
+        $params[':status'] = $status;
+    }
+    
+    // Agregar condiciones WHERE si existen
+    if (!empty($conditions)) {
+        $sql .= " WHERE " . implode(' AND ', $conditions);
     }
 
     $sql .= " ORDER BY id DESC";

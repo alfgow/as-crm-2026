@@ -14,12 +14,44 @@ final class InquilinosController {
     $this->inquilinos = $inquilinos;
   }
 
+  /**
+   * Lista todos los inquilinos con filtros opcionales
+   * 
+   * Query params:
+   * - search: Búsqueda por nombre, email o celular
+   * - status: Filtro por status (1=Nuevo, 2=En Proceso, 3=Aprobado, 4=Rechazado)
+   * 
+   * Ejemplos:
+   * - GET /api/v1/inquilinos
+   * - GET /api/v1/inquilinos?search=juan
+   * - GET /api/v1/inquilinos?status=1
+   * - GET /api/v1/inquilinos?status=1&search=juan
+   */
   public function index(Request $req, Response $res, array $ctx): void {
     $search = $req->getQuery()['search'] ?? null;
-    $all = $this->inquilinos->findAll($search);
+    $status = $req->getQuery()['status'] ?? null;
+    
+    // Validar que el status sea válido si se proporciona
+    if ($status !== null && !in_array($status, ['1', '2', '3', '4'], true)) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'Invalid status. Allowed values: 1 (Nuevo), 2 (En Proceso), 3 (Aprobado), 4 (Rechazado)']]
+      ], 400);
+      return;
+    }
+    
+    $all = $this->inquilinos->findAll($search, $status);
     $res->json([
       'data' => $all,
-      'meta' => ['requestId' => $req->getRequestId(), 'count' => count($all)],
+      'meta' => [
+        'requestId' => $req->getRequestId(), 
+        'count' => count($all),
+        'filters' => [
+          'search' => $search,
+          'status' => $status
+        ]
+      ],
       'errors' => [],
     ]);
   }

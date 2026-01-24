@@ -1,0 +1,37 @@
+{
+  "name": "Listar Inquilinos En Proceso (Status=2)",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": {
+      "raw": "{{base_url}}/api/v1/inquilinos?status=2",
+      "host": [
+        "{{base_url}}"
+      ],
+      "path": [
+        "api",
+        "v1",
+        "inquilinos"
+      ],
+      "query": [
+        {
+          "key": "status",
+          "value": "2",
+          "description": "Filtrar por status En Proceso"
+        }
+      ]
+    },
+    "description": "Lista solo los inquilinos con status = 2 (En Proceso). Estos son prospectos que están siendo validados activamente."
+  },
+  "response": [],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access}}",
+        "type": "string"
+      }
+    ]
+  }
+}

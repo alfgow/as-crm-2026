@@ -1,0 +1,37 @@
+{
+  "name": "Listar Inquilinos Aprobados (Status=3)",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": {
+      "raw": "{{base_url}}/api/v1/inquilinos?status=3",
+      "host": [
+        "{{base_url}}"
+      ],
+      "path": [
+        "api",
+        "v1",
+        "inquilinos"
+      ],
+      "query": [
+        {
+          "key": "status",
+          "value": "3",
+          "description": "Filtrar por status Aprobado"
+        }
+      ]
+    },
+    "description": "Lista solo los inquilinos con status = 3 (Aprobado). Estos son prospectos que han pasado todas las validaciones y están listos para firmar contrato."
+  },
+  "response": [],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access}}",
+        "type": "string"
+      }
+    ]
+  }
+}

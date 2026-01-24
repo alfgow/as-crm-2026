@@ -1,0 +1,37 @@
+{
+  "name": "Listar Inquilinos Rechazados (Status=4)",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": {
+      "raw": "{{base_url}}/api/v1/inquilinos?status=4",
+      "host": [
+        "{{base_url}}"
+      ],
+      "path": [
+        "api",
+        "v1",
+        "inquilinos"
+      ],
+      "query": [
+        {
+          "key": "status",
+          "value": "4",
+          "description": "Filtrar por status Rechazado"
+        }
+      ]
+    },
+    "description": "Lista solo los inquilinos con status = 4 (Rechazado). Estos son prospectos que no cumplieron con los requisitos."
+  },
+  "response": [],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access}}",
+        "type": "string"
+      }
+    ]
+  }
+}
