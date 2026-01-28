@@ -238,6 +238,18 @@ final class IncomeValidationRunsController {
 
     $status = strtoupper((string)$status);
     $allowed = ['APPROVED', 'REVIEW', 'REJECTED', 'INSUFFICIENT_DATA', 'PENDING'];
+    $status = $body['status'] ?? '';
+    if ($status === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'validation_error', 'field' => 'status', 'message' => 'El campo status es obligatorio']],
+      ], 400);
+      return;
+    }
+
+    $status = strtoupper((string)$status);
+    $allowed = ['APPROVED', 'REVIEW', 'REJECTED', 'INSUFFICIENT_DATA'];
     if (!in_array($status, $allowed, true)) {
       $res->json([
         'data' => null,
