@@ -50,6 +50,14 @@ final class IncomeValidationRunsRepository {
     return $row ?: null;
   }
 
+  public function findByRunId(string $runId): ?array {
+    $sql = "SELECT * FROM income_validation_runs WHERE run_id = :run_id LIMIT 1";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':run_id' => $runId]);
+    $row = $st->fetch();
+    return $row ?: null;
+  }
+
   public function create(array $data): array {
     $sql = "INSERT INTO income_validation_runs
             (run_id, prospecto_id, idempotency_key, status)
