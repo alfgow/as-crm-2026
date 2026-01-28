@@ -216,6 +216,78 @@ final class IncomeValidationRunsController {
     }
   }
 
+  public function close(Request $req, Response $res, array $params): void {
+    $runId = trim($params['run_id'] ?? '');
+    if ($runId === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'run_id inválido']],
+      ], 400);
+      return;
+    }
+
+    $body = $req->getJson() ?? [];
+    $status = $body['status'] ?? '';
+    if ($status === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'validation_error', 'field' => 'status', 'message' => 'El campo status es obligatorio']],
+      ], 400);
+      return;
+    }
+
+    $status = strtoupper((string)$status);
+    $allowed = ['APPROVED', 'REVIEW', 'REJECTED', 'INSUFFICIENT_DATA'];
+    if (!in_array($status, $allowed, true)) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'validation_error', 'field' => 'status', 'message' => 'status inválido']],
+      ], 400);
+      return;
+    }
+
+    $run = $this->runs->findByRunId($runId);
+    if (!$run) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'not_found', 'message' => 'Run no encontrado']],
+      ], 404);
+      return;
+    }
+
+    $body['status'] = $status;
+
+    try {
+      $updated = $this->runs->updateByRunId($runId, $body, true);
+      if (!$updated) {
+        $res->json([
+          'data' => null,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => [['code' => 'not_found', 'message' => 'Run no encontrado']],
+        ], 404);
+        return;
+      }
+
+      $updated['message'] = 'Run cerrado exitosamente';
+      $res->json([
+        'data' => $updated,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [],
+      ]);
+    } catch (\Throwable $e) {
+      $code = $this->resolveSqlError($e);
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => $code, 'message' => 'Error al cerrar el run', 'details' => $e->getMessage()]],
+      ], $code === 'conflict' ? 409 : 500);
+    }
+  }
+
   private function resolveSqlError(\Throwable $e): string {
     if ($e instanceof \PDOException && $e->getCode() === '23000') {
       return 'conflict';
