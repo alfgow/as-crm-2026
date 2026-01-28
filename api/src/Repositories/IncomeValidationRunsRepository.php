@@ -5,6 +5,23 @@ use App\Core\Database;
 
 final class IncomeValidationRunsRepository {
   private \PDO $pdo;
+  private const UPDATE_FIELDS = [
+    'run_id',
+    'prospecto_id',
+    'idempotency_key',
+    'status',
+    'confidence_avg',
+    'total_files',
+    'approved_files',
+    'review_files',
+    'rejected_files',
+    'insufficient_files',
+    'promedio_mensual_estimado',
+    'sueldo_declarado',
+    'resumen_archivos',
+    'resumen_completo',
+    'closed_at',
+  ];
 
   public function __construct(Database $db) {
     $this->pdo = $db->pdo();
@@ -80,16 +97,8 @@ final class IncomeValidationRunsRepository {
       return null;
     }
 
-    $fields = [];
-    $params = [':id' => $id];
-
-    foreach (['run_id', 'prospecto_id', 'idempotency_key', 'status'] as $field) {
-      if (array_key_exists($field, $data)) {
-        $fields[] = "{$field} = :{$field}";
-        $value = $data[$field];
-        $params[":{$field}"] = $field === 'prospecto_id' ? (int)$value : $value;
-      }
-    }
+    [$fields, $params] = $this->buildUpdateFields($data);
+    $params[':id'] = $id;
 
     if (!$fields) {
       return $existing;
@@ -102,10 +111,66 @@ final class IncomeValidationRunsRepository {
     return $this->findById($id);
   }
 
+  public function updateByRunId(string $runId, array $data, bool $setClosedAtNow = false): ?array {
+    $existing = $this->findByRunId($runId);
+    if (!$existing) {
+      return null;
+    }
+
+    [$fields, $params] = $this->buildUpdateFields($data, $setClosedAtNow);
+    $params[':run_id'] = $runId;
+
+    if (!$fields) {
+      return $existing;
+    }
+
+    $sql = "UPDATE income_validation_runs SET " . implode(', ', $fields) . ", updated_at = NOW() WHERE run_id = :run_id";
+    $st = $this->pdo->prepare($sql);
+    $st->execute($params);
+
+    return $this->findByRunId($runId);
+  }
+
   public function delete(int $id): bool {
     $sql = "DELETE FROM income_validation_runs WHERE id = :id";
     $st = $this->pdo->prepare($sql);
     $st->execute([':id' => $id]);
     return $st->rowCount() > 0;
+  }
+
+  private function buildUpdateFields(array $data, bool $setClosedAtNow = false): array {
+    $fields = [];
+    $params = [];
+
+    foreach (self::UPDATE_FIELDS as $field) {
+      if (!array_key_exists($field, $data)) {
+        continue;
+      }
+
+      $fields[] = "{$field} = :{$field}";
+      $params[":{$field}"] = $this->normalizeValue($field, $data[$field]);
+    }
+
+    if ($setClosedAtNow && !array_key_exists('closed_at', $data)) {
+      $fields[] = "closed_at = NOW()";
+    }
+
+    return [$fields, $params];
+  }
+
+  private function normalizeValue(string $field, mixed $value): mixed {
+    if (in_array($field, ['prospecto_id', 'total_files', 'approved_files', 'review_files', 'rejected_files', 'insufficient_files'], true)) {
+      return $value === null ? null : (int)$value;
+    }
+
+    if (in_array($field, ['confidence_avg', 'promedio_mensual_estimado', 'sueldo_declarado'], true)) {
+      return $value === null ? null : (float)$value;
+    }
+
+    if (in_array($field, ['resumen_archivos', 'resumen_completo'], true) && is_array($value)) {
+      return json_encode($value, JSON_UNESCAPED_UNICODE);
+    }
+
+    return $value;
   }
 }

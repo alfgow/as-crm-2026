@@ -480,6 +480,11 @@ final class App {
       $incomeRuns->evaluateStatus($req, $res, $params);
     });
 
+    $this->router->add('PUT', '/api/v1/income-validation/runs/{run_id}/close', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRuns->close($req, $res, $params);
+    });
+
     $this->router->add('DELETE', '/api/v1/income-validation/runs/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {
       $ctx = $authMw->handle($req, $res);
       $incomeRuns->destroy($req, $res, $params);

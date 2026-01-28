@@ -1238,6 +1238,40 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 116.2 Cerrar Run por run_id
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/income-validation/runs/{{run_id}}/close`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "status": "APPROVED",
+    "confidence_avg": 0.8774,
+    "total_files": 6,
+    "approved_files": 6,
+    "review_files": 0,
+    "rejected_files": 0,
+    "insufficient_files": 0,
+    "promedio_mensual_estimado": 29237.97,
+    "sueldo_declarado": 45000,
+    "resumen_archivos": [
+      {
+        "archivo_id": 889,
+        "doc_type": "payroll_receipt",
+        "confidence_score": 0.8774,
+        "verification_status": "APPROVED",
+        "has_warning": true
+      }
+    ],
+    "closed_at": "2026-01-28 13:37:44",
+    "resumen_completo": {
+      "nota": "detalle completo"
+    }
+  }
+  ```
+
 ### 117. Listar Archivos de Runs
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/income-validation/run-files`

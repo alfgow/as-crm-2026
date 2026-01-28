@@ -4968,6 +4968,58 @@
           "response": []
         },
         {
+          "name": "Close Income Validation Run",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\",\n  \"confidence_avg\": 0.8774,\n  \"total_files\": 6,\n  \"approved_files\": 6,\n  \"review_files\": 0,\n  \"rejected_files\": 0,\n  \"insufficient_files\": 0,\n  \"promedio_mensual_estimado\": 29237.97,\n  \"sueldo_declarado\": 45000,\n  \"resumen_archivos\": [\n    {\n      \"archivo_id\": 889,\n      \"doc_type\": \"payroll_receipt\",\n      \"confidence_score\": 0.8774,\n      \"verification_status\": \"APPROVED\",\n      \"has_warning\": true\n    }\n  ],\n  \"closed_at\": \"2026-01-28 13:37:44\",\n  \"resumen_completo\": {\n    \"nota\": \"detalle completo\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/income-validation/runs/{{run_id}}/close",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "income-validation",
+                "runs",
+                "{{run_id}}",
+                "close"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Delete Income Validation Run",
           "request": {
             "auth": {
