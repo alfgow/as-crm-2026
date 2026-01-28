@@ -1177,3 +1177,115 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     "error_message": null
   }
   ```
+
+## Validación de Ingresos (Runs y Archivos)
+
+### 112. Listar Runs de Validación de Ingresos
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/income-validation/runs`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Query Params** (opcionales):
+  - `run_id`: Filtra por identificador externo del run.
+  - `prospecto_id`: Filtra por prospecto.
+  - `status`: Filtra por estado (`processing`, `completed`, `failed`, etc).
+  - `idempotency_key`: Filtra por llave idempotente.
+
+### 113. Crear Run de Validación de Ingresos
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/income-validation/runs`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "run_id": "run_2024_0001",
+    "prospecto_id": 1234,
+    "idempotency_key": "income-validation-1234-0001",
+    "status": "processing"
+  }
+  ```
+
+### 114. Obtener Run por ID
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/income-validation/runs/{{id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 115. Actualizar Run
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/income-validation/runs/{{id}}`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "status": "completed"
+  }
+  ```
+
+### 116. Eliminar Run
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/income-validation/runs/{{id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 117. Listar Archivos de Runs
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/income-validation/run-files`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Query Params** (opcionales):
+  - `run_id`: Filtra por run.
+  - `archivo_id`: Filtra por archivo.
+  - `status`: Filtra por estado (`queued`, `processing`, `completed`, etc).
+  - `tipo`: Filtra por tipo de archivo.
+
+### 118. Crear Archivo de Run
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/income-validation/run-files`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "run_id": "run_2024_0001",
+    "archivo_id": 555,
+    "s3_key": "validations/run_2024_0001/archivo.pdf",
+    "tipo": "comprobante",
+    "status": "queued",
+    "file_name": "archivo.pdf",
+    "mime_type": "application/pdf",
+    "file_size_bytes": 123456,
+    "maybe_text_layer": true
+  }
+  ```
+
+### 119. Obtener Archivo por ID
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/income-validation/run-files/{{id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 120. Actualizar Archivo de Run
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/income-validation/run-files/{{id}}`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "status": "processing",
+    "presigned_url": "https://s3.amazonaws.com/bucket/.../archivo.pdf"
+  }
+  ```
+
+### 121. Eliminar Archivo de Run
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/income-validation/run-files/{{id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`

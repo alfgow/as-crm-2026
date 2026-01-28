@@ -449,6 +449,62 @@ final class App {
       $inquilinos->deleteBulk($req, $res, []);
     });
 
+    // Income Validation Runs
+    $incomeRunsRepo = new \App\Repositories\IncomeValidationRunsRepository($this->db);
+    $incomeRunFilesRepo = new \App\Repositories\IncomeValidationRunFilesRepository($this->db);
+    $incomeRuns = new \App\Controllers\IncomeValidationRunsController($incomeRunsRepo);
+    $incomeRunFiles = new \App\Controllers\IncomeValidationRunFilesController($incomeRunFilesRepo);
+
+    $this->router->add('GET', '/api/v1/income-validation/runs', function(Request $req, Response $res) use ($authMw, $incomeRuns) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRuns->index($req, $res, $ctx);
+    });
+
+    $this->router->add('POST', '/api/v1/income-validation/runs', function(Request $req, Response $res) use ($authMw, $incomeRuns) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRuns->store($req, $res, $ctx);
+    });
+
+    $this->router->add('GET', '/api/v1/income-validation/runs/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRuns->show($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/income-validation/runs/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRuns->update($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/income-validation/runs/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRuns->destroy($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/income-validation/run-files', function(Request $req, Response $res) use ($authMw, $incomeRunFiles) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRunFiles->index($req, $res, $ctx);
+    });
+
+    $this->router->add('POST', '/api/v1/income-validation/run-files', function(Request $req, Response $res) use ($authMw, $incomeRunFiles) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRunFiles->store($req, $res, $ctx);
+    });
+
+    $this->router->add('GET', '/api/v1/income-validation/run-files/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRunFiles) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRunFiles->show($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/income-validation/run-files/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRunFiles) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRunFiles->update($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/income-validation/run-files/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRunFiles) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRunFiles->destroy($req, $res, $params);
+    });
+
     // Polizas CRUD
     $polizaRepo = new \App\Repositories\PolizaRepository($this->db);
     $polizas = new \App\Controllers\PolizasController($this->config, $polizaRepo, $inmuebleRepo);
