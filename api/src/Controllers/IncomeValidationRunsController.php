@@ -3,13 +3,16 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Repositories\IncomeValidationRunFilesRepository;
 use App\Repositories\IncomeValidationRunsRepository;
 
 final class IncomeValidationRunsController {
   private IncomeValidationRunsRepository $runs;
+  private IncomeValidationRunFilesRepository $runFiles;
 
-  public function __construct(IncomeValidationRunsRepository $runs) {
+  public function __construct(IncomeValidationRunsRepository $runs, IncomeValidationRunFilesRepository $runFiles) {
     $this->runs = $runs;
+    $this->runFiles = $runFiles;
   }
 
   public function index(Request $req, Response $res, array $ctx): void {
@@ -171,10 +174,78 @@ final class IncomeValidationRunsController {
     ]);
   }
 
+  public function evaluateStatus(Request $req, Response $res, array $params): void {
+    $runId = $params['run_id'] ?? '';
+
+    if ($runId === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'run_id inválido']],
+      ], 400);
+      return;
+    }
+
+    $run = $this->runs->findByRunId($runId);
+    if (!$run) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'not_found', 'message' => 'Run no encontrado']],
+      ], 404);
+      return;
+    }
+
+    $files = $this->runFiles->findAll(['run_id' => $runId]);
+    $status = $this->resolveRunStatus($files);
+
+    try {
+      $updated = $this->runs->update((int)$run['id'], ['status' => $status]);
+      $res->json([
+        'data' => $updated,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [],
+      ]);
+    } catch (\Throwable $e) {
+      $code = $this->resolveSqlError($e);
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => $code, 'message' => 'Error al actualizar el run', 'details' => $e->getMessage()]],
+      ], $code === 'conflict' ? 409 : 500);
+    }
+  }
+
   private function resolveSqlError(\Throwable $e): string {
     if ($e instanceof \PDOException && $e->getCode() === '23000') {
       return 'conflict';
     }
     return 'server_error';
+  }
+
+  private function resolveRunStatus(array $files): string {
+    $hasFailed = false;
+    $hasProcessing = false;
+
+    foreach ($files as $file) {
+      $status = $file['status'] ?? '';
+      if ($status === 'failed') {
+        $hasFailed = true;
+        break;
+      }
+      if ($status === 'queued' || $status === 'processing') {
+        $hasProcessing = true;
+      }
+    }
+
+    if ($hasFailed) {
+      return 'failed';
+    }
+
+    if ($hasProcessing) {
+      return 'processing';
+    }
+
+    return 'done';
   }
 }

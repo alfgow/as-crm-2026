@@ -452,7 +452,7 @@ final class App {
     // Income Validation Runs
     $incomeRunsRepo = new \App\Repositories\IncomeValidationRunsRepository($this->db);
     $incomeRunFilesRepo = new \App\Repositories\IncomeValidationRunFilesRepository($this->db);
-    $incomeRuns = new \App\Controllers\IncomeValidationRunsController($incomeRunsRepo);
+    $incomeRuns = new \App\Controllers\IncomeValidationRunsController($incomeRunsRepo, $incomeRunFilesRepo);
     $incomeRunFiles = new \App\Controllers\IncomeValidationRunFilesController($incomeRunFilesRepo);
 
     $this->router->add('GET', '/api/v1/income-validation/runs', function(Request $req, Response $res) use ($authMw, $incomeRuns) {
@@ -473,6 +473,11 @@ final class App {
     $this->router->add('PUT', '/api/v1/income-validation/runs/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {
       $ctx = $authMw->handle($req, $res);
       $incomeRuns->update($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/income-validation/runs/{run_id}/evaluate-status', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {
+      $ctx = $authMw->handle($req, $res);
+      $incomeRuns->evaluateStatus($req, $res, $params);
     });
 
     $this->router->add('DELETE', '/api/v1/income-validation/runs/{id}', function(Request $req, Response $res, array $params) use ($authMw, $incomeRuns) {

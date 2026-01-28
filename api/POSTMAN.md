@@ -1232,6 +1232,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 116.1 Evaluar Status del Run
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/income-validation/runs/{{run_id}}/evaluate-status`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ### 117. Listar Archivos de Runs
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/income-validation/run-files`
