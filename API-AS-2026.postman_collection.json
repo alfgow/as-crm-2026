@@ -4993,6 +4993,7 @@
                 "type": "text"
               }
             ],
+            "description": "status es opcional: si no se envía, se usa REVIEW. Si se envía null, se interpreta como PENDING.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"APPROVED\",\n  \"confidence_avg\": 0.8774,\n  \"total_files\": 6,\n  \"approved_files\": 6,\n  \"review_files\": 0,\n  \"rejected_files\": 0,\n  \"insufficient_files\": 0,\n  \"promedio_mensual_estimado\": 29237.97,\n  \"sueldo_declarado\": 45000,\n  \"resumen_archivos\": [\n    {\n      \"archivo_id\": 889,\n      \"doc_type\": \"payroll_receipt\",\n      \"confidence_score\": 0.8774,\n      \"verification_status\": \"APPROVED\",\n      \"has_warning\": true\n    }\n  ],\n  \"closed_at\": \"2026-01-28 13:37:44\",\n  \"resumen_completo\": {\n    \"nota\": \"detalle completo\"\n  }\n}",

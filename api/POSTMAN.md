@@ -1245,6 +1245,7 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
 - **Body** (Raw JSON):
+  - `status` es opcional: si no se envía, se usa `REVIEW`. Si se envía `null`, se interpreta como `PENDING`.
   ```json
   {
     "status": "APPROVED",

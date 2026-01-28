@@ -228,6 +228,16 @@ final class IncomeValidationRunsController {
     }
 
     $body = $req->getJson() ?? [];
+    if (!array_key_exists('status', $body)) {
+      $status = 'REVIEW';
+    } elseif ($body['status'] === null) {
+      $status = 'PENDING';
+    } else {
+      $status = $body['status'];
+    }
+
+    $status = strtoupper((string)$status);
+    $allowed = ['APPROVED', 'REVIEW', 'REJECTED', 'INSUFFICIENT_DATA', 'PENDING'];
     $status = $body['status'] ?? '';
     if ($status === '') {
       $res->json([
