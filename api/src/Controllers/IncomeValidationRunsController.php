@@ -236,9 +236,6 @@ final class IncomeValidationRunsController {
       $status = $body['status'];
     }
 
-    $status = strtoupper((string)$status);
-    $allowed = ['APPROVED', 'REVIEW', 'REJECTED', 'INSUFFICIENT_DATA', 'PENDING'];
-    $status = $body['status'] ?? '';
     if ($status === '') {
       $res->json([
         'data' => null,
@@ -249,7 +246,7 @@ final class IncomeValidationRunsController {
     }
 
     $status = strtoupper((string)$status);
-    $allowed = ['APPROVED', 'REVIEW', 'REJECTED', 'INSUFFICIENT_DATA'];
+    $allowed = ['APPROVED', 'REVIEW', 'REJECTED', 'INSUFFICIENT_DATA', 'PENDING'];
     if (!in_array($status, $allowed, true)) {
       $res->json([
         'data' => null,
