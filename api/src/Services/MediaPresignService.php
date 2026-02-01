@@ -16,10 +16,14 @@ final class MediaPresignService {
       return $base . '/' . $encodedBucket . '/' . $encodedKey;
     }
 
-    return $this->buildS3PresignedUrl($bucket, $key);
+    return $this->buildS3PresignedUrl($bucket, $key, 'GET');
   }
 
-  private function buildS3PresignedUrl(string $bucket, string $key): ?string {
+  public function buildPresignedPutUrl(string $bucket, string $key): ?string {
+    return $this->buildS3PresignedUrl($bucket, $key, 'PUT');
+  }
+
+  private function buildS3PresignedUrl(string $bucket, string $key, string $method): ?string {
     $mediaConfig = $this->config['media'] ?? [];
     $s3Config = $mediaConfig['s3'] ?? [];
 
@@ -69,8 +73,9 @@ final class MediaPresignService {
     $signedHeaders = 'host';
     $payloadHash = 'UNSIGNED-PAYLOAD';
 
+    $method = strtoupper(trim($method)) ?: 'GET';
     $canonicalRequest = implode("\n", [
-      'GET',
+      $method,
       $canonicalUri,
       $canonicalQuery,
       $canonicalHeaders,
