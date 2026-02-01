@@ -266,7 +266,7 @@ final class InquilinoRepository {
     }
 
     public function addArchivo(int $idInquilino, array $data): ?array {
-        $allowed = ['tipo', 's3_key', 'mime_type', 'size', 'original_name', 'token', 'categoria'];
+        $allowed = ['tipo', 's3_key', 'mime_type', 'size', 'token', 'categoria'];
         $columns = ['id_inquilino'];
         $placeholders = [':id_inquilino'];
         $params = [':id_inquilino' => $idInquilino];
@@ -315,7 +315,7 @@ final class InquilinoRepository {
     }
 
     public function updateArchivo(int $idInquilino, int $archivoId, array $data): ?array {
-        $allowed = ['tipo', 's3_key', 'mime_type', 'size', 'original_name', 'token', 'categoria'];
+        $allowed = ['tipo', 's3_key', 'mime_type', 'size', 'token', 'categoria'];
         $set = [];
         $params = [
             ':id_inquilino' => $idInquilino,
