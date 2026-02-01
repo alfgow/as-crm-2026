@@ -4,14 +4,17 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\ArrendadorRepository;
+use App\Services\MediaUploadService;
 
 final class ArrendadoresController {
   private array $config;
   private ArrendadorRepository $arrendadores;
+  private MediaUploadService $uploads;
 
-  public function __construct(array $config, ArrendadorRepository $arrendadores) {
+  public function __construct(array $config, ArrendadorRepository $arrendadores, MediaUploadService $uploads) {
     $this->config = $config;
     $this->arrendadores = $arrendadores;
+    $this->uploads = $uploads;
   }
 
   public function index(Request $req, Response $res, array $ctx): void {
@@ -200,6 +203,85 @@ final class ArrendadoresController {
       $archivo = $this->arrendadores->addArchivo($id, [
           'tipo' => $tipo,
           's3_key' => $s3Key,
+      ]);
+
+      $res->json([
+          'data' => $archivo,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ], 201);
+  }
+
+  public function uploadArchivo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $tipo = trim((string)($_POST['tipo'] ?? ''));
+      $file = $_FILES['file'] ?? null;
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      if ($tipo === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'tipo is required']]
+          ], 400);
+          return;
+      }
+
+      if (!$file || !isset($file['tmp_name'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'file is required']]
+          ], 400);
+          return;
+      }
+
+      if (!empty($file['error'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'File upload error']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $originalName = (string)($file['name'] ?? 'archivo');
+      $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+      $suffix = $extension !== '' ? '.' . strtolower($extension) : '';
+      $key = sprintf('arrendadores/%d/%s%s', $id, bin2hex(random_bytes(16)), $suffix);
+      $mimeType = (string)($file['type'] ?? 'application/octet-stream');
+
+      $upload = $this->uploads->uploadFromPath('arrendadores', $key, (string)$file['tmp_name'], $mimeType);
+      if (!$upload['ok']) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'upload_failed', 'message' => 'Unable to upload file']]
+          ], 500);
+          return;
+      }
+
+      $archivo = $this->arrendadores->addArchivo($id, [
+          'tipo' => $tipo,
+          's3_key' => $key,
       ]);
 
       $res->json([
