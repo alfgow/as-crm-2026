@@ -528,8 +528,6 @@ final class InquilinosController {
           's3_key' => $s3Key,
           'mime_type' => $body['mime_type'] ?? null,
           'size' => $body['size'] ?? null,
-          'token' => $body['token'] ?? null,
-          'categoria' => $body['categoria'] ?? null,
       ]);
 
       $res->json([
@@ -612,8 +610,6 @@ final class InquilinosController {
           's3_key' => $key,
           'mime_type' => $mimeType,
           'size' => $size > 0 ? $size : null,
-          'token' => $_POST['token'] ?? null,
-          'categoria' => $_POST['categoria'] ?? null,
       ]);
 
       if (!$archivo) {
@@ -692,8 +688,6 @@ final class InquilinosController {
           's3_key',
           'mime_type',
           'size',
-          'token',
-          'categoria',
       ];
 
       $payload = [];
