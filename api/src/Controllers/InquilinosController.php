@@ -528,7 +528,6 @@ final class InquilinosController {
           's3_key' => $s3Key,
           'mime_type' => $body['mime_type'] ?? null,
           'size' => $body['size'] ?? null,
-          'original_name' => $body['original_name'] ?? null,
           'token' => $body['token'] ?? null,
           'categoria' => $body['categoria'] ?? null,
       ]);
@@ -613,7 +612,6 @@ final class InquilinosController {
           's3_key' => $key,
           'mime_type' => $mimeType,
           'size' => $size > 0 ? $size : null,
-          'original_name' => $originalName,
           'token' => $_POST['token'] ?? null,
           'categoria' => $_POST['categoria'] ?? null,
       ]);
@@ -694,7 +692,6 @@ final class InquilinosController {
           's3_key',
           'mime_type',
           'size',
-          'original_name',
           'token',
           'categoria',
       ];
@@ -819,7 +816,6 @@ final class InquilinosController {
           's3_key' => $key,
           'mime_type' => $mimeType,
           'size' => $size > 0 ? $size : null,
-          'original_name' => $originalName,
           'token' => $_POST['token'] ?? null,
           'categoria' => $_POST['categoria'] ?? null,
       ]);

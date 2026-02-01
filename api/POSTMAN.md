@@ -804,7 +804,6 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     "s3_key": "inquilinos/456/archivo.jpg",
     "mime_type": "image/jpeg",
     "size": 204800,
-    "original_name": "ine.jpg",
     "token": "opcional",
     "categoria": "opcional"
   }
