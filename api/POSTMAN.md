@@ -686,6 +686,17 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 59a. Reemplazar Archivo Arrendador (multipart, server-side)
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos/{{archivo_id}}/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `selfie | ine_frontal | ine_reverso | pasaporte | ...`
+- **Notas**:
+  - Este endpoint reemplaza el archivo subiendo a S3 desde el backend y actualizando el registro existente.
+
 ### 60. Eliminar Archivo Arrendador
 - **Method**: `DELETE`
 - **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos/{{archivo_id}}`
@@ -818,6 +829,19 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos/{{archivo_id}}`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+
+### 75a. Reemplazar Archivo Inquilino (multipart, server-side)
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos/{{archivo_id}}/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `selfie | ine_frontal | ine_reverso | pasaporte | forma_frontal | forma_reverso | pdf | otro | comprobante_ingreso | otro_archivo | validacion_ingresos`
+  - `token`: (opcional)
+  - `categoria`: (opcional)
+- **Notas**:
+  - Este endpoint reemplaza el archivo subiendo a S3 desde el backend y actualizando el registro existente.
 
 ### 76. Eliminar Archivo Inquilino
 - **Method**: `DELETE`

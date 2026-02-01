@@ -161,7 +161,7 @@ final class ArrendadorRepository {
     return $this->findArchivoById($arrendadorId, $archivoId);
   }
 
-  private function findArchivoById(int $arrendadorId, int $archivoId): ?array {
+  public function findArchivoById(int $arrendadorId, int $archivoId): ?array {
     $sql = "SELECT * FROM arrendadores_archivos WHERE id_arrendador = :id AND id_archivo = :archivo_id LIMIT 1";
     $st = $this->pdo->prepare($sql);
     $st->execute([

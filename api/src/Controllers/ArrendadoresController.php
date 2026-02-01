@@ -380,6 +380,105 @@ final class ArrendadoresController {
       ]);
   }
 
+  public function updateArchivoUpload(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $archivoId = (int)($params['archivoId'] ?? 0);
+      $tipo = trim((string)($_POST['tipo'] ?? ''));
+      $file = $_FILES['file'] ?? null;
+
+      if ($id <= 0 || $archivoId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador or archivo id']]
+          ], 400);
+          return;
+      }
+
+      if ($tipo === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'tipo is required']]
+          ], 400);
+          return;
+      }
+
+      if (!$file || !isset($file['tmp_name'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'file is required']]
+          ], 400);
+          return;
+      }
+
+      if (!empty($file['error'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'File upload error']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $archivoActual = $this->arrendadores->findArchivoById($id, $archivoId);
+      if (!$archivoActual) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Archivo not found']]
+          ], 404);
+          return;
+      }
+
+      $originalName = (string)($file['name'] ?? 'archivo');
+      $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+      $suffix = $extension !== '' ? '.' . strtolower($extension) : '';
+      $key = sprintf('arrendadores/%d/%s%s', $id, bin2hex(random_bytes(16)), $suffix);
+      $mimeType = (string)($file['type'] ?? 'application/octet-stream');
+
+      $upload = $this->uploads->uploadFromPath('arrendadores', $key, (string)$file['tmp_name'], $mimeType);
+      if (!$upload['ok']) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'upload_failed', 'message' => 'Unable to upload file']]
+          ], 500);
+          return;
+      }
+
+      $archivo = $this->arrendadores->updateArchivo($id, $archivoId, [
+          'tipo' => $tipo,
+          's3_key' => $key,
+      ]);
+
+      if (!$archivo) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'db_error', 'message' => 'Unable to update archivo']]
+          ], 500);
+          return;
+      }
+
+      $res->json([
+          'data' => $archivo,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
   public function update(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();

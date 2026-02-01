@@ -259,6 +259,10 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->updateArchivo($req, $res, $params);
     });
+    $this->router->add('PUT', '/api/v1/arrendadores/{id}/archivos/{archivoId}/upload', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->updateArchivoUpload($req, $res, $params);
+    });
 
     // Asesores CRUD
     $asesorRepo = new \App\Repositories\AsesorRepository($this->db);
@@ -437,6 +441,10 @@ final class App {
     $this->router->add('PUT', '/api/v1/inquilinos/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->updateArchivo($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/archivos/{archivoId}/upload', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateArchivoUpload($req, $res, $params);
     });
 
     $this->router->add('PUT', '/api/v1/inquilinos/{id}/status', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
