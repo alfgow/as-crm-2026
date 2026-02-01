@@ -4,14 +4,17 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\InquilinoRepository;
+use App\Services\MediaUploadService;
 
 final class InquilinosController {
   private array $config;
   private InquilinoRepository $inquilinos;
+  private MediaUploadService $uploads;
 
-  public function __construct(array $config, InquilinoRepository $inquilinos) {
-    $this->config = $config;
-    $this->inquilinos = $inquilinos;
+  public function __construct(array $config, InquilinoRepository $inquilinos, MediaUploadService $uploads) {
+      $this->config = $config;
+      $this->inquilinos = $inquilinos;
+      $this->uploads = $uploads;
   }
 
   /**
@@ -537,6 +540,100 @@ final class InquilinosController {
       ], 201);
   }
 
+  public function uploadArchivo(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $tipo = trim((string)($_POST['tipo'] ?? ''));
+      $file = $_FILES['file'] ?? null;
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid inquilino id']]
+          ], 400);
+          return;
+      }
+
+      if ($tipo === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'tipo is required']]
+          ], 400);
+          return;
+      }
+
+      if (!$file || !isset($file['tmp_name'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'file is required']]
+          ], 400);
+          return;
+      }
+
+      if (!empty($file['error'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'File upload error']]
+          ], 400);
+          return;
+      }
+
+      $inquilino = $this->inquilinos->findById($id);
+      if (!$inquilino) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]
+          ], 404);
+          return;
+      }
+
+      $originalName = (string)($file['name'] ?? 'archivo');
+      $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+      $suffix = $extension !== '' ? '.' . strtolower($extension) : '';
+      $key = sprintf('inquilinos/%d/%s%s', $id, bin2hex(random_bytes(16)), $suffix);
+      $mimeType = (string)($file['type'] ?? 'application/octet-stream');
+      $size = (int)($file['size'] ?? 0);
+
+      $upload = $this->uploads->uploadFromPath('inquilinos', $key, (string)$file['tmp_name'], $mimeType);
+      if (!$upload['ok']) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'upload_failed', 'message' => 'Unable to upload file']]
+          ], 500);
+          return;
+      }
+
+      $archivo = $this->inquilinos->addArchivo($id, [
+          'tipo' => $tipo,
+          's3_key' => $key,
+          'mime_type' => $mimeType,
+          'size' => $size > 0 ? $size : null,
+          'original_name' => $originalName,
+          'token' => $_POST['token'] ?? null,
+          'categoria' => $_POST['categoria'] ?? null,
+      ]);
+
+      if (!$archivo) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'db_error', 'message' => 'Unable to save archivo']]
+          ], 500);
+          return;
+      }
+
+      $res->json([
+          'data' => $archivo,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ], 201);
+  }
+
   public function deleteArchivo(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
       $archivoId = (int)($params['archivoId'] ?? 0);
@@ -628,6 +725,111 @@ final class InquilinosController {
               'meta' => ['requestId' => $req->getRequestId()],
               'errors' => [['code' => 'not_found', 'message' => 'Archivo not found']]
           ], 404);
+          return;
+      }
+
+      $res->json([
+          'data' => $archivo,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateArchivoUpload(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $archivoId = (int)($params['archivoId'] ?? 0);
+      $tipo = trim((string)($_POST['tipo'] ?? ''));
+      $file = $_FILES['file'] ?? null;
+
+      if ($id <= 0 || $archivoId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid inquilino or archivo id']]
+          ], 400);
+          return;
+      }
+
+      if ($tipo === '') {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'tipo is required']]
+          ], 400);
+          return;
+      }
+
+      if (!$file || !isset($file['tmp_name'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'file is required']]
+          ], 400);
+          return;
+      }
+
+      if (!empty($file['error'])) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'File upload error']]
+          ], 400);
+          return;
+      }
+
+      $inquilino = $this->inquilinos->findById($id);
+      if (!$inquilino) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]
+          ], 404);
+          return;
+      }
+
+      $archivoActual = $this->inquilinos->findArchivoById($id, $archivoId);
+      if (!$archivoActual) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Archivo not found']]
+          ], 404);
+          return;
+      }
+
+      $originalName = (string)($file['name'] ?? 'archivo');
+      $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+      $suffix = $extension !== '' ? '.' . strtolower($extension) : '';
+      $key = sprintf('inquilinos/%d/%s%s', $id, bin2hex(random_bytes(16)), $suffix);
+      $mimeType = (string)($file['type'] ?? 'application/octet-stream');
+      $size = (int)($file['size'] ?? 0);
+
+      $upload = $this->uploads->uploadFromPath('inquilinos', $key, (string)$file['tmp_name'], $mimeType);
+      if (!$upload['ok']) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'upload_failed', 'message' => 'Unable to upload file']]
+          ], 500);
+          return;
+      }
+
+      $archivo = $this->inquilinos->updateArchivo($id, $archivoId, [
+          'tipo' => $tipo,
+          's3_key' => $key,
+          'mime_type' => $mimeType,
+          'size' => $size > 0 ? $size : null,
+          'original_name' => $originalName,
+          'token' => $_POST['token'] ?? null,
+          'categoria' => $_POST['categoria'] ?? null,
+      ]);
+
+      if (!$archivo) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'db_error', 'message' => 'Unable to update archivo']]
+          ], 500);
           return;
       }
 

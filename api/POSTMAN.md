@@ -660,12 +660,42 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "tipo": "ine_frontal",
+    "s3_key": "arrendadores/123/archivo.jpg"
+  }
+  ```
+
+### 58a. Subir Archivo Arrendador (multipart, server-side)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `selfie | ine_frontal | ine_reverso | pasaporte | ...`
+- **Notas**:
+  - Este endpoint sube el archivo a S3 desde el backend y guarda la referencia en la BD.
+  - La respuesta regresa el registro creado en `arrendadores_archivos`.
 
 ### 59. Reemplazar Archivo Arrendador
 - **Method**: `PUT`
 - **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos/{{archivo_id}}`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+
+### 59a. Reemplazar Archivo Arrendador (multipart, server-side)
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos/{{archivo_id}}/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `selfie | ine_frontal | ine_reverso | pasaporte | ...`
+- **Notas**:
+  - Este endpoint reemplaza el archivo subiendo a S3 desde el backend y actualizando el registro existente.
 
 ### 60. Eliminar Archivo Arrendador
 - **Method**: `DELETE`
@@ -767,12 +797,51 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "tipo": "ine_frontal",
+    "s3_key": "inquilinos/456/archivo.jpg",
+    "mime_type": "image/jpeg",
+    "size": 204800,
+    "original_name": "ine.jpg",
+    "token": "opcional",
+    "categoria": "opcional"
+  }
+  ```
+
+### 74a. Subir Archivo Inquilino (multipart, server-side)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `selfie | ine_frontal | ine_reverso | pasaporte | forma_frontal | forma_reverso | pdf | otro | comprobante_ingreso | otro_archivo | validacion_ingresos`
+  - `token`: (opcional)
+  - `categoria`: (opcional)
+- **Notas**:
+  - Este endpoint sube el archivo a S3 desde el backend y guarda la referencia en la BD.
+  - La respuesta regresa el registro creado en `inquilinos_archivos`.
 
 ### 75. Reemplazar Archivo Inquilino
 - **Method**: `PUT`
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos/{{archivo_id}}`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+
+### 75a. Reemplazar Archivo Inquilino (multipart, server-side)
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos/{{archivo_id}}/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `selfie | ine_frontal | ine_reverso | pasaporte | forma_frontal | forma_reverso | pdf | otro | comprobante_ingreso | otro_archivo | validacion_ingresos`
+  - `token`: (opcional)
+  - `categoria`: (opcional)
+- **Notas**:
+  - Este endpoint reemplaza el archivo subiendo a S3 desde el backend y actualizando el registro existente.
 
 ### 76. Eliminar Archivo Inquilino
 - **Method**: `DELETE`

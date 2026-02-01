@@ -265,6 +265,83 @@ final class InquilinoRepository {
         return $rows ?: [];
     }
 
+    public function addArchivo(int $idInquilino, array $data): ?array {
+        $allowed = ['tipo', 's3_key', 'mime_type', 'size', 'original_name', 'token', 'categoria'];
+        $columns = ['id_inquilino'];
+        $placeholders = [':id_inquilino'];
+        $params = [':id_inquilino' => $idInquilino];
+
+        foreach ($allowed as $field) {
+            if (array_key_exists($field, $data)) {
+                $columns[] = $field;
+                $placeholders[] = ':' . $field;
+                $params[':' . $field] = $data[$field];
+            }
+        }
+
+        if (!isset($params[':tipo']) || !isset($params[':s3_key'])) {
+            return null;
+        }
+
+        $sql = "INSERT INTO inquilinos_archivos (" . implode(', ', $columns) . ")
+                VALUES (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $id = (int)$this->pdo->lastInsertId();
+        return $this->findArchivoById($idInquilino, $id);
+    }
+
+    public function findArchivoById(int $idInquilino, int $archivoId): ?array {
+        $sql = "SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id AND id = :archivo_id LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':id' => $idInquilino,
+            ':archivo_id' => $archivoId,
+        ]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public function deleteArchivo(int $idInquilino, int $archivoId): bool {
+        $sql = "DELETE FROM inquilinos_archivos WHERE id_inquilino = :id AND id = :archivo_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':id' => $idInquilino,
+            ':archivo_id' => $archivoId,
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    public function updateArchivo(int $idInquilino, int $archivoId, array $data): ?array {
+        $allowed = ['tipo', 's3_key', 'mime_type', 'size', 'original_name', 'token', 'categoria'];
+        $set = [];
+        $params = [
+            ':id_inquilino' => $idInquilino,
+            ':archivo_id' => $archivoId,
+        ];
+
+        foreach ($allowed as $field) {
+            if (array_key_exists($field, $data)) {
+                $set[] = "$field = :$field";
+                $params[":$field"] = $data[$field];
+            }
+        }
+
+        if (empty($set)) {
+            return $this->findArchivoById($idInquilino, $archivoId);
+        }
+
+        $sql = "UPDATE inquilinos_archivos
+                SET " . implode(', ', $set) . "
+                WHERE id_inquilino = :id_inquilino AND id = :archivo_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return $this->findArchivoById($idInquilino, $archivoId);
+    }
+
     public function findArchivosIdentidad(int $idInquilino): array {
         $tipos = ['selfie', 'ine_frontal', 'ine_reverso', 'pasaporte'];
         $placeholders = [];

@@ -134,6 +134,7 @@ final class App {
     // Media presign
     $mediaRepo = new \App\Repositories\MediaRepository($this->db);
     $mediaPresign = new \App\Services\MediaPresignService($this->config);
+    $mediaUpload = new \App\Services\MediaUploadService($mediaPresign);
     $media = new \App\Controllers\MediaController($mediaRepo, $mediaPresign);
 
     $this->router->add('GET', '/api/v1/media/presign', function(Request $req, Response $res) use ($authMw, $media) {
@@ -182,7 +183,7 @@ final class App {
 
     // Arrendadores CRUD
     $arrendadorRepo = new \App\Repositories\ArrendadorRepository($this->db);
-    $arrendadores = new \App\Controllers\ArrendadoresController($this->config, $arrendadorRepo);
+    $arrendadores = new \App\Controllers\ArrendadoresController($this->config, $arrendadorRepo, $mediaUpload);
 
     $this->router->add('GET', '/api/v1/arrendadores', function(Request $req, Response $res) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
@@ -246,6 +247,10 @@ final class App {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->addArchivo($req, $res, $params);
     });
+    $this->router->add('POST', '/api/v1/arrendadores/{id}/archivos/upload', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->uploadArchivo($req, $res, $params);
+    });
     $this->router->add('DELETE', '/api/v1/arrendadores/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->deleteArchivo($req, $res, $params);
@@ -253,6 +258,10 @@ final class App {
     $this->router->add('PUT', '/api/v1/arrendadores/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->updateArchivo($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/arrendadores/{id}/archivos/{archivoId}/upload', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadores->updateArchivoUpload($req, $res, $params);
     });
 
     // Asesores CRUD
@@ -345,7 +354,7 @@ final class App {
 
     // Inquilinos CRUD
     $inquilinoRepo = new \App\Repositories\InquilinoRepository($this->db);
-    $inquilinos = new \App\Controllers\InquilinosController($this->config, $inquilinoRepo);
+    $inquilinos = new \App\Controllers\InquilinosController($this->config, $inquilinoRepo, $mediaUpload);
 
     $this->router->add('GET', '/api/v1/inquilinos', function(Request $req, Response $res) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
@@ -420,6 +429,11 @@ final class App {
       $inquilinos->addArchivo($req, $res, $params);
     });
 
+    $this->router->add('POST', '/api/v1/inquilinos/{id}/archivos/upload', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->uploadArchivo($req, $res, $params);
+    });
+
     $this->router->add('DELETE', '/api/v1/inquilinos/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->deleteArchivo($req, $res, $params);
@@ -427,6 +441,10 @@ final class App {
     $this->router->add('PUT', '/api/v1/inquilinos/{id}/archivos/{archivoId}', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
       $ctx = $authMw->handle($req, $res);
       $inquilinos->updateArchivo($req, $res, $params);
+    });
+    $this->router->add('PUT', '/api/v1/inquilinos/{id}/archivos/{archivoId}/upload', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinos->updateArchivoUpload($req, $res, $params);
     });
 
     $this->router->add('PUT', '/api/v1/inquilinos/{id}/status', function(Request $req, Response $res, array $params) use ($authMw, $inquilinos) {
