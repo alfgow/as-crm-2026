@@ -5,14 +5,24 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\InquilinoRepository;
 use App\Repositories\ValidacionAwsRepository;
+use App\Services\RekognitionService;
 
 final class InquilinoValidacionAwsController {
   private InquilinoRepository $inquilinos;
   private ValidacionAwsRepository $validaciones;
+  private RekognitionService $rekognition;
+  private array $config;
 
-  public function __construct(InquilinoRepository $inquilinos, ValidacionAwsRepository $validaciones) {
+  public function __construct(
+    InquilinoRepository $inquilinos,
+    ValidacionAwsRepository $validaciones,
+    RekognitionService $rekognition,
+    array $config
+  ) {
     $this->inquilinos = $inquilinos;
     $this->validaciones = $validaciones;
+    $this->rekognition = $rekognition;
+    $this->config = $config;
   }
 
   public function validarIngresosPDFSimple(Request $req, Response $res, array $params): void {
@@ -212,6 +222,120 @@ final class InquilinoValidacionAwsController {
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);
+  }
+
+  public function compararRostros(Request $req, Response $res, array $params): void {
+    $id = (int)($params['id'] ?? 0);
+    if ($id <= 0) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'id inválido']],
+      ], 400);
+      return;
+    }
+
+    $inquilino = $this->inquilinos->findById($id);
+    if (!$inquilino) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'not_found', 'message' => 'Inquilino no encontrado']],
+      ], 404);
+      return;
+    }
+
+    $body = $req->getJson() ?? [];
+    $selfieKey = trim((string)($body['selfie_key'] ?? ''));
+    $ineKey = trim((string)($body['ine_frontal_key'] ?? ''));
+    $pasaporteKey = trim((string)($body['pasaporte_key'] ?? ''));
+    $targetKey = $ineKey !== '' ? $ineKey : $pasaporteKey;
+
+    if ($selfieKey === '' || $targetKey === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [[
+          'code' => 'bad_request',
+          'message' => 'Falta selfie_key o ine_frontal_key/pasaporte_key',
+        ]],
+      ], 400);
+      return;
+    }
+
+    $defaultBucket = (string)($this->config['media']['s3']['buckets']['inquilinos'] ?? '');
+    $bucket = trim((string)($body['bucket'] ?? $defaultBucket));
+    if ($bucket === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'bucket inválido']],
+      ], 400);
+      return;
+    }
+
+    $thresholdConfig = (float)($this->config['aws']['rekognition']['similarity_threshold'] ?? 85);
+    $threshold = (float)($body['similarity_threshold'] ?? $thresholdConfig);
+    $threshold = max(0, min(100, $threshold));
+
+    $response = $this->rekognition->compareFacesS3($bucket, $selfieKey, $bucket, $targetKey, $threshold);
+    $responseBody = is_array($response['body'] ?? null) ? $response['body'] : [];
+    $bestSimilarity = $this->getBestSimilarity($responseBody);
+    $matched = $response['ok'] && $bestSimilarity >= $threshold;
+
+    if (!$response['ok']) {
+      $resumen = '❌ Error en Rekognition';
+      if (!empty($responseBody['message'])) {
+        $resumen .= ': ' . $responseBody['message'];
+      } elseif (!empty($response['error'])) {
+        $resumen .= ': ' . $response['error'];
+      }
+      $proceso = 0;
+    } else {
+      $similarityText = number_format($bestSimilarity, 2) . '%';
+      $tipoDocumento = $ineKey !== '' ? 'INE' : 'pasaporte';
+      $resumen = $matched
+        ? "✅ Rostro coincide con {$tipoDocumento} ({$similarityText})"
+        : "❌ Rostro no coincide con {$tipoDocumento} ({$similarityText})";
+      $proceso = $matched ? 1 : 0;
+    }
+
+    $payload = [
+      'check' => 'faces',
+      'bucket' => $bucket,
+      'selfie_key' => $selfieKey,
+      'target_key' => $targetKey,
+      'target_tipo' => $ineKey !== '' ? 'ine_frontal' : 'pasaporte',
+      'similarity_threshold' => $threshold,
+      'best_similarity' => $bestSimilarity,
+      'rekognition' => $response,
+      'timestamp' => date(DATE_ATOM),
+    ];
+
+    $this->validaciones->guardarValidacionCheck($id, 'faces', $proceso, $payload, $resumen);
+
+    $res->json([
+      'data' => [
+        'ok' => $response['ok'],
+        'proceso' => $proceso,
+        'resumen' => $resumen,
+        'payload' => $payload,
+      ],
+      'meta' => ['requestId' => $req->getRequestId()],
+      'errors' => [],
+    ], $response['ok'] ? 200 : 502);
+  }
+
+  private function getBestSimilarity(array $body): float {
+    $matches = $body['FaceMatches'] ?? [];
+    $best = 0.0;
+    foreach ($matches as $match) {
+      $similarity = (float)($match['Similarity'] ?? 0);
+      if ($similarity > $best) {
+        $best = $similarity;
+      }
+    }
+    return $best;
   }
 
   private function buildArchivoFlags(array $archivos): array {

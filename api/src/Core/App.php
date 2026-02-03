@@ -650,8 +650,14 @@ final class App {
     $validacionLegal = new \App\Controllers\ValidacionLegalController($validacionLegalRepo, $inquilinoRepo);
     $validacionIdentidad = new \App\Controllers\ValidacionIdentidadController($inquilinoRepo);
     $validacionAwsRepo = new \App\Repositories\ValidacionAwsRepository($this->db);
+    $rekognitionService = new \App\Services\RekognitionService($this->config);
     $validacionAws = new \App\Controllers\ValidacionAwsController($inquilinoRepo, $validacionAwsRepo);
-    $inquilinoValidacionAws = new \App\Controllers\InquilinoValidacionAwsController($inquilinoRepo, $validacionAwsRepo);
+    $inquilinoValidacionAws = new \App\Controllers\InquilinoValidacionAwsController(
+      $inquilinoRepo,
+      $validacionAwsRepo,
+      $rekognitionService,
+      $this->config
+    );
     $inquilinoArchivos = new \App\Controllers\InquilinoArchivosController($inquilinoRepo, $mediaRepo, $mediaPresign);
     $iaRepo = new \App\Repositories\IARepository($this->db);
     $iaController = new \App\Controllers\IAController($iaRepo);
@@ -845,6 +851,11 @@ final class App {
     $this->router->add('POST', '/api/v1/inquilinos/{id}/validacion-aws/ingresos-pdf-simple', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
       $ctx = $authMw->handle($req, $res);
       $inquilinoValidacionAws->validarIngresosPDFSimple($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/inquilinos/{id}/validacion-aws/compare-faces', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
+      $ctx = $authMw->handle($req, $res);
+      $inquilinoValidacionAws->compararRostros($req, $res, $params);
     });
 
     $this->router->add('GET', '/api/v1/inquilinos/slug/{slug}/validacion-aws/archivos', function(Request $req, Response $res, array $params) use ($authMw, $inquilinoValidacionAws) {
