@@ -42,6 +42,22 @@ final class RekognitionService {
   /**
    * @return array{ok:bool,status:int,body:mixed,raw:string,error?:string}
    */
+  public function startFaceLivenessSession(array $payload): array {
+    return $this->request('StartFaceLivenessSession', $payload);
+  }
+
+  /**
+   * @return array{ok:bool,status:int,body:mixed,raw:string,error?:string}
+   */
+  public function getFaceLivenessSessionResults(string $sessionId): array {
+    return $this->request('GetFaceLivenessSessionResults', [
+      'SessionId' => $sessionId,
+    ]);
+  }
+
+  /**
+   * @return array{ok:bool,status:int,body:mixed,raw:string,error?:string}
+   */
   private function request(string $operation, array $payload): array {
     $rekognition = $this->config['aws']['rekognition'] ?? [];
     $accessKey = (string)($rekognition['access_key'] ?? '');

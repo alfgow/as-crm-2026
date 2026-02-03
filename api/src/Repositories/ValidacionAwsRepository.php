@@ -138,6 +138,43 @@ final class ValidacionAwsRepository {
     ]);
   }
 
+  public function guardarValidacionLiveness(int $idInquilino, int $proceso, array $payload, string $resumen): void {
+    $stmt = $this->pdo->prepare('SELECT id FROM inquilinos_validaciones WHERE id_inquilino = :id LIMIT 1');
+    $stmt->execute([':id' => $idInquilino]);
+    $row = $stmt->fetch();
+
+    $json = json_encode($payload, JSON_UNESCAPED_UNICODE);
+
+    if ($row && isset($row['id'])) {
+      $sql = "UPDATE inquilinos_validaciones
+              SET proceso_validacion_rostro = :proceso,
+                  validacion_rostro_resumen = :resumen,
+                  validacion_rostro_json = :json,
+                  updated_at = NOW()
+              WHERE id_inquilino = :id";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([
+        ':proceso' => $proceso,
+        ':resumen' => $resumen,
+        ':json' => $json,
+        ':id' => $idInquilino,
+      ]);
+      return;
+    }
+
+    $sql = "INSERT INTO inquilinos_validaciones
+              (id_inquilino, proceso_validacion_rostro, validacion_rostro_resumen, validacion_rostro_json)
+            VALUES
+              (:id, :proceso, :resumen, :json)";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([
+      ':id' => $idInquilino,
+      ':proceso' => $proceso,
+      ':resumen' => $resumen,
+      ':json' => $json,
+    ]);
+  }
+
   private function mapCheckToColumns(string $check): ?array {
     $check = strtolower(trim($check));
 
