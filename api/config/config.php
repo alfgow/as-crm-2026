@@ -57,6 +57,15 @@ return [
       ],
     ],
   ],
+  'aws' => [
+    'rekognition' => [
+      'access_key' => getenv('AWS_REKOGNITION_ACCESS_KEY') ?: (getenv('AWS_ACCESS_KEY_ID') ?: ''),
+      'secret_key' => getenv('AWS_REKOGNITION_SECRET_KEY') ?: (getenv('AWS_SECRET_ACCESS_KEY') ?: ''),
+      'session_token' => getenv('AWS_REKOGNITION_SESSION_TOKEN') ?: (getenv('AWS_SESSION_TOKEN') ?: ''),
+      'region' => getenv('AWS_REKOGNITION_REGION') ?: (getenv('AWS_REGION') ?: ''),
+      'similarity_threshold' => (float)(getenv('AWS_REKOGNITION_SIMILARITY_THRESHOLD') ?: 85),
+    ],
+  ],
   'google' => [
     'api_key' => getenv('GOOGLE_API_KEY') ?: '',
     'cx' => getenv('GOOGLE_CX') ?: '',
