@@ -23,6 +23,10 @@ final class MediaPresignService {
     return $this->buildS3PresignedUrl($bucket, $key, 'PUT');
   }
 
+  public function buildPresignedDeleteUrl(string $bucket, string $key): ?string {
+    return $this->buildS3PresignedUrl($bucket, $key, 'DELETE');
+  }
+
   private function buildS3PresignedUrl(string $bucket, string $key, string $method): ?string {
     $mediaConfig = $this->config['media'] ?? [];
     $s3Config = $mediaConfig['s3'] ?? [];
