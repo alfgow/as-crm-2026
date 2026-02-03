@@ -64,6 +64,7 @@ return [
       'session_token' => getenv('AWS_REKOGNITION_SESSION_TOKEN') ?: (getenv('AWS_SESSION_TOKEN') ?: ''),
       'region' => getenv('AWS_REKOGNITION_REGION') ?: (getenv('AWS_REGION') ?: ''),
       'similarity_threshold' => (float)(getenv('AWS_REKOGNITION_SIMILARITY_THRESHOLD') ?: 85),
+      'copy_bucket' => getenv('AWS_BUCKET_US_COPY') ?: '',
     ],
   ],
   'google' => [

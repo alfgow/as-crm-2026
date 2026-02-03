@@ -48,6 +48,7 @@ return [
       'session_token' => '', // Opcional si usas credenciales temporales
       'region' => 'us-east-1',
       'similarity_threshold' => 85, // Recomendado: 85
+      'copy_bucket' => 'TU_AWS_BUCKET_US_COPY',
     ],
   ],
 ];
