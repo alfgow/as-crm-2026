@@ -250,7 +250,8 @@ final class InquilinoValidacionAwsController {
     $selfieKey = trim((string)($body['selfie_key'] ?? ''));
     $ineKey = trim((string)($body['ine_frontal_key'] ?? ''));
     $pasaporteKey = trim((string)($body['pasaporte_key'] ?? ''));
-    $targetKey = $ineKey !== '' ? $ineKey : $pasaporteKey;
+    $formaKey = trim((string)($body['forma_frontal_key'] ?? ''));
+    $targetKey = $ineKey !== '' ? $ineKey : ($pasaporteKey !== '' ? $pasaporteKey : $formaKey);
 
     if ($selfieKey === '' || $targetKey === '') {
       $res->json([
@@ -258,7 +259,7 @@ final class InquilinoValidacionAwsController {
         'meta' => ['requestId' => $req->getRequestId()],
         'errors' => [[
           'code' => 'bad_request',
-          'message' => 'Falta selfie_key o ine_frontal_key/pasaporte_key',
+          'message' => 'Falta selfie_key o ine_frontal_key/pasaporte_key/forma_frontal_key',
         ]],
       ], 400);
       return;
@@ -294,7 +295,7 @@ final class InquilinoValidacionAwsController {
       $proceso = 0;
     } else {
       $similarityText = number_format($bestSimilarity, 2) . '%';
-      $tipoDocumento = $ineKey !== '' ? 'INE' : 'pasaporte';
+      $tipoDocumento = $ineKey !== '' ? 'INE' : ($pasaporteKey !== '' ? 'pasaporte' : 'forma migratoria');
       $resumen = $matched
         ? "✅ Rostro coincide con {$tipoDocumento} ({$similarityText})"
         : "❌ Rostro no coincide con {$tipoDocumento} ({$similarityText})";
@@ -306,7 +307,7 @@ final class InquilinoValidacionAwsController {
       'bucket' => $bucket,
       'selfie_key' => $selfieKey,
       'target_key' => $targetKey,
-      'target_tipo' => $ineKey !== '' ? 'ine_frontal' : 'pasaporte',
+      'target_tipo' => $ineKey !== '' ? 'ine_frontal' : ($pasaporteKey !== '' ? 'pasaporte' : 'forma_frontal'),
       'similarity_threshold' => $threshold,
       'best_similarity' => $bestSimilarity,
       'rekognition' => $response,
