@@ -40,4 +40,14 @@ return [
     'max_attempts' => 20,
     'batch_size' => 20,
   ],
+
+  'aws' => [
+    'rekognition' => [
+      'access_key' => 'TU_AWS_REKOGNITION_ACCESS_KEY',
+      'secret_key' => 'TU_AWS_REKOGNITION_SECRET_KEY',
+      'session_token' => '', // Opcional si usas credenciales temporales
+      'region' => 'us-east-1',
+      'similarity_threshold' => 85, // Recomendado: 85
+    ],
+  ],
 ];

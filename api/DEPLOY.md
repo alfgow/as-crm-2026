@@ -38,7 +38,38 @@ JWT_REFRESH_SECRET=...
 
 # CORS (Dominios permitidos para el frontend)
 CORS_ALLOW_ORIGINS=https://arrendamientoseguro.app,https://crm.arrendamientoseguro.app
+
+# AWS Rekognition (comparación de rostros y liveness)
+AWS_REKOGNITION_ACCESS_KEY=...
+AWS_REKOGNITION_SECRET_KEY=...
+AWS_REKOGNITION_SESSION_TOKEN=...        # Opcional (credenciales temporales)
+AWS_REKOGNITION_REGION=us-east-1
+AWS_REKOGNITION_SIMILARITY_THRESHOLD=85  # Opcional
+
+# S3 (bucket donde viven selfie e ine_frontal)
+MEDIA_S3_ACCESS_KEY=...
+MEDIA_S3_SECRET_KEY=...
+MEDIA_S3_SESSION_TOKEN=...               # Opcional (credenciales temporales)
+MEDIA_S3_REGION=us-east-1
+MEDIA_S3_BUCKET_INQUILINOS=...
 ```
+
+## 2.1 Permisos IAM requeridos (Rekognition)
+
+El usuario/rol asociado a las credenciales debe tener permiso para:
+
+- `rekognition:CompareFaces`
+- `rekognition:StartFaceLivenessSession`
+- `rekognition:GetFaceLivenessSessionResults`
+
+## 2.2 Acceso de Rekognition al bucket S3
+
+Rekognition debe poder leer el bucket donde viven los archivos `selfie` e `ine_frontal`.
+
+Opciones comunes:
+
+- **Mismo account**: usa el mismo usuario/rol con permisos `s3:GetObject` sobre el bucket.
+- **Bucket policy**: permite a Rekognition (o al rol) acceder a los objetos requeridos.
 
 ## 3. Verificación
 
