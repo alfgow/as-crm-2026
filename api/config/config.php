@@ -49,6 +49,7 @@ return [
       'secret_key' => getenv('MEDIA_S3_SECRET_KEY') ?: (getenv('AWS_SECRET_ACCESS_KEY') ?: ''),
       'session_token' => getenv('MEDIA_S3_SESSION_TOKEN') ?: (getenv('AWS_SESSION_TOKEN') ?: ''),
       'region' => getenv('MEDIA_S3_REGION') ?: (getenv('AWS_REGION') ?: ''),
+      'copy_region' => getenv('MEDIA_S3_REGION_COPY') ?: '',
       'endpoint' => getenv('MEDIA_S3_ENDPOINT') ?: '',
       'buckets' => [
         'inquilinos' => getenv('MEDIA_S3_BUCKET_INQUILINOS') ?: '',
