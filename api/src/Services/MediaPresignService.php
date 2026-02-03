@@ -34,12 +34,24 @@ final class MediaPresignService {
     $accessKey = (string)($s3Config['access_key'] ?? '');
     $secretKey = (string)($s3Config['secret_key'] ?? '');
     $region = (string)($s3Config['region'] ?? '');
+    $copyRegion = trim((string)($s3Config['copy_region'] ?? ''));
     $endpoint = (string)($s3Config['endpoint'] ?? '');
     $sessionToken = (string)($s3Config['session_token'] ?? '');
     $expires = (int)($mediaConfig['presign_expires_seconds'] ?? 900);
 
     if ($accessKey === '' || $secretKey === '' || $region === '') {
       return null;
+    }
+
+    if ($copyRegion !== '') {
+      $copyBucket = trim((string)($this->config['aws']['rekognition']['copy_bucket'] ?? ''));
+      if ($copyBucket !== '') {
+        $resolvedBucket = $this->resolveBucketName($bucket);
+        $resolvedCopyBucket = $this->resolveBucketName($copyBucket);
+        if ($resolvedBucket !== '' && $resolvedBucket === $resolvedCopyBucket) {
+          $region = $copyRegion;
+        }
+      }
     }
 
     $bucketName = $this->resolveBucketName($bucket);
