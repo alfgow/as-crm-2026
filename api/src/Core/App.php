@@ -135,6 +135,7 @@ final class App {
     $mediaRepo = new \App\Repositories\MediaRepository($this->db);
     $mediaPresign = new \App\Services\MediaPresignService($this->config);
     $mediaUpload = new \App\Services\MediaUploadService($mediaPresign);
+    $mediaCopy = new \App\Services\MediaCopyService($mediaPresign);
     $media = new \App\Controllers\MediaController($mediaRepo, $mediaPresign);
 
     $this->router->add('GET', '/api/v1/media/presign', function(Request $req, Response $res) use ($authMw, $media) {
@@ -661,6 +662,7 @@ final class App {
     $inquilinoValidacionAws = new \App\Controllers\InquilinoValidacionAwsController(
       $inquilinoRepo,
       $validacionAwsRepo,
+      $mediaCopy,
       $rekognitionService,
       $this->config
     );

@@ -5,22 +5,26 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\InquilinoRepository;
 use App\Repositories\ValidacionAwsRepository;
+use App\Services\MediaCopyService;
 use App\Services\RekognitionService;
 
 final class InquilinoValidacionAwsController {
   private InquilinoRepository $inquilinos;
   private ValidacionAwsRepository $validaciones;
+  private MediaCopyService $mediaCopy;
   private RekognitionService $rekognition;
   private array $config;
 
   public function __construct(
     InquilinoRepository $inquilinos,
     ValidacionAwsRepository $validaciones,
+    MediaCopyService $mediaCopy,
     RekognitionService $rekognition,
     array $config
   ) {
     $this->inquilinos = $inquilinos;
     $this->validaciones = $validaciones;
+    $this->mediaCopy = $mediaCopy;
     $this->rekognition = $rekognition;
     $this->config = $config;
   }
@@ -280,7 +284,62 @@ final class InquilinoValidacionAwsController {
     $threshold = (float)($body['similarity_threshold'] ?? $thresholdConfig);
     $threshold = max(0, min(100, $threshold));
 
-    $response = $this->rekognition->compareFacesS3($bucket, $selfieKey, $bucket, $targetKey, $threshold);
+    $copyBucket = trim((string)($this->config['aws']['rekognition']['copy_bucket'] ?? ''));
+    if ($copyBucket === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [[
+          'code' => 'bad_request',
+          'message' => 'bucket de copia inválido',
+        ]],
+      ], 400);
+      return;
+    }
+
+    $tempPrefix = 'tmp/rekognition/' . $id . '/' . bin2hex(random_bytes(8));
+    $tempSelfieKey = $tempPrefix . '_selfie';
+    $tempTargetKey = $tempPrefix . '_target';
+    $copiedSelfie = false;
+    $copiedTarget = false;
+    $response = ['ok' => false, 'body' => [], 'error' => null];
+
+    try {
+      $copySelfie = $this->mediaCopy->copyObject($bucket, $selfieKey, $copyBucket, $tempSelfieKey);
+      if (!$copySelfie['ok']) {
+        $response = [
+          'ok' => false,
+          'body' => ['message' => 'No se pudo copiar la selfie a AWS US'],
+          'error' => $copySelfie['error'] ?? 'copy_selfie_failed',
+        ];
+      } else {
+        $copiedSelfie = true;
+        $copyTarget = $this->mediaCopy->copyObject($bucket, $targetKey, $copyBucket, $tempTargetKey);
+        if (!$copyTarget['ok']) {
+          $response = [
+            'ok' => false,
+            'body' => ['message' => 'No se pudo copiar el documento a AWS US'],
+            'error' => $copyTarget['error'] ?? 'copy_target_failed',
+          ];
+        } else {
+          $copiedTarget = true;
+          $response = $this->rekognition->compareFacesS3(
+            $copyBucket,
+            $tempSelfieKey,
+            $copyBucket,
+            $tempTargetKey,
+            $threshold
+          );
+        }
+      }
+    } finally {
+      if ($copiedSelfie) {
+        $this->mediaCopy->deleteObject($copyBucket, $tempSelfieKey);
+      }
+      if ($copiedTarget) {
+        $this->mediaCopy->deleteObject($copyBucket, $tempTargetKey);
+      }
+    }
     $responseBody = is_array($response['body'] ?? null) ? $response['body'] : [];
     $bestSimilarity = $this->getBestSimilarity($responseBody);
     $matched = $response['ok'] && $bestSimilarity >= $threshold;
