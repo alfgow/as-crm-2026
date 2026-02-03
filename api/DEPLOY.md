@@ -65,11 +65,19 @@ El usuario/rol asociado a las credenciales debe tener permiso para:
 ## 2.2 Acceso de Rekognition al bucket S3
 
 Rekognition debe poder leer el bucket donde viven los archivos `selfie` e `ine_frontal`.
+Rekognition leerá el bucket ubicado en **us-east-1**.
 
 Opciones comunes:
 
 - **Mismo account**: usa el mismo usuario/rol con permisos `s3:GetObject` sobre el bucket.
 - **Bucket policy**: permite a Rekognition (o al rol) acceder a los objetos requeridos.
+
+## 2.3 Permisos IAM para copias (copia-inquilinos-us)
+
+Para el proceso de copias hacia/desde `copia-inquilinos-us`, asegúrate de asignar estos permisos:
+
+- `s3:GetObject` en el **bucket origen**.
+- `s3:PutObject` y `s3:DeleteObject` en el **bucket destino**.
 
 ## 3. Verificación
 
