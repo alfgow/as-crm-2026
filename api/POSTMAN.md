@@ -1193,6 +1193,51 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   }
   ```
 
+### 105c. Validación AWS - CompareFaces
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validacion-aws/compare-faces`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+  - `Content-Type`: `application/json`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "bucket": "mi-bucket",
+    "selfie_key": "inquilinos/123/selfie.jpg",
+    "ine_frontal_key": "inquilinos/123/ine-frontal.jpg",
+    "pasaporte_key": "inquilinos/123/pasaporte.jpg",
+    "forma_frontal_key": "inquilinos/123/forma-frontal.jpg",
+    "similarity_threshold": 85
+  }
+  ```
+- **Notas**:
+  - Se compara `selfie_key` contra el primer identificador disponible en este orden: `ine_frontal_key`, `pasaporte_key`, `forma_frontal_key`.
+  - `bucket` es opcional si existe `media.s3.buckets.inquilinos`.
+- **Success Response**:
+  ```json
+  {
+    "data": {
+      "ok": true,
+      "proceso": 1,
+      "resumen": "✅ Rostro coincide con INE (93.20%)",
+      "payload": {
+        "check": "faces",
+        "bucket": "mi-bucket",
+        "selfie_key": "inquilinos/123/selfie.jpg",
+        "target_key": "inquilinos/123/ine-frontal.jpg",
+        "target_tipo": "ine_frontal",
+        "similarity_threshold": 85,
+        "best_similarity": 93.2,
+        "rekognition": {
+          "FaceMatches": []
+        },
+        "timestamp": "2025-01-01T12:00:00-06:00"
+      }
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": []
+  }
+  ```
 ### 105a. Liveness - Iniciar sesión
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/liveness/session`
