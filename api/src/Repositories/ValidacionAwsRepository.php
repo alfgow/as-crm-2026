@@ -189,6 +189,11 @@ final class ValidacionAwsRepository {
         'resumen' => 'validacion_rostro_resumen',
         'json' => 'validacion_rostro_json',
       ],
+      'liveness' => [
+        'proceso' => 'proceso_validacion_rostro',
+        'resumen' => 'validacion_rostro_resumen',
+        'json' => 'validacion_rostro_json',
+      ],
       'save_face' => [
         'proceso' => 'proceso_validacion_rostro',
         'resumen' => 'validacion_rostro_resumen',

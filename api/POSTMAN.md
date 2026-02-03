@@ -1079,13 +1079,72 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 - **Query**:
-  - `check`: `archivos|faces|ocr|parse|kv|match|status|resumen_full`
+  - `check`: `archivos|faces|liveness|ocr|parse|kv|match|status|resumen_full`
 
 ### 102. Validación AWS (checks POST)
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-aws`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "check": "liveness"
+  }
+  ```
+- **Success Response**:
+  ```json
+  {
+    "data": {
+      "ok": true,
+      "check": "liveness",
+      "resumen": "Validación liveness ejecutada",
+      "payload": {
+        "check": "liveness",
+        "archivos": {
+          "selfie": true,
+          "ine_frontal": true,
+          "ine_reverso": false,
+          "pasaporte": false,
+          "forma_migratoria": false,
+          "comprobantes": 3
+        },
+        "timestamp": "2025-01-01T12:00:00-06:00"
+      }
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": []
+  }
+  ```
+- **Fail Response (400)**:
+  ```json
+  {
+    "data": {
+      "checks": [
+        "archivos",
+        "faces",
+        "liveness",
+        "ocr",
+        "parse",
+        "nombres",
+        "kv",
+        "match",
+        "save_match",
+        "save_face",
+        "status",
+        "ingresos_list",
+        "ingresos_ocr",
+        "resumen_full",
+        "verificamex"
+      ],
+      "mensaje": "check inválido o faltante"
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": [
+      { "code": "bad_request", "message": "check inválido" }
+    ]
+  }
+  ```
 
 ### 104. Archivos AWS por Slug
 - **Method**: `GET`
@@ -1098,6 +1157,128 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/validacion-aws/ingresos-pdf-simple`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Success Response**:
+  ```json
+  {
+    "data": {
+      "ok": true,
+      "proceso": 1,
+      "resumen": "☑️ Ingresos completos",
+      "payload": {
+        "tipo": "ingresos_pdf_simple",
+        "conteo": 3,
+        "archivos": [
+          { "s3_key": "inquilinos/1/ingresos-1.pdf", "ext": "pdf" }
+        ],
+        "reglas": {
+          "min_recomendado": 3,
+          "criterio": "OK si hay >= 3 PDFs; REVIEW si 1-2; FAIL si 0."
+        },
+        "status": "OK",
+        "ts": "2025-01-01T12:00:00-06:00"
+      }
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": []
+  }
+  ```
+- **Fail Response (404)**:
+  ```json
+  {
+    "data": null,
+    "meta": { "requestId": "abc123" },
+    "errors": [
+      { "code": "not_found", "message": "Inquilino no encontrado" }
+    ]
+  }
+  ```
+
+### 105a. Liveness - Iniciar sesión
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/liveness/session`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+  - `Content-Type`: `application/json`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "settings": {
+      "AuditImagesLimit": 1
+    },
+    "output_config": {
+      "S3Bucket": "mi-bucket",
+      "S3KeyPrefix": "liveness/{{id_inquilino}}/"
+    }
+  }
+  ```
+- **Success Response**:
+  ```json
+  {
+    "data": {
+      "ok": true,
+      "session_id": "abc-session-123",
+      "status": "CREATED",
+      "confidence": null,
+      "audit_images": null,
+      "raw": {
+        "SessionId": "abc-session-123",
+        "Status": "CREATED"
+      }
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": []
+  }
+  ```
+- **Fail Response (400)**:
+  ```json
+  {
+    "data": null,
+    "meta": { "requestId": "abc123" },
+    "errors": [
+      { "code": "bad_request", "message": "id inválido" }
+    ]
+  }
+  ```
+
+### 105b. Liveness - Obtener resultado
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/liveness/result/{{sessionId}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Success Response**:
+  ```json
+  {
+    "data": {
+      "ok": true,
+      "session_id": "abc-session-123",
+      "status": "SUCCEEDED",
+      "confidence": 99.2,
+      "audit_images": [
+        {
+          "S3Object": {
+            "Bucket": "mi-bucket",
+            "Name": "liveness/1/audit-1.jpg"
+          }
+        }
+      ]
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": []
+  }
+  ```
+- **Fail Response (502)**:
+  ```json
+  {
+    "data": {
+      "ok": false,
+      "error": "Error en Rekognition"
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": [
+      { "code": "rekognition_error", "message": "No fue posible obtener resultados" }
+    ]
+  }
+  ```
 
 ### 106. IA - Vista
 - **Method**: `GET`
