@@ -170,6 +170,7 @@ final class InquilinoValidacionAwsController {
     $allowed = [
       'archivos',
       'faces',
+      'liveness',
       'ocr',
       'parse',
       'nombres',
