@@ -9,10 +9,20 @@ final class HttpClient {
     $ch = curl_init($url);
 
     $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    $h = array_merge([
-      'Content-Type: application/json; charset=utf-8',
+    $defaultHeaders = [
       'Accept: application/json',
-    ], $headers);
+    ];
+    $hasContentType = false;
+    foreach ($headers as $header) {
+      if (stripos($header, 'content-type:') === 0) {
+        $hasContentType = true;
+        break;
+      }
+    }
+    if (!$hasContentType) {
+      $defaultHeaders[] = 'Content-Type: application/json; charset=utf-8';
+    }
+    $h = array_merge($defaultHeaders, $headers);
 
     $respHeaders = [];
     curl_setopt_array($ch, [
