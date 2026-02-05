@@ -30,6 +30,7 @@ final class ApiClientsController {
     $name = trim((string)($body['name'] ?? ''));
     $scopes = $body['scopes'] ?? [];
     $rateLimit = (int)($body['rate_limit'] ?? 60);
+    $refreshTtl = isset($body['refresh_ttl_seconds']) ? (int)$body['refresh_ttl_seconds'] : null;
 
     if ($name === '' || !is_array($scopes) || empty($scopes)) {
       $res->json([
@@ -41,7 +42,7 @@ final class ApiClientsController {
     }
 
     try {
-      $created = $this->clients->createClient($name, $scopes, $rateLimit);
+      $created = $this->clients->createClient($name, $scopes, $rateLimit, 'active', $refreshTtl);
       $res->json([
         'data' => $created,
         'meta' => ['requestId' => $req->getRequestId()],
@@ -72,6 +73,34 @@ final class ApiClientsController {
       $result = $this->clients->rotateSecret($id);
       $res->json([
         'data' => $result,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [],
+      ]);
+    } catch (\Throwable $e) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'db_error', 'message' => $e->getMessage()]],
+      ], 500);
+    }
+  }
+
+  public function destroy(Request $req, Response $res, array $params): void {
+    $id = (int)($params['id'] ?? 0);
+
+    if ($id <= 0) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'Invalid client id']],
+      ], 400);
+      return;
+    }
+
+    try {
+      $this->clients->revoke($id);
+      $res->json([
+        'data' => ['ok' => true],
         'meta' => ['requestId' => $req->getRequestId()],
         'errors' => [],
       ]);

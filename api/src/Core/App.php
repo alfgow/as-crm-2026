@@ -107,9 +107,19 @@ final class App {
       $apiClients->rotateSecret($req, $res, $params);
     });
 
+    $this->router->add('DELETE', '/api/v1/api-clients/{id}', function(Request $req, Response $res, array $params) use ($authMw, $apiClients) {
+      $ctx = $authMw->handle($req, $res);
+      $apiClients->destroy($req, $res, $params);
+    });
+
     $this->router->add('POST', '/api/v1/integrations/clients/{id}/rotate-secret', function(Request $req, Response $res, array $params) use ($authMw, $apiClients) {
       $ctx = $authMw->handle($req, $res);
       $apiClients->rotateSecret($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/integrations/clients/{id}', function(Request $req, Response $res, array $params) use ($authMw, $apiClients) {
+      $ctx = $authMw->handle($req, $res);
+      $apiClients->destroy($req, $res, $params);
     });
 
     // Prospect access (OTP + magic link)
