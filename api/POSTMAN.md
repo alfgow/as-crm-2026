@@ -853,12 +853,52 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/archivos-presignados`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Query Params**:
+  - `page` (opcional): Número de página (default: 1)
+  - `per_page` (opcional): Items por página (default: 20, máx: 100)
+  - `all` (opcional): Si es `true`, devuelve todos los archivos sin paginar (modo legacy)
+- **Response** (Paginado):
+  ```json
+  {
+    "data": {
+      "items": [
+        {
+          "key": "uuid/filename.jpg",
+          "url": "https://bucket.s3...",
+          "tipo": "selfie",
+          "archivo_id": 123,
+          "mime_type": "image/jpeg",
+          "size": 102456
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "per_page": 20,
+        "total": 50,
+        "total_pages": 3,
+        "has_next": true,
+        "has_prev": false
+      },
+      "omitidos": []
+    },
+    "meta": { "requestId": "..." },
+    "errors": []
+  }
+  ```
 
 ### 78. Archivos Presignados por ID
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos-presignados`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Query Params**:
+  - `page` (opcional): Número de página (default: 1)
+  - `per_page` (opcional): Items por página (default: 20, máx: 100)
+  - `all` (opcional): Si es `true`, devuelve todos los archivos sin paginar (modo legacy)
+- **Notas**:
+  - El endpoint ahora usa paginación por defecto para mejor rendimiento
+  - URLs presignadas tienen expiración configurada en el servidor
+  - Se recomienda usar `per_page=50` o menos para mejor experiencia de usuario
 
 ## Pólizas (Endpoints adicionales)
 

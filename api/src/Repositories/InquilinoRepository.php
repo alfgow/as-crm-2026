@@ -245,6 +245,82 @@ final class InquilinoRepository {
         return $stmt->fetchAll();
     }
 
+    /**
+     * Obtiene SOLO los archivos de un inquilino de forma optimizada
+     * Sin cargar todos los datos relacionados
+     *
+     * @param int $id ID del inquilino
+     * @param int|null $page Número de página (null para todos)
+     * @param int|null $perPage Items por página (null para todos)
+     * @return array ['items' => archivos, 'total' => total_count]
+     */
+    public function findArchivosPaginated(int $id, ?int $page = null, ?int $perPage = null): array {
+        // Primero verificar que el inquilino existe
+        $checkStmt = $this->pdo->prepare("SELECT id FROM inquilinos WHERE id = :id LIMIT 1");
+        $checkStmt->execute([':id' => $id]);
+        if (!$checkStmt->fetch()) {
+            return null;
+        }
+
+        // Contar total
+        $countStmt = $this->pdo->prepare("SELECT COUNT(*) FROM inquilinos_archivos WHERE id_inquilino = :id");
+        $countStmt->execute([':id' => $id]);
+        $total = (int) $countStmt->fetchColumn();
+
+        if ($total === 0) {
+            return ['items' => [], 'total' => 0];
+        }
+
+        // Construir query con paginación si se solicita
+        if ($page !== null && $perPage !== null && $perPage > 0) {
+            $offset = ($page - 1) * $perPage;
+            $stmt = $this->pdo->prepare("SELECT id, tipo, s3_key, mime_type, size, created_at 
+                                          FROM inquilinos_archivos 
+                                          WHERE id_inquilino = :id 
+                                          ORDER BY id DESC 
+                                          LIMIT :limit OFFSET :offset");
+            $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+            $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        } else {
+            $stmt = $this->pdo->prepare("SELECT id, tipo, s3_key, mime_type, size, created_at 
+                                          FROM inquilinos_archivos 
+                                          WHERE id_inquilino = :id 
+                                          ORDER BY id DESC");
+            $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        $items = $stmt->fetchAll();
+
+        return [
+            'items' => $items ?: [],
+            'total' => $total,
+        ];
+    }
+
+    /**
+     * Obtiene SOLO los archivos de un inquilino por slug
+     * Versión ligera para el endpoint de archivos presignados
+     *
+     * @param string $slug Slug del inquilino
+     * @param int|null $page Número de página (null para todos)
+     * @param int|null $perPage Items por página (null para todos)
+     * @return array|null ['items' => archivos, 'total' => total_count] o null si no existe
+     */
+    public function findArchivosBySlugPaginated(string $slug, ?int $page = null, ?int $perPage = null): ?array {
+        $sql = "SELECT id FROM inquilinos WHERE slug = :slug LIMIT 1";
+        $st = $this->pdo->prepare($sql);
+        $st->execute([':slug' => $slug]);
+        $row = $st->fetch();
+
+        if (!$row || empty($row['id'])) {
+            return null;
+        }
+
+        return $this->findArchivosPaginated((int)$row['id'], $page, $perPage);
+    }
+
     public function findArchivosByTipos(int $idInquilino, array $tipos): array {
         if (empty($tipos)) {
             return [];

@@ -40,3 +40,14 @@ Tareas completadas:
 - Agregados endpoints /ia/ventas/proceso/periodo y /api/v1/ia/ventas/proceso/periodo con agregación por canal_venta en rango de fechas.
 - Agregados endpoints /ia/ventas/proceso/usuario y /api/v1/ia/ventas/proceso/usuario con filtro por usuario en periodo (anio/mes).
 - Documentados endpoints financieros faltantes (CRUD de ventas, reportes por periodo/canal, exportación) en POSTMAN.md.
+
+OPTIMIZACIÓN CRÍTICA - /archivos-presignados:
+- Problema: El endpoint cargaba TODO el inquilino (findById) con múltiples queries relacionales innecesarias
+- Problema: No había paginación, cargaba TODOS los archivos de golpe causando timeouts
+- Problema: Las validaciones de S3 keys no usaban caché
+- Solución: Nuevos métodos optimizados findArchivosPaginated() y findArchivosBySlugPaginated()
+- Solución: Implementada paginación configurable (default: 20, max: 100) con parámetros ?page y ?per_page
+- Solución: Caché en memoria para validaciones de S3 keys (5 min TTL)
+- Solución: Batch validation de keys (100 por batch) para evitar queries enormes
+- Mantenida compatibilidad: ?all=true devuelve todos los archivos (modo legacy)
+- Archivos modificados: PaginatedResponse.php (nuevo), MediaRepository.php, InquilinoRepository.php, InquilinoArchivosController.php
