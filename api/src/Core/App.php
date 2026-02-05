@@ -653,6 +653,7 @@ final class App {
     $validacionAwsRepo = new \App\Repositories\ValidacionAwsRepository($this->db);
     $rekognitionService = new \App\Services\RekognitionService($this->config);
     $validacionAws = new \App\Controllers\ValidacionAwsController($inquilinoRepo, $validacionAwsRepo);
+    $verificamex = new \App\Controllers\VerificamexController($inquilinoRepo, $validacionAwsRepo);
     $liveness = new \App\Controllers\LivenessController(
       $inquilinoRepo,
       $validacionAwsRepo,
@@ -734,6 +735,11 @@ final class App {
     $this->router->add('POST', '/api/v1/validacion-aws/procesar', function(Request $req, Response $res) use ($authMw, $validacionAws) {
       $ctx = $authMw->handle($req, $res);
       $validacionAws->procesar($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/inquilinos/{id}/verificamex', function(Request $req, Response $res, array $params) use ($authMw, $verificamex) {
+      $ctx = $authMw->handle($req, $res);
+      $verificamex->validar($req, $res, $params);
     });
 
     $this->router->add('POST', '/api/v1/inquilinos/{id}/liveness/session', function(Request $req, Response $res, array $params) use ($authMw, $liveness) {
