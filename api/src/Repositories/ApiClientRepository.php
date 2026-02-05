@@ -123,7 +123,7 @@ final class ApiClientRepository {
   }
 
   public function revoke(int $id): void {
-    $sql = "UPDATE api_clients SET status = 'revoked', updated_at = NOW() WHERE id = :id LIMIT 1";
+    $sql = "DELETE FROM api_clients WHERE id = :id LIMIT 1";
     $st = $this->pdo->prepare($sql);
     $st->execute([':id' => $id]);
   }
