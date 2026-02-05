@@ -30,6 +30,7 @@ final class ApiClientsController {
     $name = trim((string)($body['name'] ?? ''));
     $scopes = $body['scopes'] ?? [];
     $rateLimit = (int)($body['rate_limit'] ?? 60);
+    $refreshTtl = isset($body['refresh_ttl_seconds']) ? (int)$body['refresh_ttl_seconds'] : null;
 
     if ($name === '' || !is_array($scopes) || empty($scopes)) {
       $res->json([
@@ -41,7 +42,7 @@ final class ApiClientsController {
     }
 
     try {
-      $created = $this->clients->createClient($name, $scopes, $rateLimit);
+      $created = $this->clients->createClient($name, $scopes, $rateLimit, 'active', $refreshTtl);
       $res->json([
         'data' => $created,
         'meta' => ['requestId' => $req->getRequestId()],
