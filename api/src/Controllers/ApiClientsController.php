@@ -84,4 +84,32 @@ final class ApiClientsController {
       ], 500);
     }
   }
+
+  public function destroy(Request $req, Response $res, array $params): void {
+    $id = (int)($params['id'] ?? 0);
+
+    if ($id <= 0) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'Invalid client id']],
+      ], 400);
+      return;
+    }
+
+    try {
+      $this->clients->revoke($id);
+      $res->json([
+        'data' => ['ok' => true],
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [],
+      ]);
+    } catch (\Throwable $e) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'db_error', 'message' => $e->getMessage()]],
+      ], 500);
+    }
+  }
 }
