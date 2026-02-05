@@ -1146,6 +1146,41 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   }
   ```
 
+### 103. Validación Verificamex (básica)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/verificamex`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+  - `Content-Type`: `application/json`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "ine_front": "<base64_o_url>",
+    "ine_back": "<base64_o_url>",
+    "selfie": "<base64_o_url>",
+    "model": "basic"
+  }
+  ```
+- **Notas**:
+  - El token se toma de `API_VERIFICAMEX` en el `.env`.
+- **Success Response**:
+  ```json
+  {
+    "data": {
+      "ok": true,
+      "status": 200,
+      "proceso_validacion_verificamex": 1,
+      "verificamex_resumen": "Validación exitosa",
+      "verificamex": {
+        "data": { "status": true },
+        "message": "Validación aprobada"
+      }
+    },
+    "meta": { "requestId": "abc123" },
+    "errors": []
+  }
+  ```
+
 ### 104. Archivos AWS por Slug
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/inquilinos/slug/{{slug}}/validacion-aws/archivos`
