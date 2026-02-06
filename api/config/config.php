@@ -37,7 +37,7 @@ return [
     'domain' => getenv('AUTH_COOKIE_DOMAIN') ?: '',
     'secure' => (getenv('AUTH_COOKIE_SECURE') ?: 'true') === 'true',
     'http_only' => (getenv('AUTH_COOKIE_HTTP_ONLY') ?: 'true') === 'true',
-    'same_site' => getenv('AUTH_COOKIE_SAMESITE') ?: 'Lax',
+    'same_site' => getenv('AUTH_COOKIE_SAMESITE') ?: 'None',
   ],
 
   'cors' => [
