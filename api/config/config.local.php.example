@@ -30,7 +30,7 @@ return [
     'domain' => '',
     'secure' => true,
     'http_only' => true,
-    'same_site' => 'Lax',
+    'same_site' => 'None',
   ],
 
   'cors' => [
