@@ -104,6 +104,10 @@ Accept: application/json
 Authorization: Bearer <TU_TOKEN_DE_ACCESO>
 ```
 
+**Opción segura con cookies HttpOnly (recomendado):**
+- La API también puede leer el access token desde cookie HttpOnly configurada por el backend.
+- Si usas cookies, no necesitas enviar `Authorization` desde el frontend (el navegador enviará cookies automáticamente).
+
 **Ejemplo de Respuesta Exitosa:**
 ```json
 {

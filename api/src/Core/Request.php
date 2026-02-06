@@ -6,6 +6,7 @@ final class Request {
   private string $path;
   private array $query;
   private array $headers;
+  private array $cookies;
   private ?array $jsonBody;
   private string $requestId;
 
@@ -28,6 +29,7 @@ final class Request {
 
     $this->query = $_GET ?? [];
     $this->headers = $this->readHeaders();
+    $this->cookies = $_COOKIE ?? [];
     $this->jsonBody = $this->readJsonBody();
     $this->requestId = $this->headers['x-request-id'] ?? bin2hex(random_bytes(12));
   }
@@ -72,6 +74,7 @@ final class Request {
   public function getJson(): ?array { return $this->jsonBody; }
   public function getRequestId(): string { return $this->requestId; }
   public function getHeader(string $name): ?string { return $this->headers[strtolower($name)] ?? null; }
+  public function getCookie(string $name): ?string { return $this->cookies[$name] ?? null; }
 
   public function bearerToken(): ?string {
     $auth = $this->headers['authorization'] ?? '';

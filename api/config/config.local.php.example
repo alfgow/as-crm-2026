@@ -21,6 +21,17 @@ return [
     'access_ttl' => 900,       // 15 min
     'refresh_ttl' => 2592000, // 30 días
   ],
+  'auth_cookies' => [
+    'enabled' => true,
+    'expose_tokens' => false,
+    'access_cookie' => 'as_access_token',
+    'refresh_cookie' => 'as_refresh_token',
+    'path' => '/',
+    'domain' => '',
+    'secure' => true,
+    'http_only' => true,
+    'same_site' => 'Lax',
+  ],
 
   'cors' => [
     // Dominios exactos que harán peticiones (Frontends)

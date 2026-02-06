@@ -15,6 +15,7 @@ final class AuthController {
   private TokenRepository $tokens;
   private ApiLogRepository $apiLogs;
   private Logger $logger;
+  private array $cookieConfig;
 
   public function __construct(array $config, UserRepository $users, TokenRepository $tokens, ApiLogRepository $apiLogs, Logger $logger) {
     $this->config = $config;
@@ -22,6 +23,7 @@ final class AuthController {
     $this->tokens = $tokens;
     $this->apiLogs = $apiLogs;
     $this->logger = $logger;
+    $this->cookieConfig = $config['auth_cookies'] ?? [];
   }
 
   public function login(Request $req, Response $res, array $params): void {
@@ -90,12 +92,18 @@ final class AuthController {
     $this->apiLogs->log($req, 200, 'auth.login');
 
     unset($user['password']);
+    $this->setAuthCookies($accessToken, $refreshToken, $accessPayload['exp'], $refreshPayload['exp']);
+
+    $data = [
+      'user' => $user
+    ];
+    if ($this->shouldExposeTokens()) {
+      $data['accessToken'] = $accessToken;
+      $data['refreshToken'] = $refreshToken;
+    }
+
     $res->json([
-      'data' => [
-        'accessToken' => $accessToken,
-        'refreshToken' => $refreshToken,
-        'user' => $user
-      ],
+      'data' => $data,
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);
@@ -104,6 +112,9 @@ final class AuthController {
   public function refresh(Request $req, Response $res, array $params): void {
     $body = $req->getJson() ?? [];
     $refreshToken = (string)($body['refreshToken'] ?? '');
+    if ($refreshToken === '') {
+      $refreshToken = (string)($req->getCookie($this->refreshCookieName()) ?? '');
+    }
 
     if ($refreshToken === '') {
       $res->json([
@@ -147,10 +158,10 @@ final class AuthController {
 
     $this->apiLogs->log($req, 200, 'auth.refresh');
 
+    $this->setAuthCookies($accessToken, $refreshToken, $accessPayload['exp'], (int)($payload['exp'] ?? 0));
+
     $res->json([
-      'data' => [
-        'accessToken' => $accessToken
-      ],
+      'data' => $this->shouldExposeTokens() ? ['accessToken' => $accessToken] : [],
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);
@@ -159,18 +170,27 @@ final class AuthController {
   public function logout(Request $req, Response $res, array $params): void {
     // 1. Revoke Access Token (Bearer) if present
     $authHeader = $req->getHeader('Authorization');
+    $bearerToken = '';
     if ($authHeader && preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
-        $bearerToken = $matches[1];
-        $payload = Jwt::verify($bearerToken, $this->config['jwt']['access_secret']);
-        
-        if ($payload && isset($payload['jti'], $payload['sub'], $payload['exp'])) {
-            $this->tokens->blacklistAccessToken((string)$payload['jti'], (int)$payload['sub'], (int)$payload['exp']);
-        }
+      $bearerToken = $matches[1];
+    }
+    if ($bearerToken === '') {
+      $bearerToken = (string)($req->getCookie($this->accessCookieName()) ?? '');
+    }
+
+    if ($bearerToken !== '') {
+      $payload = Jwt::verify($bearerToken, $this->config['jwt']['access_secret']);
+      if ($payload && isset($payload['jti'], $payload['sub'], $payload['exp'])) {
+        $this->tokens->blacklistAccessToken((string)$payload['jti'], (int)$payload['sub'], (int)$payload['exp']);
+      }
     }
 
     // 2. Revoke Refresh Token if passed
     $body = $req->getJson() ?? [];
     $refreshToken = (string)($body['refreshToken'] ?? '');
+    if ($refreshToken === '') {
+      $refreshToken = (string)($req->getCookie($this->refreshCookieName()) ?? '');
+    }
 
     if ($refreshToken !== '') {
         $payload = Jwt::verify($refreshToken, $this->config['jwt']['refresh_secret']);
@@ -180,10 +200,66 @@ final class AuthController {
     }
 
     $this->apiLogs->log($req, 200, 'auth.logout');
+    $this->clearAuthCookies();
     $res->json([
       'data' => ['ok' => true, 'message' => 'Logged out successfully (Access Token blacklisted, Refresh Token revoked)'],
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);
+  }
+
+  private function shouldExposeTokens(): bool {
+    if (!$this->cookiesEnabled()) {
+      return true;
+    }
+    return (bool)($this->cookieConfig['expose_tokens'] ?? false);
+  }
+
+  private function cookiesEnabled(): bool {
+    return (bool)($this->cookieConfig['enabled'] ?? false);
+  }
+
+  private function accessCookieName(): string {
+    return (string)($this->cookieConfig['access_cookie'] ?? 'as_access_token');
+  }
+
+  private function refreshCookieName(): string {
+    return (string)($this->cookieConfig['refresh_cookie'] ?? 'as_refresh_token');
+  }
+
+  private function setAuthCookies(string $accessToken, string $refreshToken, int $accessExp, int $refreshExp): void {
+    if (!$this->cookiesEnabled()) {
+      return;
+    }
+
+    $this->setCookie($this->accessCookieName(), $accessToken, $accessExp);
+    $this->setCookie($this->refreshCookieName(), $refreshToken, $refreshExp);
+  }
+
+  private function clearAuthCookies(): void {
+    if (!$this->cookiesEnabled()) {
+      return;
+    }
+
+    $expired = time() - 3600;
+    $this->setCookie($this->accessCookieName(), '', $expired);
+    $this->setCookie($this->refreshCookieName(), '', $expired);
+  }
+
+  private function setCookie(string $name, string $value, int $expiresAt): void {
+    $options = [
+      'expires' => $expiresAt,
+      'path' => (string)($this->cookieConfig['path'] ?? '/'),
+      'secure' => (bool)($this->cookieConfig['secure'] ?? true),
+      'httponly' => (bool)($this->cookieConfig['http_only'] ?? true),
+      'samesite' => (string)($this->cookieConfig['same_site'] ?? 'Lax'),
+    ];
+
+    $domain = (string)($this->cookieConfig['domain'] ?? '');
+    if ($domain !== '') {
+      $options['domain'] = $domain;
+    }
+
+    setcookie($name, $value, $options);
   }
 }

@@ -28,6 +28,17 @@ return [
     'access_ttl' => (int)(getenv('JWT_ACCESS_TTL_SECONDS') ?: 900),       // 15 min
     'refresh_ttl' => (int)(getenv('JWT_REFRESH_TTL_SECONDS') ?: 2592000), // 30 días
   ],
+  'auth_cookies' => [
+    'enabled' => (getenv('AUTH_COOKIE_ENABLED') ?: 'true') === 'true',
+    'expose_tokens' => (getenv('AUTH_COOKIE_EXPOSE_TOKENS') ?: 'false') === 'true',
+    'access_cookie' => getenv('AUTH_ACCESS_COOKIE_NAME') ?: 'as_access_token',
+    'refresh_cookie' => getenv('AUTH_REFRESH_COOKIE_NAME') ?: 'as_refresh_token',
+    'path' => getenv('AUTH_COOKIE_PATH') ?: '/',
+    'domain' => getenv('AUTH_COOKIE_DOMAIN') ?: '',
+    'secure' => (getenv('AUTH_COOKIE_SECURE') ?: 'true') === 'true',
+    'http_only' => (getenv('AUTH_COOKIE_HTTP_ONLY') ?: 'true') === 'true',
+    'same_site' => getenv('AUTH_COOKIE_SAMESITE') ?: 'Lax',
+  ],
 
   'cors' => [
     'allow_origins' => array_values(array_filter(array_map('trim', explode(',', getenv('CORS_ALLOW_ORIGINS') ?: '')))),
