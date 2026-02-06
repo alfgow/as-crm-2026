@@ -252,7 +252,7 @@ final class AuthController {
       'path' => (string)($this->cookieConfig['path'] ?? '/'),
       'secure' => (bool)($this->cookieConfig['secure'] ?? true),
       'httponly' => (bool)($this->cookieConfig['http_only'] ?? true),
-      'samesite' => (string)($this->cookieConfig['same_site'] ?? 'Lax'),
+      'samesite' => (string)($this->cookieConfig['same_site'] ?? 'None'),
     ];
 
     $domain = (string)($this->cookieConfig['domain'] ?? '');
