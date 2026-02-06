@@ -8,11 +8,13 @@ use App\Core\Response;
 final class AuthMiddleware {
   private string $accessSecret;
   private \App\Repositories\TokenRepository $tokens;
+  private string $accessCookie;
 
-  public function __construct(string $accessSecret, \App\Repositories\TokenRepository $tokens) {
+  public function __construct(string $accessSecret, \App\Repositories\TokenRepository $tokens, string $accessCookie = 'as_access_token') {
     echo ""; // Dummy to avoid whitespace issues
     $this->accessSecret = $accessSecret;
     $this->tokens = $tokens;
+    $this->accessCookie = $accessCookie;
   }
 
   /**
@@ -20,6 +22,9 @@ final class AuthMiddleware {
    */
   public function handle(Request $req, Response $res): array {
     $token = $req->bearerToken();
+    if (!$token) {
+      $token = $req->getCookie($this->accessCookie);
+    }
     if (!$token) {
       error_log("AuthMiddleware: Missing or malformed Bearer token. Header: " . ($req->getHeader('authorization') ?? 'NULL'));
       $res->json([

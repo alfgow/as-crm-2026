@@ -46,7 +46,8 @@ final class App {
     $this->router->add('POST', '/api/v1/auth/api/refresh', [$apiAuth, 'refresh']);
 
     // Protected
-    $authMw = new AuthMiddleware($this->config['jwt']['access_secret'], $tokenRepo);
+    $accessCookie = $this->config['auth_cookies']['access_cookie'] ?? 'as_access_token';
+    $authMw = new AuthMiddleware($this->config['jwt']['access_secret'], $tokenRepo, $accessCookie);
 
     $this->router->add('GET', '/api/v1/users/me', function(Request $req, Response $res, array $params) use ($authMw, $users) {
       $ctx = $authMw->handle($req, $res);
