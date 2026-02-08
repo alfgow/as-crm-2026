@@ -134,6 +134,7 @@ final class ProspectIdentityAccessController {
     $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
     $safeLink = htmlspecialchars($link, ENT_QUOTES, 'UTF-8');
     $safeExpires = htmlspecialchars($expiresAt, ENT_QUOTES, 'UTF-8');
+    $year = date('Y');
 
     return <<<HTML
 <!DOCTYPE html>
@@ -141,25 +142,79 @@ final class ProspectIdentityAccessController {
   <head>
     <meta charset="UTF-8" />
     <title>Validación de identidad</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #fde8e8ca;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #4b1d1d;
+      }
+      .container {
+        max-width: 520px;
+        margin: auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        overflow: hidden;
+      }
+      .header {
+        text-align: center;
+        padding: 24px 20px 10px;
+      }
+      .header img.logo {
+        width: 140px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+      }
+      .content {
+        padding: 20px 30px 30px;
+        text-align: center;
+      }
+      .content h2 {
+        margin: 10px 0;
+        font-size: 20px;
+        color: #4b1d1d;
+      }
+      .content p {
+        margin: 8px 0;
+        color: #4b1d1d;
+      }
+      .cta {
+        display: inline-block;
+        background: #de6868;
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin: 16px 0;
+      }
+      .footer {
+        text-align: center;
+        padding: 16px;
+        font-size: 12px;
+        color: #777;
+        background: #fdf2f2;
+      }
+    </style>
   </head>
-  <body style="font-family: Arial, sans-serif; background: #f6f7fb; padding: 24px;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 24px;">
-      <tr>
-        <td>
-          <h2 style="color: #1f2937;">Hola {$safeName},</h2>
-          <p style="color: #374151; font-size: 16px;">
-            Para continuar con tu validación de identidad, da clic en el botón:
-          </p>
-          <p style="text-align: center; margin: 32px 0;">
-            <a href="{$safeLink}" style="background: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; display: inline-block;">
-              Validar identidad
-            </a>
-          </p>
-          <p style="color: #6b7280; font-size: 14px;">Este enlace expira en: {$safeExpires}</p>
-          <p style="color: #9ca3af; font-size: 12px;">Si no solicitaste esta validación, ignora este mensaje.</p>
-        </td>
-      </tr>
-    </table>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="https://alfgow.s3.mx-central-1.amazonaws.com/Logo+Circular.png" alt="Arrendamiento Seguro" class="logo" />
+      </div>
+      <div class="content">
+        <h2>Hola {$safeName},</h2>
+        <p>Para continuar con tu validación de identidad, da clic en el botón:</p>
+        <a href="{$safeLink}" class="cta">Validar identidad</a>
+        <p>Este enlace expira en: {$safeExpires}</p>
+        <p>Si no solicitaste esta validación, ignora este mensaje.</p>
+      </div>
+      <div class="footer">
+        © {$year} Arrendamiento Seguro · Todos los derechos reservados.
+      </div>
+    </div>
   </body>
 </html>
 HTML;
