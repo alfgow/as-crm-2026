@@ -87,6 +87,16 @@ return [
     'jwt_secret' => getenv('PROSPECT_JWT_SECRET') ?: (getenv('JWT_ACCESS_SECRET') ?: ''),
     'frontend_public_base' => getenv('PROSPECT_FRONTEND_PUBLIC_BASE') ?: 'https://arrendamientoseguro.app',
   ],
+  'identity_validation' => [
+    'token_ttl_minutes' => (int)(getenv('IDENTITY_VALIDATION_TTL_MINUTES') ?: 60),
+    'public_base' => getenv('IDENTITY_VALIDATION_PUBLIC_BASE') ?: 'https://mail.arrendamientoseguro.app/validacion-identidad',
+  ],
+  'ses' => [
+    'access_key' => getenv('AWS_SES_ACCESS_KEY') ?: (getenv('AWS_ACCESS_KEY_ID') ?: ''),
+    'secret_key' => getenv('AWS_SES_SECRET_KEY') ?: (getenv('AWS_SECRET_ACCESS_KEY') ?: ''),
+    'region' => getenv('AWS_SES_REGION') ?: (getenv('AWS_REGION') ?: 'us-east-1'),
+    'source_email' => getenv('AWS_SES_SOURCE_EMAIL') ?: '',
+  ],
   'api_auth' => [
     'expected_audience' => getenv('API_EXPECTED_AUDIENCE') ?: 'n8n-integrations',
     'access_ttl' => (int)(getenv('API_ACCESS_TOKEN_TTL') ?: 3600),

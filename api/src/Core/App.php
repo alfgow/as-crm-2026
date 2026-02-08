@@ -126,6 +126,8 @@ final class App {
     // Prospect access (OTP + magic link)
     $prospectRepo = new \App\Repositories\ProspectAccessRepository($this->db);
     $prospectAccess = new \App\Controllers\ProspectAccessController($this->config, $prospectRepo);
+    $sesMailer = new \App\Services\SesEmailService($this->config);
+    $prospectIdentity = new \App\Controllers\ProspectIdentityAccessController($this->config, $prospectRepo, $sesMailer);
 
     $this->router->add('GET', '/api/v1/prospectos/code', function(Request $req, Response $res) use ($authMw, $prospectAccess) {
       $ctx = $authMw->handle($req, $res);
@@ -140,6 +142,17 @@ final class App {
     $this->router->add('POST', '/api/v1/prospectos/send-emails', function(Request $req, Response $res) use ($authMw, $prospectAccess) {
       $ctx = $authMw->handle($req, $res);
       $prospectAccess->sendEmails($req, $res);
+    });
+
+    // Prospect identity validation (token + SES email)
+    $this->router->add('POST', '/api/v1/prospectos/identidad/issue', function(Request $req, Response $res) use ($authMw, $prospectIdentity) {
+      $ctx = $authMw->handle($req, $res);
+      $prospectIdentity->issue($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/prospectos/identidad/send-email', function(Request $req, Response $res) use ($authMw, $prospectIdentity) {
+      $ctx = $authMw->handle($req, $res);
+      $prospectIdentity->sendEmail($req, $res);
     });
 
     // Media presign

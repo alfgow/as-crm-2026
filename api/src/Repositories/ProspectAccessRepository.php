@@ -53,6 +53,24 @@ final class ProspectAccessRepository {
     return (int)$this->pdo->lastInsertId();
   }
 
+  public function insertIdentityToken(array $row): int {
+    $sql = "INSERT INTO prospect_update_tokens
+            (actor_type, actor_id, email, jti, otp, otp_hash, token_hash, scope, expires_at)
+            VALUES (:actor_type, :actor_id, :email, :jti, NULL, NULL, :token_hash, :scope, :expires_at)";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([
+      ':actor_type' => $row['actor_type'],
+      ':actor_id' => $row['actor_id'],
+      ':email' => $row['email'],
+      ':jti' => $row['jti'],
+      ':token_hash' => $row['token_hash'],
+      ':scope' => $row['scope'],
+      ':expires_at' => $row['expires_at'],
+    ]);
+
+    return (int)$this->pdo->lastInsertId();
+  }
+
   private function findByEmail(string $email, string $actorType): ?array {
     if ($actorType === 'inquilino') {
       $stmt = $this->pdo->prepare(
