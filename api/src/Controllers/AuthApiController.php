@@ -255,7 +255,11 @@ final class AuthApiController {
   private function issueTokenPair(array $client, array $scopes, string $audience): array {
     $accessTtl = (int)($this->config['api_auth']['access_ttl'] ?? 3600);
     $refreshTtl = (int)($this->config['api_auth']['refresh_ttl'] ?? 2592000);
+    $clientAccessTtl = isset($client['access_ttl_seconds']) ? (int)$client['access_ttl_seconds'] : 0;
     $clientRefreshTtl = isset($client['refresh_ttl_seconds']) ? (int)$client['refresh_ttl_seconds'] : 0;
+    if ($clientAccessTtl > 0) {
+      $accessTtl = $clientAccessTtl;
+    }
     if ($clientRefreshTtl > 0) {
       $refreshTtl = $clientRefreshTtl;
     }
