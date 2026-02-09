@@ -11,7 +11,7 @@ final class ApiClientRepository {
   }
 
   public function findAll(): array {
-    $sql = "SELECT id, client_id, name, allowed_scopes, status, rate_limit_per_minute, refresh_ttl_seconds, last_used_at, created_at, updated_at
+    $sql = "SELECT id, client_id, name, allowed_scopes, status, rate_limit_per_minute, access_ttl_seconds, refresh_ttl_seconds, last_used_at, created_at, updated_at
             FROM api_clients
             ORDER BY created_at DESC";
     $st = $this->pdo->query($sql);
@@ -62,7 +62,8 @@ final class ApiClientRepository {
     array $scopes,
     int $rateLimitPerMinute = 60,
     string $status = 'active',
-    ?int $refreshTtlSeconds = null
+    ?int $refreshTtlSeconds = null,
+    ?int $accessTtlSeconds = null
   ): array {
     $name = trim($name);
     if ($name === '') {
@@ -81,8 +82,8 @@ final class ApiClientRepository {
     $clientSecret = $this->generateSecret();
     $secretHash = password_hash($clientSecret, PASSWORD_DEFAULT);
 
-    $sql = "INSERT INTO api_clients (client_id, name, secret_hash, allowed_scopes, status, rate_limit_per_minute, refresh_ttl_seconds, created_at, updated_at)
-            VALUES (:client_id, :name, :secret_hash, :scopes, :status, :rate_limit, :refresh_ttl_seconds, NOW(), NOW())";
+    $sql = "INSERT INTO api_clients (client_id, name, secret_hash, allowed_scopes, status, rate_limit_per_minute, access_ttl_seconds, refresh_ttl_seconds, created_at, updated_at)
+            VALUES (:client_id, :name, :secret_hash, :scopes, :status, :rate_limit, :access_ttl_seconds, :refresh_ttl_seconds, NOW(), NOW())";
     $st = $this->pdo->prepare($sql);
     $st->execute([
       ':client_id' => $clientId,
@@ -91,6 +92,7 @@ final class ApiClientRepository {
       ':scopes' => json_encode(array_values($scopes), JSON_UNESCAPED_SLASHES),
       ':status' => $status,
       ':rate_limit' => max(1, $rateLimitPerMinute),
+      ':access_ttl_seconds' => $accessTtlSeconds,
       ':refresh_ttl_seconds' => $refreshTtlSeconds,
     ]);
 
@@ -99,6 +101,7 @@ final class ApiClientRepository {
       'client_secret' => $clientSecret,
       'name' => $name,
       'scopes' => array_values($scopes),
+      'access_ttl_seconds' => $accessTtlSeconds,
       'refresh_ttl_seconds' => $refreshTtlSeconds,
     ];
   }

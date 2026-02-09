@@ -533,7 +533,9 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   {
     "name": "Cliente Integración",
     "scopes": ["read", "write"],
-    "rate_limit": 60
+    "rate_limit": 60,
+    "access_ttl_seconds": 31536000,
+    "refresh_ttl_seconds": 2592000
   }
   ```
 
@@ -555,6 +557,16 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
+ - **Body** (Raw JSON):
+  ```json
+  {
+    "name": "Cliente Integración",
+    "scopes": ["read", "write"],
+    "rate_limit": 60,
+    "access_ttl_seconds": 31536000,
+    "refresh_ttl_seconds": 2592000
+  }
+  ```
 
 ### 44. Rotar Secret Integrations Client (Alias)
 - **Method**: `POST`
