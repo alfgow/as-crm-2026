@@ -119,6 +119,44 @@ final class ProspectIdentityAccessController {
     ], ($result['ok'] ?? false) ? 200 : 502);
   }
 
+  public function validate(Request $req, Response $res): void {
+    $body = $req->getJson();
+    $tokenRaw = trim((string)($body['token'] ?? ''));
+
+    if ($tokenRaw === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'Token requerido']],
+      ], 400);
+      return;
+    }
+
+    $tokenHash = hash('sha256', $tokenRaw);
+    $row = $this->prospects->findIdentityTokenByHash($tokenHash);
+    if (!$row) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'unauthorized', 'message' => 'Token inválido o expirado']],
+      ], 401);
+      return;
+    }
+
+    $res->json([
+      'data' => [
+        'valid' => true,
+        'actor_type' => $row['actor_type'],
+        'actor_id' => (int)$row['actor_id'],
+        'email' => $row['email'],
+        'scope' => $row['scope'],
+        'expires_at' => $row['expires_at'],
+      ],
+      'meta' => ['requestId' => $req->getRequestId()],
+      'errors' => [],
+    ]);
+  }
+
   private function generateToken(): string {
     return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
   }
