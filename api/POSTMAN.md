@@ -584,6 +584,50 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
 
+### 47a. Emitir Token Validación Identidad (Prospecto)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/prospectos/identidad/issue`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "email": "correo@ejemplo.com",
+    "actor": "inquilino",
+    "ttl_minutes": 60
+  }
+  ```
+
+### 47b. Enviar Email Validación Identidad (Prospecto)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/prospectos/identidad/send-email`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "email": "correo@ejemplo.com",
+    "identity_link": "https://mail.arrendamientoseguro.app/validacion-identidad/<token>",
+    "expires_at": "2026-01-01 12:00:00",
+    "actor_name": "Usuario"
+  }
+  ```
+
+### 47c. Validar Token Identidad (Prospecto)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/prospectos/identidad/validate`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "token": "<token>"
+  }
+  ```
+
 ## Media / Presign
 
 ### 48. Presign Single

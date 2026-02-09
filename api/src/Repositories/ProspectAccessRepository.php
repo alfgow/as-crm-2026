@@ -71,6 +71,20 @@ final class ProspectAccessRepository {
     return (int)$this->pdo->lastInsertId();
   }
 
+  public function findIdentityTokenByHash(string $tokenHash): ?array {
+    $sql = "SELECT actor_type, actor_id, email, scope, expires_at
+            FROM prospect_update_tokens
+            WHERE token_hash = :token_hash
+              AND scope = 'identity:validation'
+              AND expires_at > NOW()
+            LIMIT 1";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':token_hash' => $tokenHash]);
+    $row = $stmt->fetch();
+
+    return $row ?: null;
+  }
+
   private function findByEmail(string $email, string $actorType): ?array {
     if ($actorType === 'inquilino') {
       $stmt = $this->pdo->prepare(

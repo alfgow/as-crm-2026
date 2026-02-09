@@ -155,6 +155,11 @@ final class App {
       $prospectIdentity->sendEmail($req, $res);
     });
 
+    $this->router->add('POST', '/api/v1/prospectos/identidad/validate', function(Request $req, Response $res) use ($authMw, $prospectIdentity) {
+      $ctx = $authMw->handle($req, $res);
+      $prospectIdentity->validate($req, $res);
+    });
+
     // Media presign
     $mediaRepo = new \App\Repositories\MediaRepository($this->db);
     $mediaPresign = new \App\Services\MediaPresignService($this->config);
