@@ -483,6 +483,16 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     "validacion_documentos_resumen": "Documentos OK",
     "validacion_documentos_json": { "ine": "ok", "comprobante": "ok" },
     "proceso_validacion_ingresos": 1,
+    "liveness_process": {
+      "AuditImages": [],
+      "Challenge": {
+        "Type": "FaceMovementAndLightChallenge",
+        "Version": "2.0.0"
+      },
+      "Confidence": 99.93,
+      "SessionId": "e20d7250-7113-4fb6-bbf3-f4da6371442a",
+      "Status": "SUCCEEDED"
+    },
     "comentarios": "Validación en proceso"
   }
   ```
