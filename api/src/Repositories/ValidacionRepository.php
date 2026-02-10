@@ -26,6 +26,7 @@ final class ValidacionRepository {
       'proceso_validacion_documentos', 'validacion_documentos_resumen', 'validacion_documentos_json',
       'proceso_validacion_archivos', 'validacion_archivos_resumen', 'validacion_archivos_json',
       'proceso_validacion_rostro', 'validacion_rostro_resumen', 'validacion_rostro_json',
+      'liveness_process',
       'proceso_validacion_id', 'validacion_id_resumen', 'validacion_id_json',
       'proceso_validacion_ingresos', 'validacion_ingresos_resumen', 'validacion_ingresos_json',
       'proceso_pago_inicial', 'pago_inicial_resumen', 'pago_inicial_json',
@@ -45,7 +46,7 @@ final class ValidacionRepository {
                 $set[] = "$f = :$f";
                 // Handle JSON inputs if array
                 $val = $data[$f];
-                if (is_array($val) && strpos($f, '_json') !== false) {
+                if (is_array($val) && (strpos($f, '_json') !== false || $f === 'liveness_process')) {
                     $val = json_encode($val);
                 }
                 $values[":$f"] = $val;
@@ -65,7 +66,7 @@ final class ValidacionRepository {
                 $cols[] = $f;
                 // Handle JSON
                 $val = $data[$f];
-                if (is_array($val) && strpos($f, '_json') !== false) {
+                if (is_array($val) && (strpos($f, '_json') !== false || $f === 'liveness_process')) {
                     $val = json_encode($val);
                 }
                 $vals[":$f"] = $val;

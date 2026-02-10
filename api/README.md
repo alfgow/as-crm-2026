@@ -57,6 +57,7 @@ Todos estos endpoints soportan operaciones estándar: `GET /` (Listar), `POST /`
 
 ### ✅ Validaciones
 *   `GET/PUT /inquilinos/{id}/validaciones`: Gestionar el estado de validación de un inquilino específico.
+    *   El `PUT` acepta `liveness_process` como objeto JSON para persistir el resultado completo del proceso de liveness en `inquilinos_validaciones.liveness_process`.
 
 ### ⚙️ Sistema y Automatización
 | Método | Endpoint | Descripción |
