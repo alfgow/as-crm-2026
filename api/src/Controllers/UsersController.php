@@ -25,8 +25,13 @@ final class UsersController {
     }
 
     unset($user['password']); // nunca regreses hashes
+    // Compatibilidad: algunos frontends esperan `data.user`,
+    // mientras otros consumen `data` directamente como objeto usuario.
+    $data = $user;
+    $data['user'] = $user;
+
     $res->json([
-      'data' => $user,
+      'data' => $data,
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);
