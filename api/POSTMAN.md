@@ -397,11 +397,15 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   }
   ```
 
-### 29. Eliminar Inquilino
+### 29. Eliminar Inquilino (completo)
 - **Method**: `DELETE`
 - **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}`
+- **Descripción**: Elimina el registro principal del inquilino, sus tablas relacionadas (`direccion`, `trabajo`, `fiador`, `historial`, `validaciones`, `archivos`) y después intenta eliminar del bucket S3 todos los `s3_key` asociados.
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Notas**:
+  - Si el inquilino no existe, responde `404`.
+  - La respuesta incluye `s3_deleted_count`, `s3_error_count` y `s3_errors` para auditar si algún archivo no se pudo borrar en S3.
 
 ## Gestión de Pólizas (CRUD)
 

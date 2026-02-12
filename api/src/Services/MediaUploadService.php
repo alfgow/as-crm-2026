@@ -47,6 +47,33 @@ final class MediaUploadService {
     ];
   }
 
+  public function deleteObject(string $bucket, string $key): array {
+    $url = $this->presign->buildPresignedDeleteUrl($bucket, $key);
+    if (!$url) {
+      return ['ok' => false, 'status' => 0, 'error' => 'presign_failed'];
+    }
+
+    $context = stream_context_create([
+      'http' => [
+        'method' => 'DELETE',
+        'ignore_errors' => true,
+      ],
+    ]);
+
+    $result = @file_get_contents($url, false, $context);
+    $status = $this->extractStatusCode($http_response_header ?? []);
+
+    if ($result === false && $status === 0) {
+      return ['ok' => false, 'status' => 0, 'error' => 'delete_failed'];
+    }
+
+    return [
+      'ok' => $status >= 200 && $status < 300,
+      'status' => $status,
+      'error' => $status >= 200 && $status < 300 ? null : 'delete_failed',
+    ];
+  }
+
   private function extractStatusCode(array $headers): int {
     if (empty($headers)) {
       return 0;

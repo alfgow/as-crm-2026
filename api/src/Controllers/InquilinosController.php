@@ -221,8 +221,62 @@ final class InquilinosController {
 
   public function destroy(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
-      $this->inquilinos->delete($id);
-      $res->json(['data' => ['success' => true, 'id' => $id], 'meta' => ['requestId' => $req->getRequestId()], 'errors' => []]);
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid inquilino id']]
+          ], 400);
+          return;
+      }
+
+      try {
+          $result = $this->inquilinos->deleteComplete($id);
+
+          if (!$result['deleted']) {
+              $res->json([
+                  'data' => null,
+                  'meta' => ['requestId' => $req->getRequestId()],
+                  'errors' => [['code' => 'not_found', 'message' => 'Inquilino not found']]
+              ], 404);
+              return;
+          }
+
+          $s3Deleted = [];
+          $s3Errors = [];
+          foreach ($result['s3_keys'] as $key) {
+              $deleteResult = $this->uploads->deleteObject('inquilinos', (string)$key);
+              if ($deleteResult['ok']) {
+                  $s3Deleted[] = $key;
+                  continue;
+              }
+
+              $s3Errors[] = [
+                  'key' => $key,
+                  'status' => (int)($deleteResult['status'] ?? 0),
+                  'error' => (string)($deleteResult['error'] ?? 'delete_failed'),
+              ];
+          }
+
+          $res->json([
+              'data' => [
+                  'success' => true,
+                  'id' => $id,
+                  's3_deleted_count' => count($s3Deleted),
+                  's3_error_count' => count($s3Errors),
+                  's3_errors' => $s3Errors,
+              ],
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => []
+          ]);
+      } catch (\Throwable $e) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'server_error', 'message' => 'Unable to delete inquilino completely']]
+          ], 500);
+      }
   }
 
   public function deleteBulk(Request $req, Response $res): void {
