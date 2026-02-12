@@ -197,11 +197,61 @@ final class InquilinoRepository {
   }
 
   public function delete(int $id): void {
-     // Optional: Delete from related tables manually if no ON DELETE CASCADE
-     // We will assume DB handles cascades or we leave orphans for safety in this version.
-     // To be safe, let's delete main.
      $sql = "DELETE FROM inquilinos WHERE id = :id";
      $this->pdo->prepare($sql)->execute([':id' => $id]);
+  }
+
+  /**
+   * Elimina un inquilino y sus datos relacionados en una sola transacción.
+   *
+   * @return array{deleted:bool,s3_keys:array<int,string>}
+   */
+  public function deleteComplete(int $id): array {
+    if ($id <= 0) {
+      return ['deleted' => false, 's3_keys' => []];
+    }
+
+    $checkStmt = $this->pdo->prepare("SELECT id FROM inquilinos WHERE id = :id LIMIT 1");
+    $checkStmt->execute([':id' => $id]);
+    if (!$checkStmt->fetch()) {
+      return ['deleted' => false, 's3_keys' => []];
+    }
+
+    $keysStmt = $this->pdo->prepare("SELECT s3_key FROM inquilinos_archivos WHERE id_inquilino = :id");
+    $keysStmt->execute([':id' => $id]);
+    $s3Keys = array_values(array_filter(array_map('strval', $keysStmt->fetchAll(\PDO::FETCH_COLUMN) ?: []), fn($key) => trim($key) !== ''));
+
+    $this->pdo->beginTransaction();
+    try {
+      foreach ([
+        'inquilinos_archivos',
+        'inquilinos_validaciones',
+        'inquilinos_historial_vivienda',
+        'inquilinos_fiador',
+        'inquilinos_trabajo',
+        'inquilinos_direccion',
+      ] as $table) {
+        $stmt = $this->pdo->prepare("DELETE FROM {$table} WHERE id_inquilino = :id");
+        $stmt->execute([':id' => $id]);
+      }
+
+      $stmtMain = $this->pdo->prepare("DELETE FROM inquilinos WHERE id = :id");
+      $stmtMain->execute([':id' => $id]);
+      $deleted = $stmtMain->rowCount() > 0;
+
+      if ($deleted) {
+        $this->pdo->commit();
+        return ['deleted' => true, 's3_keys' => $s3Keys];
+      }
+
+      $this->pdo->rollBack();
+      return ['deleted' => false, 's3_keys' => []];
+    } catch (\Throwable $e) {
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      throw $e;
+    }
   }
 
   public function deleteBulk(array $ids): int {
