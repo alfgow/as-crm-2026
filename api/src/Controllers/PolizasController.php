@@ -469,24 +469,38 @@ final class PolizasController {
   public function generarContratoDocx(Request $req, Response $res, array $params): void {
       $numero = (int)($params['numero'] ?? 0);
       $body = $req->getJson() ?? [];
-      $tipoContratoKey = mb_strtolower(trim((string)($body['tipo_contrato'] ?? '')), 'UTF-8');
 
-      if ($numero <= 0 || $tipoContratoKey === '') {
-          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'numero y tipo_contrato son requeridos']]], 400);
+      if ($numero <= 0) {
+          $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'bad_request', 'message' => 'numero es requerido']]], 400);
+          return;
       }
 
       $poliza = $this->polizas->findContratoByNumero($numero);
       if (!$poliza) {
           $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'not_found', 'message' => 'Poliza no encontrada']]], 404);
+          return;
+      }
+
+      $tipoContratoInput = mb_strtolower(trim((string)($body['tipo_contrato'] ?? '')), 'UTF-8');
+      $tipoContratoKey = $tipoContratoInput !== '' ? $tipoContratoInput : $this->inferTipoContratoKey($poliza);
+      if ($tipoContratoKey === null) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'No fue posible determinar el tipo de contrato automáticamente. Envía tipo_contrato.']]
+          ], 422);
+          return;
       }
 
       if (!isset($this->contractTemplateMap[$tipoContratoKey])) {
           $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'template_not_found', 'message' => 'Aún no hay plantilla para ese tipo de contrato']]], 422);
+          return;
       }
 
       $templatePath = $this->templatePath($this->contractTemplateMap[$tipoContratoKey]);
       if (!is_file($templatePath)) {
           $res->json(['data' => null, 'meta' => ['requestId' => $req->getRequestId()], 'errors' => [['code' => 'template_not_found', 'message' => 'Plantilla de contrato no encontrada']]], 404);
+          return;
       }
 
       $vars = $this->docx->getVariables($templatePath);
@@ -521,10 +535,42 @@ final class PolizasController {
 
       return [
           'poliza' => $poliza,
+          'tipo_contrato_sugerido' => $this->inferTipoContratoKey($poliza),
           'inquilino_nombre' => $nombreInquilino !== '' ? $nombreInquilino : null,
           'fiador_nombre' => $nombreFiador !== '' ? $nombreFiador : null,
           'obligado_nombre' => $nombreObligado !== '' ? $nombreObligado : null,
       ];
+  }
+
+
+  private function inferTipoContratoKey(array $poliza): ?string {
+      $tipoInquilino = mb_strtolower(trim((string)($poliza['inquilino_tipo'] ?? '')), 'UTF-8');
+      $esInquilinoPM = str_contains($tipoInquilino, 'moral') || $tipoInquilino === 'pm' || $tipoInquilino === 'persona moral';
+
+      $arrendadorRfc = strtoupper(trim((string)($poliza['arrendador_rfc'] ?? '')));
+      $inquilinoRfc = strtoupper(trim((string)($poliza['inquilino_rfc'] ?? '')));
+      $hasFiador = $this->fullName($poliza, 'fiador_nombre', 'fiador_apellidop', 'fiador_apellidom') !== '';
+      $hasObligado = $this->fullName($poliza, 'obligado_nombre', 'obligado_apellidop', 'obligado_apellidom') !== '';
+
+      $arrPm = strlen($arrendadorRfc) === 12;
+      $inqPmByRfc = strlen($inquilinoRfc) === 12;
+      $inqPm = $esInquilinoPM || $inqPmByRfc;
+
+      if ($arrPm && $inqPm) return 'pmoral';
+      if ($arrPm && !$inqPm) return 'arr_pm_inq_pf';
+
+      if ($inqPm && !$arrPm) {
+          if ($hasObligado && $hasFiador) return 'os_fiador_pm';
+          if ($hasObligado) return 'os_pm';
+          if ($hasFiador) return 'fiador_pm';
+          return 'normal_pm';
+      }
+
+      if ($hasObligado && $hasFiador) return 'os_fiador_pf';
+      if ($hasObligado) return 'os_pf';
+      if ($hasFiador) return 'fiador_pf';
+
+      return 'normal_pf';
   }
 
   /** @param array<int,string> $vars */
@@ -584,13 +630,24 @@ final class PolizasController {
       $set($out, 'OBLIGADO SOLIDARIO', $mayus($obligado));
       $set($out, 'INMUEBLE', $mayus((string)($poliza['direccion_inmueble'] ?? '')));
       $set($out, 'VIGENCIA', $mayus((string)($poliza['vigencia'] ?? '')));
-      $set($out, 'monto_renta', $this->normalizarMonto((string)($poliza['monto_renta'] ?? '0')));
-      $set($out, 'monto_mantenimiento', $this->normalizarMonto((string)($poliza['monto_mantenimiento'] ?? '0')));
+      $set($out, 'ESTACIONAMIENTO', $this->textoEstacionamiento($poliza['estacionamiento_inmueble'] ?? 0));
+      $set($out, 'MASCOTAS', $mayus($this->clausulaMascotas((string)($poliza['mascotas_inmueble'] ?? ''))));
+      $set($out, 'CLAUSULA_MTTO', $mayus($this->clausulaMantenimiento((string)($poliza['mantenimiento_inmueble'] ?? ''), (string)($poliza['monto_mantenimiento'] ?? '0'))));
+      $set($out, 'monto_renta', $this->montoEnNumeroYTexto((string)($poliza['monto_renta'] ?? '0')));
+      $set($out, 'monto_mantenimiento', $this->montoEnNumeroYTexto((string)($poliza['monto_mantenimiento'] ?? '0')));
       $set($out, 'DIRECCION_ARRENDADOR', $mayus((string)($poliza['direccion_arrendador'] ?? '')));
       $set($out, 'NACIONALIDAD_ARRENDADOR', $mayus((string)($poliza['arrendador_nacionalidad'] ?? '')));
       $set($out, 'NACIONALIDAD_ARRENDATARIO', $mayus((string)($poliza['inquilino_nacionalidad'] ?? '')));
       $set($out, 'NACIONALIDAD_OBLIGADO', $mayus((string)($poliza['obligado_nacionalidad'] ?? '')));
       $set($out, 'NACIONALIDAD_FIADOR', $mayus((string)($poliza['fiador_nacionalidad'] ?? '')));
+      $set($out, 'TIPO_ID_ARRENDADOR', $this->normalizarTipoIdentificacion((string)($poliza['arrendador_tipo_id'] ?? '')));
+      $set($out, 'NUM_ID_ARRENDADOR', $mayus((string)($poliza['arrendador_num_id'] ?? '')));
+      $set($out, 'TIPO_ID_ARRENDATARIO', $this->normalizarTipoIdentificacion((string)($poliza['inquilino_tipo_id'] ?? '')));
+      $set($out, 'NUM_ID_ARRENDATARIO', $mayus((string)($poliza['inquilino_num_id'] ?? '')));
+      $set($out, 'TIPO_ID_OBLIGADO', $this->normalizarTipoIdentificacion((string)($poliza['obligado_tipo_id'] ?? '')));
+      $set($out, 'NUM_ID_OBLIGADO', $mayus((string)($poliza['obligado_num_id'] ?? '')));
+      $set($out, 'TIPO_ID_FIADOR', $this->normalizarTipoIdentificacion((string)($poliza['fiador_tipo_id'] ?? '')));
+      $set($out, 'NUM_ID_FIADOR', $mayus((string)($poliza['fiador_num_id'] ?? '')));
 
       $fechaInicio = (string)($poliza['fecha_poliza'] ?? date('Y-m-d'));
       $fecha = new \DateTime($fechaInicio);
@@ -598,8 +655,98 @@ final class PolizasController {
       $fmtLar = new \IntlDateFormatter('es_MX', \IntlDateFormatter::LONG, \IntlDateFormatter::NONE, 'America/Mexico_City', \IntlDateFormatter::GREGORIAN, "dd 'de' MMMM 'de' yyyy");
       $set($out, 'mes_renta', $mayus((string)$fmtMes->format($fecha)));
       $set($out, 'fecha_inicio', $mayus((string)$fmtLar->format($fecha)));
+      $set($out, 'DIA_PAGO', $fecha->format('d'));
+
+      $set($out, 'num_cuenta', (string)($poliza['arrendador_cuenta'] ?? ''));
+      $set($out, 'banco', $mayus((string)($poliza['arrendador_banco'] ?? '')));
+      $set($out, 'clabe', (string)($poliza['arrendador_clabe'] ?? ''));
 
       return $out;
+  }
+
+  private function normalizarTipoIdentificacion(string $tipo): string {
+      $tipo = mb_strtoupper(trim($tipo), 'UTF-8');
+      if (in_array($tipo, ['INE', 'IFE', 'INE/IFE', 'INE / IFE'], true)) {
+          return 'CREDENCIAL DE ELECTOR';
+      }
+      return $tipo;
+  }
+
+  private function textoEstacionamiento($valor): string {
+      $cantidad = (int)$valor;
+      if ($cantidad <= 0) {
+          return 'SIN ESTACIONAMIENTO';
+      }
+      if ($cantidad === 1) {
+          return 'CON DERECHO AL USO EXCLUSIVO DE UN CAJÓN DE ESTACIONAMIENTO';
+      }
+      $enTexto = mb_strtoupper((new \NumberFormatter('es', \NumberFormatter::SPELLOUT))->format($cantidad), 'UTF-8');
+      $enTexto = str_replace('UNO', 'UN', $enTexto);
+      return sprintf('CON DERECHO AL USO EXCLUSIVO DE %s CAJONES DE ESTACIONAMIENTO', $enTexto);
+  }
+
+  private function clausulaMascotas(string $rawMascotas): string {
+      $valor = mb_strtolower(trim($rawMascotas), 'UTF-8');
+      $permite = in_array($valor, ['si', 'sí', '1', 'true', 'permitidas'], true);
+      if ($permite) {
+          return '"EL ARRENDADOR" OTORGA PERMISO EXPRESO A "EL ARRENDATARIO" PARA TENER UNA MASCOTA, "EL ARRENDATARIO" DEBERÁ CUMPLIR CON LAS NORMATIVAS DEL DESARROLLO, NO CAUSAR MOLESTIAS A TERCEROS NI DAÑOS A LA PROPIEDAD, MANTENER LA LIMPIEZA DEL INMUEBLE Y REPARAR CUALQUIER DAÑO OCASIONADO POR LA MASCOTA. ASIMISMO, DEBERÁ CUMPLIR CON LAS DISPOSICIONES LEGALES Y REGLAMENTARIAS APLICABLES.';
+      }
+      return '"EL ARRENDATARIO" TIENE PROHIBIDO TENER MASCOTAS DENTRO DEL INMUEBLE ARRENDADO, EN CASO DE INCUMPLIMIENTO, "EL ARRENDADOR" PODRÁ RESCINDIR EL CONTRATO DE MANERA INMEDIATA, SIN NECESIDAD DE REQUERIMIENTO PREVIO, CONSIDERÁNDOSE DICHO INCUMPLIMIENTO COMO CAUSA JUSTIFICADA PARA DAR POR TERMINADO EL CONTRATO DE ARRENDAMIENTO.';
+  }
+
+  private function clausulaMantenimiento(string $rawEstado, string $rawMonto): string {
+      $estado = mb_strtolower(trim($rawEstado), 'UTF-8');
+      $montoNumero = $this->normalizarMonto($rawMonto);
+      $montoLetras = $this->montoSoloLetras($rawMonto);
+
+      $positivos = ['si', 'sí', '1', 'true', 'incluye', 'incluido'];
+      $negativos = ['no', '0', 'false', 'excluye', 'excluido'];
+      $noAplica = ['no aplica', 'na', 'n/a', 'none'];
+
+      if (in_array($estado, $positivos, true)) {
+          return sprintf('LAS PARTES ACUERDAN QUE EL PAGO DE LA CUOTA MENSUAL DE MANTENIMIENTO CORRESPONDIENTE AL INMUEBLE, QUE AL MOMENTO DE LA FIRMA DEL PRESENTE CONTRATO ASCIENDE A LA CANTIDAD DE %s (%s), YA ESTÁ INCLUIDO EN EL MONTO DE LA RENTA MENSUAL ESTABLECIDO EN LA CLÁUSULA SEGUNDA DEL PRESENTE CONTRATO. EN CONSECUENCIA, "EL ARRENDADOR" SE OBLIGA A REALIZAR DICHO PAGO PUNTUALMENTE ANTE LA ADMINISTRACIÓN DEL EDIFICIO O CONJUNTO HABITACIONAL CORRESPONDIENTE, GARANTIZANDO A "EL ARRENDATARIO" QUE LOS SERVICIOS COMUNES INCLUIDOS EN DICHA CUOTA NO SERÁN INTERRUMPIDOS, LIMITADOS NI SUSPENDIDOS DURANTE LA VIGENCIA DEL PRESENTE CONTRATO. NO OBSTANTE LO ANTERIOR, EN CASO DE QUE LA CUOTA DE MANTENIMIENTO SUFRA UN INCREMENTO DURANTE LA VIGENCIA DEL PRESENTE CONTRATO, LAS PARTES CONVIENEN QUE DICHO INCREMENTO SERÁ CUBIERTO POR “EL ARRENDATARIO”, POR SER EL USUARIO DIRECTO DE LOS BENEFICIOS DERIVADOS DEL MANTENIMIENTO, SIEMPRE Y CUANDO DICHO AUMENTO SEA DEBIDAMENTE JUSTIFICADO POR LA ADMINISTRACIÓN CORRESPONDIENTE.', $montoNumero, $montoLetras);
+      }
+
+      if (in_array($estado, $negativos, true)) {
+          return sprintf('LAS PARTES ACUERDAN QUE EL PAGO DE LA CUOTA MENSUAL DE MANTENIMIENTO CORRESPONDIENTE AL INMUEBLE, QUE AL MOMENTO DE LA FIRMA DEL PRESENTE CONTRATO ASCIENDE A LA CANTIDAD DE %s (%s), NO ESTÁ INCLUIDO EN EL MONTO DE LA RENTA MENSUAL ESTABLECIDO EN LA CLÁUSULA SEGUNDA DEL PRESENTE CONTRATO. EN CONSECUENCIA, "EL ARRENDATARIO" SE OBLIGA A REALIZAR DICHO PAGO PUNTUALMENTE ANTE LA ADMINISTRACIÓN DEL EDIFICIO O CONJUNTO HABITACIONAL CORRESPONDIENTE, GARANTIZANDO A "EL ARRENDADOR" QUE LOS SERVICIOS COMUNES INCLUIDOS EN DICHA CUOTA NO SERÁN INTERRUMPIDOS, LIMITADOS NI SUSPENDIDOS DURANTE LA VIGENCIA DEL PRESENTE CONTRATO. NO OBSTANTE LO ANTERIOR, EN CASO DE QUE LA CUOTA DE MANTENIMIENTO SUFRA UN INCREMENTO DURANTE LA VIGENCIA DEL PRESENTE CONTRATO, LAS PARTES CONVIENEN QUE DICHO INCREMENTO SERÁ CUBIERTO POR “EL ARRENDATARIO”, POR SER EL USUARIO DIRECTO DE LOS BENEFICIOS DERIVADOS DEL MANTENIMIENTO, SIEMPRE Y CUANDO DICHO AUMENTO SEA DEBIDAMENTE JUSTIFICADO POR LA ADMINISTRACIÓN CORRESPONDIENTE.', $montoNumero, $montoLetras);
+      }
+
+      if (in_array($estado, $noAplica, true)) {
+          return 'LAS PARTES ACUERDAN QUE EN EL PRESENTE CONTRATO NO APLICA EL PAGO DE CUOTAS DE MANTENIMIENTO, YA QUE EL INMUEBLE OBJETO DE ARRENDAMIENTO NO SE ENCUENTRA SUJETO A DICHO CONCEPTO.';
+      }
+
+      return 'LAS PARTES ACUERDAN QUE EL PAGO DE LA CUOTA DE MANTENIMIENTO DEL INMUEBLE NO HA SIDO ESPECIFICADO CLARAMENTE, POR LO QUE SE SUJETARÁ A LO QUE POSTERIORMENTE PACTEN POR ESCRITO.';
+  }
+
+  private function montoSoloLetras(string $monto): string {
+      $valor = $this->montoDecimal($monto);
+      $entero = (int)floor($valor);
+      $centavos = (int)round(($valor - $entero) * 100);
+      if ($centavos === 100) {
+          $entero++;
+          $centavos = 0;
+      }
+
+      $texto = mb_strtoupper((new \NumberFormatter('es', \NumberFormatter::SPELLOUT))->format($entero), 'UTF-8');
+      $texto = str_replace('UNO', 'UN', $texto);
+      return sprintf('%s PESOS %02d/100 M.N.', $texto, $centavos);
+  }
+
+  private function montoEnNumeroYTexto(string $monto): string {
+      return sprintf('%s (%s)', $this->normalizarMonto($monto), $this->montoSoloLetras($monto));
+  }
+
+  private function montoDecimal(string $valor): float {
+      $normalizado = str_replace(['$', ' '], '', trim($valor));
+      if (preg_match('/^\d{1,3}(\.\d{3})+,\d{1,2}$/', $normalizado) === 1) {
+          $normalizado = str_replace('.', '', $normalizado);
+          $normalizado = str_replace(',', '.', $normalizado);
+      } elseif (preg_match('/^\d+,\d{1,2}$/', $normalizado) === 1) {
+          $normalizado = str_replace(',', '.', $normalizado);
+      } else {
+          $normalizado = str_replace(',', '', $normalizado);
+      }
+      return is_numeric($normalizado) ? (float)$normalizado : 0.0;
   }
 
   private function fullName(array $row, string $nombre, string $apPaterno, string $apMaterno): string {
