@@ -735,6 +735,16 @@ final class App {
       $polizas->guardarContrato($req, $res, $params);
     });
 
+    $this->router->add('GET', '/api/v1/polizas/numero/{numero}/docx/poliza', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->descargarPolizaDocx($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/polizas/numero/{numero}/docx/contrato', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->generarContratoDocx($req, $res, $params);
+    });
+
     // Validaciones CRUD
     $validacionRepo = new \App\Repositories\ValidacionRepository($this->db);
     $validaciones = new \App\Controllers\ValidacionesController($this->config, $validacionRepo, $inquilinoRepo);
