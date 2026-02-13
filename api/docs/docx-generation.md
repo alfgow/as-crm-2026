@@ -24,6 +24,7 @@ Generar y descargar documentos Word (`.docx`) desde plantillas para:
   "tipo_contrato": "normal_pf"
 }
 ```
+> `tipo_contrato` ahora es opcional. Si no se envía, la API lo infiere con los datos de la póliza y sus relaciones (inquilino, arrendador, fiador, obligado, etc).
 - **Respuesta:** binario `.docx` (descarga directa)
 
 ## Tipos de contrato soportados
@@ -40,12 +41,12 @@ Generar y descargar documentos Word (`.docx`) desde plantillas para:
 - `os_fiador_pm`
 
 ## Flujo interno resumido
-1. Validar `numero` y (para contrato) `tipo_contrato`.
+1. Validar `numero` (y `tipo_contrato` solo si se envía manualmente).
 2. Buscar póliza (`findContratoByNumero`).
-3. Resolver plantilla por mapa centralizado.
+3. Resolver tipo de contrato (manual o inferido automáticamente) y plantilla por mapa centralizado.
 4. Confirmar que el archivo de plantilla exista.
 5. Leer placeholders `${...}` de la plantilla.
-6. Construir reemplazos con datos de póliza/partes.
+6. Construir reemplazos con datos de póliza/partes, incluyendo lógica de cláusulas para `MASCOTAS`, `ESTACIONAMIENTO` y `CLAUSULA_MTTO` (mantenimiento incluido/no incluido/no aplica).
 7. Renderizar DOCX temporal.
 8. Devolver descarga directa con `Content-Disposition`.
 
