@@ -458,21 +458,7 @@ final class PolizasController {
       }
 
       $vars = $this->docx->getVariables($templatePath);
-      $set = function (array &$out, string $key, $value) use ($vars): void {
-          if (in_array($key, $vars, true)) {
-              $out[$key] = (string)$value;
-          }
-      };
-      $mayus = fn($v): string => mb_strtoupper(trim((string)$v), 'UTF-8');
-
-      $replacements = [];
-      $set($replacements, 'NUM', (string)($poliza['numero_poliza'] ?? ''));
-      $set($replacements, 'FECHA_EMISION', (string)($poliza['fecha_poliza'] ?? date('Y-m-d')));
-      $set($replacements, 'ARRENDADOR', $mayus($poliza['nombre_arrendador'] ?? ''));
-      $set($replacements, 'INQUILINO', $mayus($this->fullName($poliza, 'nombre_inquilino', 'apellidop_inquilino', 'apellidom_inquilino')));
-      $set($replacements, 'INMUEBLE', $mayus($poliza['direccion_inmueble'] ?? ''));
-      $set($replacements, 'MONTO_RENTA', (string)($poliza['monto_renta'] ?? ''));
-      $set($replacements, 'VIGENCIA', (string)($poliza['vigencia'] ?? ''));
+      $replacements = $this->buildPolizaReplacements($poliza, $vars);
 
       $tmpDocx = tempnam(sys_get_temp_dir(), 'poliza_docx_') . '.docx';
       $this->docx->renderToFile($templatePath, $replacements, $tmpDocx);
@@ -539,6 +525,42 @@ final class PolizasController {
           'fiador_nombre' => $nombreFiador !== '' ? $nombreFiador : null,
           'obligado_nombre' => $nombreObligado !== '' ? $nombreObligado : null,
       ];
+  }
+
+  /** @param array<int,string> $vars */
+  private function buildPolizaReplacements(array $poliza, array $vars): array {
+      $set = function (array &$out, string $key, $value) use ($vars): void {
+          if (in_array($key, $vars, true)) {
+              $out[$key] = (string)$value;
+          }
+      };
+      $setOneOf = function (array &$out, array $keys, $value) use ($set): void {
+          foreach ($keys as $key) {
+              $set($out, $key, $value);
+          }
+      };
+      $mayus = fn($v): string => mb_strtoupper(trim((string)$v), 'UTF-8');
+
+      $arrendatario = $this->fullName($poliza, 'nombre_inquilino', 'apellidop_inquilino', 'apellidom_inquilino');
+      $obligado = $this->fullName($poliza, 'obligado_nombre', 'obligado_apellidop', 'obligado_apellidom');
+      $fiador = $this->fullName($poliza, 'fiador_nombre', 'fiador_apellidop', 'fiador_apellidom');
+
+      $out = [];
+      $setOneOf($out, ['NUM'], (string)($poliza['numero_poliza'] ?? ''));
+      $setOneOf($out, ['SERIE'], (string)($poliza['serie_poliza'] ?? ''));
+      $setOneOf($out, ['FECHA_EMISION'], (string)($poliza['fecha_poliza'] ?? date('Y-m-d')));
+      $setOneOf($out, ['ASESOR'], $mayus((string)($poliza['nombre_asesor'] ?? '')));
+      $setOneOf($out, ['ARRENDADOR'], $mayus((string)($poliza['nombre_arrendador'] ?? '')));
+      $setOneOf($out, ['ARRENDATARIO', 'INQUILINO'], $mayus($arrendatario));
+      $setOneOf($out, ['OBLIGADO_SOLIDARIO', 'OBLIGADO SOLIDARIO'], $mayus($obligado));
+      $setOneOf($out, ['FIADOR'], $mayus($fiador));
+      $setOneOf($out, ['TIPO_INMUEBLE'], $mayus((string)($poliza['tipo_inmueble'] ?? '')));
+      $setOneOf($out, ['DIRECCION_INMUEBLE', 'INMUEBLE'], $mayus((string)($poliza['direccion_inmueble'] ?? '')));
+      $setOneOf($out, ['MONTO_RENTA'], (string)($poliza['monto_renta'] ?? '0'));
+      $setOneOf($out, ['MONTO_POLIZA'], (string)($poliza['monto_poliza'] ?? '0'));
+      $setOneOf($out, ['VIGENCIA'], (string)($poliza['vigencia'] ?? ''));
+
+      return $out;
   }
 
   /** @param array<int,string> $vars */
