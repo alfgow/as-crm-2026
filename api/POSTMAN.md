@@ -1006,6 +1006,41 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 84. Descargar Póliza DOCX
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/docx/poliza`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Respuesta**:
+  - Binario `.docx` con descarga directa.
+
+### 85. Generar Contrato DOCX
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/polizas/numero/{{numero}}/docx/contrato`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+  - `Content-Type`: `application/json`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "tipo_contrato": "normal_pf"
+  }
+  ```
+- **Tipos soportados**:
+  - `normal_pf`
+  - `os_pf`
+  - `fiador_pf`
+  - `os_fiador_pf`
+  - `arr_pm_inq_pf`
+  - `inq_pm_arr_pf`
+  - `pmoral`
+  - `normal_pm`
+  - `os_pm`
+  - `fiador_pm`
+  - `os_fiador_pm`
+- **Respuesta**:
+  - Binario `.docx` con descarga directa.
+
 ## Financieros
 
 ### 83. Listar Financieros
