@@ -651,7 +651,7 @@ final class PolizasController {
 
       $fechaInicio = (string)($poliza['fecha_poliza'] ?? date('Y-m-d'));
       $fecha = new \DateTime($fechaInicio);
-      $fmtMes = new \IntlDateFormatter('es_MX', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, 'America/Mexico_City', \IntlDateFormatter::GREGORIAN, 'LLLL');
+      $fmtMes = new \IntlDateFormatter('es_MX', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, 'America/Mexico_City', \IntlDateFormatter::GREGORIAN, 'LLLL yyyy');
       $fmtLar = new \IntlDateFormatter('es_MX', \IntlDateFormatter::LONG, \IntlDateFormatter::NONE, 'America/Mexico_City', \IntlDateFormatter::GREGORIAN, "dd 'de' MMMM 'de' yyyy");
       $set($out, 'mes_renta', $mayus((string)$fmtMes->format($fecha)));
       $set($out, 'fecha_inicio', $mayus((string)$fmtLar->format($fecha)));
