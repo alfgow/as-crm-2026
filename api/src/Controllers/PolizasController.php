@@ -556,9 +556,9 @@ final class PolizasController {
       $setOneOf($out, ['FIADOR'], $mayus($fiador));
       $setOneOf($out, ['TIPO_INMUEBLE'], $mayus((string)($poliza['tipo_inmueble'] ?? '')));
       $setOneOf($out, ['DIRECCION_INMUEBLE', 'INMUEBLE'], $mayus((string)($poliza['direccion_inmueble'] ?? '')));
-      $setOneOf($out, ['MONTO_RENTA'], (string)($poliza['monto_renta'] ?? '0'));
-      $setOneOf($out, ['MONTO_POLIZA'], (string)($poliza['monto_poliza'] ?? '0'));
-      $setOneOf($out, ['VIGENCIA'], (string)($poliza['vigencia'] ?? ''));
+      $setOneOf($out, ['MONTO_RENTA'], $this->normalizarMonto((string)($poliza['monto_renta'] ?? '0')));
+      $setOneOf($out, ['MONTO_POLIZA'], $this->normalizarMonto((string)($poliza['monto_poliza'] ?? '0')));
+      $setOneOf($out, ['VIGENCIA'], $mayus((string)($poliza['vigencia'] ?? '')));
 
       return $out;
   }
@@ -584,8 +584,8 @@ final class PolizasController {
       $set($out, 'OBLIGADO SOLIDARIO', $mayus($obligado));
       $set($out, 'INMUEBLE', $mayus((string)($poliza['direccion_inmueble'] ?? '')));
       $set($out, 'VIGENCIA', $mayus((string)($poliza['vigencia'] ?? '')));
-      $set($out, 'monto_renta', (string)($poliza['monto_renta'] ?? '0'));
-      $set($out, 'monto_mantenimiento', (string)($poliza['monto_mantenimiento'] ?? '0'));
+      $set($out, 'monto_renta', $this->normalizarMonto((string)($poliza['monto_renta'] ?? '0')));
+      $set($out, 'monto_mantenimiento', $this->normalizarMonto((string)($poliza['monto_mantenimiento'] ?? '0')));
       $set($out, 'DIRECCION_ARRENDADOR', $mayus((string)($poliza['direccion_arrendador'] ?? '')));
       $set($out, 'NACIONALIDAD_ARRENDADOR', $mayus((string)($poliza['arrendador_nacionalidad'] ?? '')));
       $set($out, 'NACIONALIDAD_ARRENDATARIO', $mayus((string)($poliza['inquilino_nacionalidad'] ?? '')));
@@ -604,6 +604,35 @@ final class PolizasController {
 
   private function fullName(array $row, string $nombre, string $apPaterno, string $apMaterno): string {
       return trim(sprintf('%s %s %s', (string)($row[$nombre] ?? ''), (string)($row[$apPaterno] ?? ''), (string)($row[$apMaterno] ?? '')));
+  }
+
+  /** Normaliza "$3,800.00" | "3800,00" | "3800" y lo devuelve como moneda "$3,800.00" */
+  private function normalizarMonto(string $valor): string {
+      $v = trim($valor);
+      if ($v === '') {
+          return '$0.00';
+      }
+
+      $v = str_replace(['$', ' '], '', $v);
+
+      // Formato 3.800,50 -> 3800.50
+      if (preg_match('/^\d{1,3}(\.\d{3})+,\d{1,2}$/', $v) === 1) {
+          $v = str_replace('.', '', $v);
+          $v = str_replace(',', '.', $v);
+      } elseif (preg_match('/^\d+,\d{1,2}$/', $v) === 1) {
+          // Formato 3800,50 -> 3800.50
+          $v = str_replace(',', '.', $v);
+      } else {
+          // Quitar separadores de miles en formatos tipo 3,800.50
+          $v = str_replace(',', '', $v);
+      }
+
+      if (!is_numeric($v)) {
+          return '$0.00';
+      }
+
+      $monto = (float)$v;
+      return '$' . number_format($monto, 2, '.', ',');
   }
 
   private function templatePath(string $file): string {
