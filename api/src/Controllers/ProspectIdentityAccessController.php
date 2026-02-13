@@ -143,6 +143,8 @@ final class ProspectIdentityAccessController {
       return;
     }
 
+    $selfieS3Key = $this->prospects->findSelfieS3Key((string)$row['actor_type'], (int)$row['actor_id']);
+
     $res->json([
       'data' => [
         'valid' => true,
@@ -151,6 +153,7 @@ final class ProspectIdentityAccessController {
         'email' => $row['email'],
         'scope' => $row['scope'],
         'expires_at' => $row['expires_at'],
+        's3_key' => $selfieS3Key,
       ],
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],

@@ -85,6 +85,41 @@ final class ProspectAccessRepository {
     return $row ?: null;
   }
 
+  public function findSelfieS3Key(string $actorType, int $actorId): ?string {
+    if ($actorId <= 0) {
+      return null;
+    }
+
+    if ($actorType === 'inquilino') {
+      $sql = "SELECT s3_key
+              FROM inquilinos_archivos
+              WHERE id_inquilino = :actor_id
+                AND tipo = 'selfie'
+              ORDER BY id DESC
+              LIMIT 1";
+    } elseif ($actorType === 'arrendador') {
+      $sql = "SELECT s3_key
+              FROM arrendadores_archivos
+              WHERE id_arrendador = :actor_id
+                AND tipo = 'selfie'
+              ORDER BY id DESC
+              LIMIT 1";
+    } else {
+      return null;
+    }
+
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':actor_id' => $actorId]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+      return null;
+    }
+
+    $key = trim((string)($row['s3_key'] ?? ''));
+    return $key !== '' ? $key : null;
+  }
+
   private function findByEmail(string $email, string $actorType): ?array {
     if ($actorType === 'inquilino') {
       $stmt = $this->pdo->prepare(
