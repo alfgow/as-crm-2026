@@ -567,7 +567,9 @@ final class App {
     $polizas = new \App\Controllers\PolizasController($this->config, $polizaRepo, $inmuebleRepo);
 
     $financieroRepo = new \App\Repositories\FinancieroRepository($this->db);
+    $preVentaRepo = new \App\Repositories\PreVentaRepository($this->db);
     $financiero = new \App\Controllers\FinancieroController($financieroRepo);
+    $preVentas = new \App\Controllers\PreVentasController($preVentaRepo, $financieroRepo);
     $iaVentas = new \App\Controllers\IAVentasController($financieroRepo);
     $dashboard = new \App\Controllers\DashboardController($inquilinoRepo, $polizaRepo);
     $vencimientos = new \App\Controllers\VencimientosController($polizaRepo);
@@ -610,6 +612,67 @@ final class App {
     $this->router->add('GET', '/api/v1/financieros/ventas/export', function(Request $req, Response $res) use ($authMw, $financiero) {
       $ctx = $authMw->handle($req, $res);
       $financiero->exportarVentas($req, $res);
+    });
+
+    $this->router->add('GET', '/api/v1/pre-ventas', function(Request $req, Response $res) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->index($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/pre-ventas', function(Request $req, Response $res) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->store($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/pre-ventas/{id_preventa}/cerrar', function(Request $req, Response $res, array $params) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->cerrar($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/pre-ventas/{id_preventa}', function(Request $req, Response $res, array $params) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->cancelar($req, $res, $params);
+    });
+
+    // Alias de compatibilidad frontend
+    $this->router->add('GET', '/api/v1/financieros/preventas', function(Request $req, Response $res) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->index($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/financieros/preventas', function(Request $req, Response $res) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->store($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/financieros/preventas/{id_preventa}/cerrar', function(Request $req, Response $res, array $params) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->cerrar($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/financieros/preventas/{id_preventa}', function(Request $req, Response $res, array $params) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->cancelar($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/financieros/pre-ventas', function(Request $req, Response $res) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->index($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/financieros/pre-ventas', function(Request $req, Response $res) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->store($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/financieros/pre-ventas/{id_preventa}/cerrar', function(Request $req, Response $res, array $params) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->cerrar($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/financieros/pre-ventas/{id_preventa}', function(Request $req, Response $res, array $params) use ($authMw, $preVentas) {
+      $ctx = $authMw->handle($req, $res);
+      $preVentas->cancelar($req, $res, $params);
     });
 
     $this->router->add('GET', '/api/v1/dashboard', function(Request $req, Response $res) use ($authMw, $dashboard) {

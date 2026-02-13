@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS pre_ventas (
+  id_preventa INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_poliza INT UNSIGNED NOT NULL,
+  numero_poliza BIGINT UNSIGNED NOT NULL,
+  id_asesor INT UNSIGNED NULL,
+  id_usuario_creador INT UNSIGNED NULL,
+  canal_venta VARCHAR(120) NOT NULL,
+  concepto_venta VARCHAR(255) NOT NULL,
+  monto_venta DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  comision_asesor DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  ganancia_neta DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  estado_preventa TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  observaciones TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_preventa),
+  KEY idx_pre_ventas_estado (estado_preventa),
+  KEY idx_pre_ventas_created_at (created_at),
+  KEY idx_pre_ventas_numero_poliza (numero_poliza)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
