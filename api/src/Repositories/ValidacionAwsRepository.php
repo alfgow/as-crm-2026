@@ -138,7 +138,7 @@ final class ValidacionAwsRepository {
     ]);
   }
 
-  public function guardarValidacionLiveness(int $idInquilino, int $proceso, array $payload, string $resumen): void {
+  public function guardarValidacionLiveness(int $idInquilino, array $payload): void {
     $stmt = $this->pdo->prepare('SELECT id FROM inquilinos_validaciones WHERE id_inquilino = :id LIMIT 1');
     $stmt->execute([':id' => $idInquilino]);
     $row = $stmt->fetch();
@@ -147,15 +147,11 @@ final class ValidacionAwsRepository {
 
     if ($row && isset($row['id'])) {
       $sql = "UPDATE inquilinos_validaciones
-              SET proceso_validacion_rostro = :proceso,
-                  validacion_rostro_resumen = :resumen,
-                  validacion_rostro_json = :json,
+              SET liveness_process = :json,
                   updated_at = NOW()
               WHERE id_inquilino = :id";
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute([
-        ':proceso' => $proceso,
-        ':resumen' => $resumen,
         ':json' => $json,
         ':id' => $idInquilino,
       ]);
@@ -163,14 +159,12 @@ final class ValidacionAwsRepository {
     }
 
     $sql = "INSERT INTO inquilinos_validaciones
-              (id_inquilino, proceso_validacion_rostro, validacion_rostro_resumen, validacion_rostro_json)
+              (id_inquilino, liveness_process)
             VALUES
-              (:id, :proceso, :resumen, :json)";
+              (:id, :json)";
     $stmt = $this->pdo->prepare($sql);
     $stmt->execute([
       ':id' => $idInquilino,
-      ':proceso' => $proceso,
-      ':resumen' => $resumen,
       ':json' => $json,
     ]);
   }

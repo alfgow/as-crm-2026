@@ -138,8 +138,7 @@ final class LivenessController {
       'ts' => date(DATE_ATOM),
     ];
 
-    [$proceso, $resumen] = $this->resolveLivenessOutcome($livenessPassed, $faceMatch);
-    $this->validaciones->guardarValidacionLiveness($id, $proceso, $payload, $resumen);
+    $this->validaciones->guardarValidacionLiveness($id, $payload);
 
     $res->json([
       'data' => [
@@ -444,32 +443,6 @@ final class LivenessController {
       'face_match_reason' => (string)($faceMatch['reason'] ?? 'compare_faces_error'),
       'face_match_reason_message' => $reasonMessage,
     ];
-  }
-
-  /**
-   * @param array<string,mixed>|null $faceMatch
-   * @return array{0:int,1:string}
-   */
-  private function resolveLivenessOutcome(bool $livenessPassed, ?array $faceMatch): array {
-    if (!$livenessPassed) {
-      return [2, '⚠️ Liveness en revisión'];
-    }
-
-    if (!is_array($faceMatch) || !($faceMatch['attempted'] ?? false)) {
-      return [1, '☑️ Liveness aprobado'];
-    }
-
-    if (($faceMatch['request_ok'] ?? false) && ($faceMatch['matched'] ?? false)) {
-      $similarityText = number_format((float)($faceMatch['best_similarity'] ?? 0), 2);
-      return [1, "✅ Liveness + selfie coincide ({$similarityText}%)"];
-    }
-
-    if ($faceMatch['request_ok'] ?? false) {
-      $similarityText = number_format((float)($faceMatch['best_similarity'] ?? 0), 2);
-      return [0, "❌ Liveness OK pero selfie no coincide ({$similarityText}%)"];
-    }
-
-    return [2, '⚠️ Liveness aprobado; comparación con selfie pendiente'];
   }
 
   private function getBestSimilarity(array $body): float {
