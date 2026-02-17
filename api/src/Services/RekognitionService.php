@@ -10,6 +10,22 @@ final class RekognitionService {
     $this->config = $config;
   }
 
+
+  /**
+   * @param array<string,mixed> $sourceImage
+   * @param array<string,mixed> $targetImage
+   * @return array{ok:bool,status:int,body:mixed,raw:string,error?:string}
+   */
+  public function compareFaces(array $sourceImage, array $targetImage, float $similarityThreshold): array {
+    $payload = [
+      'SourceImage' => $sourceImage,
+      'TargetImage' => $targetImage,
+      'SimilarityThreshold' => $similarityThreshold,
+    ];
+
+    return $this->request('CompareFaces', $payload);
+  }
+
   /**
    * @return array{ok:bool,status:int,body:mixed,raw:string,error?:string}
    */
@@ -36,7 +52,7 @@ final class RekognitionService {
       'SimilarityThreshold' => $similarityThreshold,
     ];
 
-    return $this->request('CompareFaces', $payload);
+    return $this->compareFaces($payload['SourceImage'], $payload['TargetImage'], $similarityThreshold);
   }
 
   /**

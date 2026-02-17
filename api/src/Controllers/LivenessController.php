@@ -119,6 +119,8 @@ final class LivenessController {
     $confidence = $body['Confidence'] ?? null;
     $auditImages = $body['AuditImages'] ?? null;
     $referenceImage = $this->normalizeReferenceImage($body['ReferenceImage'] ?? null);
+    $faceMatch = $livenessPassed ? $this->compareReferenceImageVsSelfie($id, $referenceImage) : null;
+    $livenessDecision = $this->buildLivenessDecision($status, $livenessPassed, $faceMatch);
 
     $payload = [
       'session_id' => $sessionId,
@@ -126,14 +128,13 @@ final class LivenessController {
       'confidence' => $confidence,
       'audit_images' => $auditImages,
       'reference_image' => $referenceImage,
+      'face_match' => $faceMatch,
+      'decision' => $livenessDecision,
       'raw' => $body,
       'ts' => date(DATE_ATOM),
     ];
 
-    $proceso = $livenessPassed ? 1 : 2;
-    $resumen = $livenessPassed
-      ? '☑️ Liveness aprobado'
-      : '⚠️ Liveness en revisión';
+    [$proceso, $resumen] = $this->resolveLivenessOutcome($livenessPassed, $faceMatch);
     $this->validaciones->guardarValidacionLiveness($id, $proceso, $payload, $resumen);
 
     $res->json([
@@ -147,6 +148,9 @@ final class LivenessController {
         'confidence' => $confidence,
         'audit_images' => $auditImages,
         'reference_image' => $referenceImage,
+        'face_match' => $faceMatch,
+        'liveness_decision' => $livenessDecision,
+        'liveness_message' => $livenessDecision['message'],
       ],
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
@@ -180,6 +184,207 @@ final class LivenessController {
     }
 
     return $normalized === [] ? null : $normalized;
+  }
+
+  /**
+   * @param array<string,mixed>|null $referenceImage
+   * @return array<string,mixed>|null
+   */
+  private function compareReferenceImageVsSelfie(int $id, ?array $referenceImage): ?array {
+    if ($referenceImage === null) {
+      return [
+        'attempted' => false,
+        'request_ok' => false,
+        'matched' => false,
+        'reason' => 'reference_image_missing',
+        'reason_message' => 'AWS no devolvió ReferenceImage para esta sesión.',
+      ];
+    }
+
+    $selfies = $this->inquilinos->findArchivosByTipos($id, ['selfie']);
+    $selfieKey = trim((string)($selfies[0] ?? ''));
+    if ($selfieKey === '') {
+      return [
+        'attempted' => false,
+        'request_ok' => false,
+        'matched' => false,
+        'reason' => 'selfie_missing',
+        'reason_message' => 'No existe selfie registrada del inquilino para comparar.',
+      ];
+    }
+
+    $bucket = (string)($this->config['media']['s3']['buckets']['inquilinos'] ?? '');
+    if ($bucket === '') {
+      return [
+        'attempted' => false,
+        'request_ok' => false,
+        'matched' => false,
+        'reason' => 'selfie_bucket_missing',
+        'reason_message' => 'No está configurado el bucket de selfies en backend.',
+      ];
+    }
+
+    $sourceImage = $this->buildSourceImageForCompare($referenceImage);
+    if ($sourceImage === null) {
+      return [
+        'attempted' => false,
+        'request_ok' => false,
+        'matched' => false,
+        'reason' => 'reference_image_invalid',
+        'reason_message' => 'ReferenceImage no tiene formato usable (Bytes o S3Object).',
+      ];
+    }
+
+    $threshold = (float)($this->config['aws']['rekognition']['similarity_threshold'] ?? 85);
+    $threshold = max(0, min(100, $threshold));
+
+    $targetImage = [
+      'S3Object' => [
+        'Bucket' => $bucket,
+        'Name' => $selfieKey,
+      ],
+    ];
+
+    $compare = $this->rekognition->compareFaces($sourceImage, $targetImage, $threshold);
+    $responseBody = is_array($compare['body'] ?? null) ? $compare['body'] : [];
+    $bestSimilarity = $this->getBestSimilarity($responseBody);
+
+    $requestOk = (bool)($compare['ok'] ?? false);
+    $matched = $requestOk && $bestSimilarity >= $threshold;
+
+    return [
+      'attempted' => true,
+      'request_ok' => $requestOk,
+      'matched' => $matched,
+      'reason' => $requestOk ? ($matched ? 'match' : 'not_match') : 'compare_faces_error',
+      'reason_message' => $requestOk
+        ? ($matched ? 'La selfie coincide con la imagen de referencia.' : 'La selfie no coincide con la imagen de referencia.')
+        : 'No fue posible completar CompareFaces en Rekognition.',
+      'similarity_threshold' => $threshold,
+      'best_similarity' => $bestSimilarity,
+      'selfie_key' => $selfieKey,
+      'rekognition' => $compare,
+    ];
+  }
+
+  /**
+   * @param array<string,mixed> $referenceImage
+   * @return array<string,mixed>|null
+   */
+  private function buildSourceImageForCompare(array $referenceImage): ?array {
+    $bytesBase64 = trim((string)($referenceImage['bytes_base64'] ?? ''));
+    if ($bytesBase64 !== '') {
+      return ['Bytes' => $bytesBase64];
+    }
+
+    $s3Object = $referenceImage['s3_object'] ?? null;
+    if (is_array($s3Object)) {
+      return ['S3Object' => $s3Object];
+    }
+
+    return null;
+  }
+
+  /**
+   * @param array<string,mixed>|null $faceMatch
+   * @return array<string,mixed>
+   */
+  private function buildLivenessDecision(string $status, bool $livenessPassed, ?array $faceMatch): array {
+    if (!$livenessPassed) {
+      return [
+        'approved' => false,
+        'code' => $status === 'EXPIRED' ? 'liveness_expired' : 'liveness_failed',
+        'message' => $status === 'EXPIRED'
+          ? 'La validación de vida expiró; solicita una nueva sesión.'
+          : 'La validación de vida no fue exitosa.',
+      ];
+    }
+
+    if (!is_array($faceMatch) || !($faceMatch['attempted'] ?? false)) {
+      $reason = (string)($faceMatch['reason'] ?? 'compare_not_attempted');
+      $reasonMessage = (string)($faceMatch['reason_message'] ?? 'No se pudo ejecutar la comparación facial automática.');
+
+      return [
+        'approved' => true,
+        'code' => 'liveness_passed_compare_pending',
+        'message' => 'Liveness aprobado; comparación facial pendiente.',
+        'face_match_reason' => $reason,
+        'face_match_reason_message' => $reasonMessage,
+      ];
+    }
+
+    if (($faceMatch['request_ok'] ?? false) && ($faceMatch['matched'] ?? false)) {
+      $similarityText = number_format((float)($faceMatch['best_similarity'] ?? 0), 2);
+      return [
+        'approved' => true,
+        'code' => 'liveness_passed_face_match',
+        'message' => "Liveness aprobado y selfie coincidente ({$similarityText}%).",
+      ];
+    }
+
+    if ($faceMatch['request_ok'] ?? false) {
+      $similarityText = number_format((float)($faceMatch['best_similarity'] ?? 0), 2);
+      return [
+        'approved' => false,
+        'code' => 'liveness_passed_face_mismatch',
+        'message' => "Liveness aprobado pero selfie no coincide ({$similarityText}%).",
+      ];
+    }
+
+    $reasonMessage = (string)($faceMatch['reason_message'] ?? 'No se pudo ejecutar CompareFaces.');
+    return [
+      'approved' => true,
+      'code' => 'liveness_passed_compare_error',
+      'message' => 'Liveness aprobado; comparación facial con error técnico.',
+      'face_match_reason' => (string)($faceMatch['reason'] ?? 'compare_faces_error'),
+      'face_match_reason_message' => $reasonMessage,
+    ];
+  }
+
+  /**
+   * @param array<string,mixed>|null $faceMatch
+   * @return array{0:int,1:string}
+   */
+  private function resolveLivenessOutcome(bool $livenessPassed, ?array $faceMatch): array {
+    if (!$livenessPassed) {
+      return [2, '⚠️ Liveness en revisión'];
+    }
+
+    if (!is_array($faceMatch) || !($faceMatch['attempted'] ?? false)) {
+      return [1, '☑️ Liveness aprobado'];
+    }
+
+    if (($faceMatch['request_ok'] ?? false) && ($faceMatch['matched'] ?? false)) {
+      $similarityText = number_format((float)($faceMatch['best_similarity'] ?? 0), 2);
+      return [1, "✅ Liveness + selfie coincide ({$similarityText}%)"];
+    }
+
+    if ($faceMatch['request_ok'] ?? false) {
+      $similarityText = number_format((float)($faceMatch['best_similarity'] ?? 0), 2);
+      return [0, "❌ Liveness OK pero selfie no coincide ({$similarityText}%)"];
+    }
+
+    return [2, '⚠️ Liveness aprobado; comparación con selfie pendiente'];
+  }
+
+  private function getBestSimilarity(array $body): float {
+    $matches = $body['FaceMatches'] ?? [];
+    if (!is_array($matches)) {
+      return 0.0;
+    }
+
+    $best = 0.0;
+    foreach ($matches as $match) {
+      if (!is_array($match)) {
+        continue;
+      }
+      $similarity = (float)($match['Similarity'] ?? 0);
+      if ($similarity > $best) {
+        $best = $similarity;
+      }
+    }
+
+    return $best;
   }
 
   private function buildStartPayload(Request $req): array {
