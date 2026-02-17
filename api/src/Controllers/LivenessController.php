@@ -115,6 +115,7 @@ final class LivenessController {
 
     $body = is_array($result['body']) ? $result['body'] : [];
     $status = (string)($body['Status'] ?? '');
+    $livenessPassed = $status === 'SUCCEEDED';
     $confidence = $body['Confidence'] ?? null;
     $auditImages = $body['AuditImages'] ?? null;
 
@@ -127,8 +128,8 @@ final class LivenessController {
       'ts' => date(DATE_ATOM),
     ];
 
-    $proceso = $status === 'SUCCEEDED' ? 1 : 2;
-    $resumen = $status === 'SUCCEEDED'
+    $proceso = $livenessPassed ? 1 : 2;
+    $resumen = $livenessPassed
       ? '☑️ Liveness aprobado'
       : '⚠️ Liveness en revisión';
     $this->validaciones->guardarValidacionLiveness($id, $proceso, $payload, $resumen);
@@ -136,6 +137,9 @@ final class LivenessController {
     $res->json([
       'data' => [
         'ok' => true,
+        'request_ok' => true,
+        'liveness_passed' => $livenessPassed,
+        'liveness_status' => $status,
         'session_id' => $sessionId,
         'status' => $status,
         'confidence' => $confidence,

@@ -1475,6 +1475,9 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   {
     "data": {
       "ok": true,
+      "request_ok": true,
+      "liveness_passed": true,
+      "liveness_status": "SUCCEEDED",
       "session_id": "abc-session-123",
       "status": "SUCCEEDED",
       "confidence": 99.2,
@@ -1491,6 +1494,60 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     "errors": []
   }
   ```
+- **Diferencia entre éxito técnico y éxito funcional**:
+  - `request_ok`: indica si la llamada técnica al proveedor (AWS Rekognition) fue exitosa.
+    - `true`: AWS respondió correctamente (HTTP 200 del API interno).
+    - `false`: hubo un error técnico al consultar resultados (timeout, credenciales, error AWS, etc.).
+  - `liveness_passed`: indica el resultado funcional de la validación de vida.
+    - `true` cuando `liveness_status === "SUCCEEDED"`.
+    - `false` para otros estados (`FAILED`, `EXPIRED`, etc.).
+  - `liveness_status`: valor crudo devuelto por AWS en `Status`.
+- **Ejemplos funcionales**:
+  - `SUCCEEDED` (éxito técnico + éxito funcional):
+    ```json
+    {
+      "data": {
+        "ok": true,
+        "request_ok": true,
+        "liveness_passed": true,
+        "liveness_status": "SUCCEEDED",
+        "session_id": "abc-session-123",
+        "status": "SUCCEEDED"
+      },
+      "meta": { "requestId": "abc123" },
+      "errors": []
+    }
+    ```
+  - `FAILED` (éxito técnico + fallo funcional):
+    ```json
+    {
+      "data": {
+        "ok": true,
+        "request_ok": true,
+        "liveness_passed": false,
+        "liveness_status": "FAILED",
+        "session_id": "abc-session-123",
+        "status": "FAILED"
+      },
+      "meta": { "requestId": "abc123" },
+      "errors": []
+    }
+    ```
+  - `EXPIRED` (éxito técnico + sesión expirada):
+    ```json
+    {
+      "data": {
+        "ok": true,
+        "request_ok": true,
+        "liveness_passed": false,
+        "liveness_status": "EXPIRED",
+        "session_id": "abc-session-123",
+        "status": "EXPIRED"
+      },
+      "meta": { "requestId": "abc123" },
+      "errors": []
+    }
+    ```
 - **Fail Response (502)**:
   ```json
   {
