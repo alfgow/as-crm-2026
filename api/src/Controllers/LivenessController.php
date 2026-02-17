@@ -118,12 +118,14 @@ final class LivenessController {
     $livenessPassed = $status === 'SUCCEEDED';
     $confidence = $body['Confidence'] ?? null;
     $auditImages = $body['AuditImages'] ?? null;
+    $referenceImage = $this->normalizeReferenceImage($body['ReferenceImage'] ?? null);
 
     $payload = [
       'session_id' => $sessionId,
       'status' => $status,
       'confidence' => $confidence,
       'audit_images' => $auditImages,
+      'reference_image' => $referenceImage,
       'raw' => $body,
       'ts' => date(DATE_ATOM),
     ];
@@ -144,10 +146,40 @@ final class LivenessController {
         'status' => $status,
         'confidence' => $confidence,
         'audit_images' => $auditImages,
+        'reference_image' => $referenceImage,
       ],
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [],
     ]);
+  }
+
+  /**
+   * @return array<string,mixed>|null
+   */
+  private function normalizeReferenceImage(mixed $referenceImage): ?array {
+    if (!is_array($referenceImage)) {
+      return null;
+    }
+
+    $normalized = [];
+
+    if (isset($referenceImage['Bytes']) && is_string($referenceImage['Bytes']) && $referenceImage['Bytes'] !== '') {
+      $normalized['bytes_base64'] = $referenceImage['Bytes'];
+    }
+
+    if (isset($referenceImage['S3Object']) && is_array($referenceImage['S3Object'])) {
+      $normalized['s3_object'] = $referenceImage['S3Object'];
+    }
+
+    if (isset($referenceImage['BoundingBox']) && is_array($referenceImage['BoundingBox'])) {
+      $normalized['bounding_box'] = $referenceImage['BoundingBox'];
+    }
+
+    if (array_key_exists('Confidence', $referenceImage)) {
+      $normalized['confidence'] = $referenceImage['Confidence'];
+    }
+
+    return $normalized === [] ? null : $normalized;
   }
 
   private function buildStartPayload(Request $req): array {
