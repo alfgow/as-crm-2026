@@ -1481,6 +1481,20 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
       "session_id": "abc-session-123",
       "status": "SUCCEEDED",
       "confidence": 99.2,
+      "reference_image": {
+        "bytes_base64": "<base64>",
+        "s3_object": {
+          "Bucket": "mi-bucket",
+          "Name": "liveness/1/reference.jpg"
+        },
+        "bounding_box": {
+          "Width": 0.31,
+          "Height": 0.31,
+          "Left": 0.34,
+          "Top": 0.22
+        },
+        "confidence": 99.99
+      },
       "audit_images": [
         {
           "S3Object": {
@@ -1502,6 +1516,11 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     - `true` cuando `liveness_status === "SUCCEEDED"`.
     - `false` para otros estados (`FAILED`, `EXPIRED`, etc.).
   - `liveness_status`: valor crudo devuelto por AWS en `Status`.
+  - `reference_image`: imagen de referencia devuelta por AWS para encadenar validaciones posteriores (por ejemplo, comparación facial).
+    - `bytes_base64`: imagen en Base64 cuando AWS la devuelve embebida.
+    - `s3_object`: bucket/key cuando la imagen está en S3.
+    - `bounding_box`: recorte facial detectado por AWS.
+    - `confidence`: confianza asociada a la imagen de referencia.
 - **Ejemplos funcionales**:
   - `SUCCEEDED` (éxito técnico + éxito funcional):
     ```json
