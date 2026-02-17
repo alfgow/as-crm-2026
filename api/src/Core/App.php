@@ -758,6 +758,7 @@ final class App {
     $liveness = new \App\Controllers\LivenessController(
       $inquilinoRepo,
       $validacionAwsRepo,
+      $mediaCopy,
       $rekognitionService,
       $this->config
     );
