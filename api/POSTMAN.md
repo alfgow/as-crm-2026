@@ -1481,6 +1481,36 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
       "session_id": "abc-session-123",
       "status": "SUCCEEDED",
       "confidence": 99.2,
+      "reference_image": {
+        "bytes_base64": "<base64>",
+        "s3_object": {
+          "Bucket": "mi-bucket",
+          "Name": "liveness/1/reference.jpg"
+        },
+        "bounding_box": {
+          "Width": 0.31,
+          "Height": 0.31,
+          "Left": 0.34,
+          "Top": 0.22
+        },
+        "confidence": 99.99
+      },
+      "face_match": {
+        "attempted": true,
+        "request_ok": true,
+        "matched": true,
+        "reason": "match",
+        "reason_message": "La selfie coincide con la imagen de referencia.",
+        "similarity_threshold": 85,
+        "best_similarity": 98.4,
+        "selfie_key": "inquilinos/123/selfie.jpg"
+      },
+      "liveness_decision": {
+        "approved": true,
+        "code": "liveness_passed_face_match",
+        "message": "Liveness aprobado y selfie coincidente (98.40%)."
+      },
+      "liveness_message": "Liveness aprobado y selfie coincidente (98.40%).",
       "audit_images": [
         {
           "S3Object": {
@@ -1502,6 +1532,23 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     - `true` cuando `liveness_status === "SUCCEEDED"`.
     - `false` para otros estados (`FAILED`, `EXPIRED`, etc.).
   - `liveness_status`: valor crudo devuelto por AWS en `Status`.
+  - `reference_image`: imagen de referencia devuelta por AWS para encadenar validaciones posteriores (por ejemplo, comparación facial).
+    - `bytes_base64`: imagen en Base64 cuando AWS la devuelve embebida.
+    - `s3_object`: bucket/key cuando la imagen está en S3.
+    - `bounding_box`: recorte facial detectado por AWS.
+    - `confidence`: confianza asociada a la imagen de referencia.
+  - `face_match`: comparación automática entre `reference_image` y la selfie del inquilino (solo cuando `liveness_status = SUCCEEDED`).
+    - `attempted`: indica si se intentó la comparación.
+    - `request_ok`: éxito técnico del `CompareFaces`.
+    - `matched`: resultado funcional de coincidencia usando `similarity_threshold`.
+    - `reason`: código de motivo (`match`, `not_match`, `compare_faces_error`, `selfie_missing`, etc.).
+    - `reason_message`: mensaje legible del motivo de comparación.
+    - `best_similarity`: mejor similitud encontrada en Rekognition.
+  - `liveness_decision`: decisión final pensada para frontend.
+    - `approved`: bandera final (aprobado/no aprobado para continuar flujo).
+    - `code`: código estable de decisión (`liveness_passed_face_match`, `liveness_passed_face_mismatch`, `liveness_expired`, etc.).
+    - `message`: mensaje legible listo para UI.
+  - `liveness_message`: alias corto de `liveness_decision.message`.
 - **Ejemplos funcionales**:
   - `SUCCEEDED` (éxito técnico + éxito funcional):
     ```json
