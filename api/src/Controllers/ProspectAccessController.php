@@ -61,6 +61,8 @@ final class ProspectAccessController {
     $otpHash = password_hash($otp, PASSWORD_BCRYPT);
 
     $jti = $this->uuidv4();
+    $magicToken = $this->generateToken();
+    $magicTokenHash = hash('sha256', $magicToken);
     $now = time();
     $exp = $now + $ttlSeconds;
     $scope = 'self:update';
@@ -88,6 +90,7 @@ final class ProspectAccessController {
       'actor_id' => $actorId,
       'email' => $email,
       'jti' => $jti,
+      'magic_token_hash' => $magicTokenHash,
       'otp' => $otp,
       'otp_hash' => $otpHash,
       'token_hash' => $tokenHash,
@@ -95,7 +98,7 @@ final class ProspectAccessController {
       'expires_at' => $expiresAt,
     ]);
 
-    $magicLink = rtrim($this->frontendPublicBase(), '/') . '/auth/code?j=' . $jti;
+    $magicLink = rtrim($this->frontendPublicBase(), '/') . '/auth/code?t=' . rawurlencode($magicToken);
 
     $res->json([
       'data' => [
@@ -142,11 +145,70 @@ final class ProspectAccessController {
     ]);
   }
 
+  public function consume(Request $req, Response $res): void {
+    $body = $req->getJson() ?? [];
+    $token = trim((string)($body['token'] ?? ''));
+
+    if ($token === '') {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'Token requerido']],
+      ], 400);
+      return;
+    }
+
+    $tokenHash = hash('sha256', $token);
+    $row = $this->prospects->consumeMagicToken(
+      $tokenHash,
+      $this->clientIp($req),
+      (string)($req->getHeader('user-agent') ?? '')
+    );
+
+    if (!$row) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'unauthorized', 'message' => 'Token inválido, expirado o ya consumido']],
+      ], 401);
+      return;
+    }
+
+    $res->json([
+      'data' => [
+        'valid' => true,
+        'actor_type' => $row['actor_type'],
+        'actor_id' => (int)$row['actor_id'],
+        'email' => $row['email'],
+        'scope' => $row['scope'],
+        'expires_at' => $row['expires_at'],
+        'consumed_at' => $row['consumed_at'],
+      ],
+      'meta' => ['requestId' => $req->getRequestId()],
+      'errors' => [],
+    ]);
+  }
+
   private function uuidv4(): string {
     $d = random_bytes(16);
     $d[6] = chr((ord($d[6]) & 0x0f) | 0x40);
     $d[8] = chr((ord($d[8]) & 0x3f) | 0x80);
     return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($d), 4));
+  }
+
+  private function generateToken(): string {
+    return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+  }
+
+  private function clientIp(Request $req): ?string {
+    $xff = trim((string)($req->getHeader('x-forwarded-for') ?? ''));
+    if ($xff !== '') {
+      $parts = array_map('trim', explode(',', $xff));
+      return $parts[0] ?? null;
+    }
+
+    $remote = trim((string)($_SERVER['REMOTE_ADDR'] ?? ''));
+    return $remote !== '' ? $remote : null;
   }
 
   private function frontendPublicBase(): string {

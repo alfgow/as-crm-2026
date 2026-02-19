@@ -143,6 +143,11 @@ final class App {
       $prospectAccess->sendEmails($req, $res);
     });
 
+    $this->router->add('POST', '/api/v1/prospectos/code/consume', function(Request $req, Response $res) use ($authMw, $prospectAccess) {
+      $ctx = $authMw->handle($req, $res);
+      $prospectAccess->consume($req, $res);
+    });
+
     // Prospect identity validation (token + SES email)
     $this->router->add('POST', '/api/v1/prospectos/identidad/issue', function(Request $req, Response $res) use ($authMw, $prospectIdentity) {
       $ctx = $authMw->handle($req, $res);
