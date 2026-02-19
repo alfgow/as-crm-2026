@@ -602,6 +602,7 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
+- **Nota**: El `magic_link` de respuesta usa un token opaco en query param `t` (ej. `/auth/code?t=<token>`).
 
 ### 47. Enviar Emails a Prospectos
 - **Method**: `POST`
@@ -609,6 +610,22 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
+
+### 47d. Consumir Magic Link (One-Time)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/prospectos/code/consume`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "token": "<token_opaco_de_query_t>"
+  }
+  ```
+- **Comportamiento**:
+  - Valida `scope=self:update`, token no expirado y no consumido.
+  - Marca el token como consumido (`consumed_at`) para evitar reuso.
 
 ### 47a. Emitir Token Validación Identidad (Prospecto)
 - **Method**: `POST`
