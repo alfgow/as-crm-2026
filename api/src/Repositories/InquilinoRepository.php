@@ -19,7 +19,7 @@ final class InquilinoRepository {
    * @return array Lista de inquilinos
    */
   public function findAll(?string $search = null, ?string $status = null): array {
-    $sql = "SELECT id, nombre_inquilino, apellidop_inquilino, apellidom_inquilino, email, celular, status, fecha as fecha_registro
+    $sql = "SELECT id, tipo, nombre_inquilino, apellidop_inquilino, apellidom_inquilino, email, celular, status, fecha as fecha_registro
             FROM inquilinos";
             
     $params = [];
