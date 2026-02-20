@@ -124,8 +124,8 @@ final class App {
 
     // Prospect access (OTP + magic link)
     $prospectRepo = new \App\Repositories\ProspectAccessRepository($this->db);
-    $prospectAccess = new \App\Controllers\ProspectAccessController($this->config, $prospectRepo);
     $sesMailer = new \App\Services\SesEmailService($this->config);
+    $prospectAccess = new \App\Controllers\ProspectAccessController($this->config, $prospectRepo, $sesMailer);
     $prospectIdentity = new \App\Controllers\ProspectIdentityAccessController($this->config, $prospectRepo, $sesMailer);
 
     $this->router->add('GET', '/api/v1/prospectos/code', function(Request $req, Response $res) use ($authMw, $prospectAccess) {
