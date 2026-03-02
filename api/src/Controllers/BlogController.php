@@ -150,8 +150,16 @@ final class BlogController {
 
     $originalName = (string)($file['name'] ?? 'archivo');
     $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+    $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+    $baseName = strtolower(trim($baseName));
+    $baseName = preg_replace('/[^a-z0-9_-]+/', '-', $baseName ?? '') ?? '';
+    $baseName = trim($baseName, '-_');
+    if ($baseName === '') {
+      $baseName = 'imagen';
+    }
+
     $suffix = $extension !== '' ? '.' . strtolower($extension) : '';
-    $key = sprintf('blog/%d/%s%s', $id, bin2hex(random_bytes(16)), $suffix);
+    $key = sprintf('blog/%s_%s%s', uniqid(), $baseName, $suffix);
     $mimeType = (string)($file['type'] ?? 'application/octet-stream');
     $size = (int)($file['size'] ?? 0);
 
