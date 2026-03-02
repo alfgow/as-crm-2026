@@ -694,6 +694,17 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 50a. Subir Imagen Blog (multipart, server-side)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/blog/{{id_blog}}/archivos/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `portada | galeria | miniatura | otro`
+- **Notas**:
+  - Este endpoint sube el archivo al bucket de blog desde backend y actualiza `blog_posts.imagen_key`.
+
 ## Arrendadores (Endpoints adicionales)
 
 ### 51. Arrendadores por Asesor

@@ -183,7 +183,7 @@ final class App {
 
     // Blog
     $blogRepo = new \App\Repositories\BlogRepository($this->db);
-    $blog = new \App\Controllers\BlogController($blogRepo);
+    $blog = new \App\Controllers\BlogController($blogRepo, $mediaUpload);
 
     $this->router->add('GET', '/api/v1/blog', function(Request $req, Response $res) use ($authMw, $blog) {
       $ctx = $authMw->handle($req, $res);
@@ -203,6 +203,11 @@ final class App {
     $this->router->add('POST', '/api/v1/blog', function(Request $req, Response $res) use ($authMw, $blog) {
       $ctx = $authMw->handle($req, $res);
       $blog->store($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/blog/{id}/archivos/upload', function(Request $req, Response $res, array $params) use ($authMw, $blog) {
+      $ctx = $authMw->handle($req, $res);
+      $blog->uploadArchivo($req, $res, $params);
     });
 
     $this->router->add('PUT', '/api/v1/blog/{id}', function(Request $req, Response $res, array $params) use ($authMw, $blog) {
