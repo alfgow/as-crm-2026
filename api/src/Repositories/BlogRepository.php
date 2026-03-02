@@ -116,6 +116,25 @@ final class BlogRepository {
     return $st->rowCount() > 0;
   }
 
+  public function updateImageKey(int $id, string $imageKey): ?array {
+    $post = $this->findById($id);
+    if (!$post) {
+      return null;
+    }
+
+    $sql = "UPDATE blog_posts
+            SET imagen_key = :imagen_key,
+                updated_at = NOW()
+            WHERE id = :id";
+    $st = $this->pdo->prepare($sql);
+    $st->execute([
+      ':imagen_key' => $imageKey,
+      ':id' => $id,
+    ]);
+
+    return $this->findById($id);
+  }
+
   private function slugify(string $texto): string {
     $texto = trim($texto);
     $reemplazos = [
