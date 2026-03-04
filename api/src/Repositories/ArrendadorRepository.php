@@ -15,11 +15,15 @@ final class ArrendadorRepository {
     $params = [];
 
     if ($search !== null && $search !== '') {
-      $sql .= " WHERE nombre_arrendador LIKE :search
-                OR email LIKE :search
-                OR telefono LIKE :search
-                OR celular LIKE :search";
-      $params[':search'] = '%' . $search . '%';
+      $sql .= " WHERE nombre_arrendador LIKE :search_nombre
+                OR email LIKE :search_email
+                OR telefono LIKE :search_telefono
+                OR celular LIKE :search_celular";
+      $searchValue = '%' . $search . '%';
+      $params[':search_nombre'] = $searchValue;
+      $params[':search_email'] = $searchValue;
+      $params[':search_telefono'] = $searchValue;
+      $params[':search_celular'] = $searchValue;
     }
 
     $sql .= " ORDER BY id DESC";
