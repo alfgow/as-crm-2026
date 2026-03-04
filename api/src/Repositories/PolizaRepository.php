@@ -149,6 +149,7 @@ final class PolizaRepository {
   public function findVencimientosPorMesAnio(int $mes, int $anio, ?int $idAsesor = null): array {
     $sql = "SELECT p.*,
                    a.nombre_arrendador,
+                   a.telefono AS telefono_arrendador,
                    i.nombre_inquilino,
                    ase.nombre_asesor,
                    inm.direccion_inmueble
