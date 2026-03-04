@@ -18,7 +18,8 @@ final class ArrendadoresController {
   }
 
   public function index(Request $req, Response $res, array $ctx): void {
-    $all = $this->arrendadores->findAll();
+    $search = trim((string)($req->getQuery()['search'] ?? ''));
+    $all = $this->arrendadores->findAll($search !== '' ? $search : null);
 
     $res->json([
       'data' => $all,
