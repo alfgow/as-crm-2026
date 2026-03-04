@@ -1152,6 +1152,11 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/vencimientos`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Query params opcionales**:
+  - `mes` (1-12)
+  - `anio` (YYYY)
+  - `id_asesor` (entero positivo)
+- **Ejemplo**: `{{base_url}}/api/v1/vencimientos?mes=8&anio=2026&id_asesor=1`
 
 ## Validaciones legales / identidad / AWS / IA
 

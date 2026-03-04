@@ -18,11 +18,21 @@ final class VencimientosController {
     $query = $req->getQuery();
     $mes = isset($query['mes']) ? (int)$query['mes'] : null;
     $anio = isset($query['anio']) ? (int)$query['anio'] : null;
+    $idAsesor = isset($query['id_asesor']) ? (int)$query['id_asesor'] : null;
+
+    if ($idAsesor !== null && $idAsesor <= 0) {
+      $res->json([
+        'data' => null,
+        'meta' => ['requestId' => $req->getRequestId()],
+        'errors' => [['code' => 'bad_request', 'message' => 'id_asesor debe ser un entero positivo']],
+      ], 400);
+      return;
+    }
 
     if ($mes && $anio) {
-      $polizas = $this->polizas->findVencimientosPorMesAnio($mes, $anio);
+      $polizas = $this->polizas->findVencimientosPorMesAnio($mes, $anio, $idAsesor);
     } else {
-      $polizas = $this->polizas->findVencimientosProximos();
+      $polizas = $this->polizas->findVencimientosProximos($idAsesor);
 
       $mesActual = (int)date('n');
       $anioActual = (int)date('Y');
@@ -70,6 +80,7 @@ final class VencimientosController {
         'count' => count($polizas),
         'mes' => $mes,
         'anio' => $anio,
+        'id_asesor' => $idAsesor,
       ],
       'errors' => [],
     ]);
