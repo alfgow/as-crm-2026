@@ -695,6 +695,11 @@ final class App {
       $vencimientos->index($req, $res);
     });
 
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/polizas', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->byArrendador($req, $res, $params);
+    });
+
     $this->router->add('GET', '/api/v1/polizas', function(Request $req, Response $res) use ($authMw, $polizas) {
       $ctx = $authMw->handle($req, $res);
       $polizas->index($req, $res, $ctx);
