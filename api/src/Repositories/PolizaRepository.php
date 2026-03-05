@@ -28,6 +28,25 @@ final class PolizaRepository {
     return $st->fetchAll();
   }
 
+  public function findByArrendadorId(int $arrendadorId): array {
+    $sql = "SELECT p.*,
+                   a.nombre_arrendador,
+                   i.nombre_inquilino,
+                   ase.nombre_asesor,
+                   inm.direccion_inmueble
+            FROM polizas p
+            LEFT JOIN arrendadores a ON p.id_arrendador = a.id
+            LEFT JOIN inquilinos i ON p.id_inquilino = i.id
+            LEFT JOIN asesores ase ON p.id_asesor = ase.id
+            LEFT JOIN inmuebles inm ON p.id_inmueble = inm.id
+            WHERE p.id_arrendador = :arrendador_id
+            ORDER BY p.id_poliza DESC";
+
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':arrendador_id' => $arrendadorId]);
+    return $st->fetchAll();
+  }
+
   public function findById(int $id): ?array {
     $sql = "SELECT p.*,
                    a.nombre_arrendador,

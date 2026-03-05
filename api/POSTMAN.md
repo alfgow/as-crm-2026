@@ -809,6 +809,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 61a. Pólizas por Arrendador
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/polizas`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ### 62. Inmueble Info
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/inmuebles/{{id_inmueble}}/info`
