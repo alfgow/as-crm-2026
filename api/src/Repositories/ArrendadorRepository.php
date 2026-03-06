@@ -118,6 +118,50 @@ final class ArrendadorRepository {
     return $st->fetchAll();
   }
 
+
+  /**
+   * Obtiene SOLO los archivos de un arrendador
+   * Versión ligera para el endpoint de archivos presignados
+   *
+   * @param int $id ID del arrendador
+   * @param int|null $page Número de página (null para todos)
+   * @param int|null $perPage Items por página (null para todos)
+   * @return array|null ['items' => archivos, 'total' => total_count] o null si no existe
+   */
+  public function findArchivosPaginated(int $id, ?int $page = null, ?int $perPage = null): ?array {
+    $checkStmt = $this->pdo->prepare("SELECT id FROM arrendadores WHERE id = :id LIMIT 1");
+    $checkStmt->execute([':id' => $id]);
+    if (!$checkStmt->fetch()) {
+      return null;
+    }
+
+    $countStmt = $this->pdo->prepare("SELECT COUNT(*) FROM arrendadores_archivos WHERE id_arrendador = :id");
+    $countStmt->execute([':id' => $id]);
+    $total = (int)$countStmt->fetchColumn();
+
+    if ($total === 0) {
+      return ['items' => [], 'total' => 0];
+    }
+
+    if ($page !== null && $perPage !== null && $perPage > 0) {
+      $offset = ($page - 1) * $perPage;
+      $stmt = $this->pdo->prepare("SELECT * FROM arrendadores_archivos WHERE id_arrendador = :id ORDER BY id_archivo DESC LIMIT :limit OFFSET :offset");
+      $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+      $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
+      $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+    } else {
+      $stmt = $this->pdo->prepare("SELECT * FROM arrendadores_archivos WHERE id_arrendador = :id ORDER BY id_archivo DESC");
+      $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+    }
+
+    $stmt->execute();
+
+    return [
+      'items' => $stmt->fetchAll() ?: [],
+      'total' => $total,
+    ];
+  }
+
   public function findArchivosByArrendadorId(int $arrendadorId): array {
     $sql = "SELECT * FROM arrendadores_archivos WHERE id_arrendador = :id ORDER BY id_archivo DESC";
     $st = $this->pdo->prepare($sql);

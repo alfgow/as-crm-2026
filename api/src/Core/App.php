@@ -223,6 +223,7 @@ final class App {
     // Arrendadores CRUD
     $arrendadorRepo = new \App\Repositories\ArrendadorRepository($this->db);
     $arrendadores = new \App\Controllers\ArrendadoresController($this->config, $arrendadorRepo, $mediaUpload);
+    $arrendadorArchivos = new \App\Controllers\ArrendadorArchivosController($arrendadorRepo, $mediaRepo, $mediaPresign);
 
     $this->router->add('GET', '/api/v1/arrendadores', function(Request $req, Response $res) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
@@ -281,6 +282,10 @@ final class App {
     $this->router->add('GET', '/api/v1/arrendadores/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->archivos($req, $res, $params);
+    });
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/archivos-presignados', function(Request $req, Response $res, array $params) use ($authMw, $arrendadorArchivos) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadorArchivos->presignById($req, $res, $params);
     });
     $this->router->add('POST', '/api/v1/arrendadores/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
