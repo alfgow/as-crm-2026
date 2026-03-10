@@ -35,14 +35,15 @@ final class ProspectAccessRepository {
 
   public function insertToken(array $row): int {
     $sql = "INSERT INTO prospect_update_tokens
-            (actor_type, actor_id, email, jti, otp, otp_hash, token_hash, scope, expires_at)
-            VALUES (:actor_type, :actor_id, :email, :jti, :otp, :otp_hash, :token_hash, :scope, :expires_at)";
+            (actor_type, actor_id, email, jti, magic_token_hash, otp, otp_hash, token_hash, scope, expires_at)
+            VALUES (:actor_type, :actor_id, :email, :jti, :magic_token_hash, :otp, :otp_hash, :token_hash, :scope, :expires_at)";
     $stmt = $this->pdo->prepare($sql);
     $stmt->execute([
       ':actor_type' => $row['actor_type'],
       ':actor_id' => $row['actor_id'],
       ':email' => $row['email'],
       ':jti' => $row['jti'],
+      ':magic_token_hash' => $row['magic_token_hash'] ?? null,
       ':otp' => $row['otp'],
       ':otp_hash' => $row['otp_hash'],
       ':token_hash' => $row['token_hash'],
@@ -83,6 +84,87 @@ final class ProspectAccessRepository {
     $row = $stmt->fetch();
 
     return $row ?: null;
+  }
+
+  public function consumeMagicToken(string $tokenHash, ?string $ip = null, ?string $userAgent = null): ?array {
+    try {
+      $this->pdo->beginTransaction();
+
+      $sql = "SELECT id, actor_type, actor_id, email, scope, expires_at
+              FROM prospect_update_tokens
+              WHERE magic_token_hash = :magic_token_hash
+                AND scope = 'self:update'
+                AND expires_at > NOW()
+                AND consumed_at IS NULL
+              LIMIT 1
+              FOR UPDATE";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([':magic_token_hash' => $tokenHash]);
+      $row = $stmt->fetch();
+
+      if (!$row) {
+        $this->pdo->rollBack();
+        return null;
+      }
+
+      $upd = $this->pdo->prepare(
+        "UPDATE prospect_update_tokens
+         SET consumed_at = NOW(),
+             consumed_ip = :consumed_ip,
+             consumed_user_agent = :consumed_user_agent
+         WHERE id = :id"
+      );
+      $upd->execute([
+        ':consumed_ip' => $ip,
+        ':consumed_user_agent' => $userAgent !== null ? substr($userAgent, 0, 255) : null,
+        ':id' => $row['id'],
+      ]);
+
+      $this->pdo->commit();
+
+      $row['consumed_at'] = (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+      return $row;
+    } catch (\Throwable $e) {
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      throw $e;
+    }
+  }
+
+  public function findSelfieS3Key(string $actorType, int $actorId): ?string {
+    if ($actorId <= 0) {
+      return null;
+    }
+
+    if ($actorType === 'inquilino') {
+      $sql = "SELECT s3_key
+              FROM inquilinos_archivos
+              WHERE id_inquilino = :actor_id
+                AND tipo = 'selfie'
+              ORDER BY id DESC
+              LIMIT 1";
+    } elseif ($actorType === 'arrendador') {
+      $sql = "SELECT s3_key
+              FROM arrendadores_archivos
+              WHERE id_arrendador = :actor_id
+                AND tipo = 'selfie'
+              ORDER BY id DESC
+              LIMIT 1";
+    } else {
+      return null;
+    }
+
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':actor_id' => $actorId]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+      return null;
+    }
+
+    $key = trim((string)($row['s3_key'] ?? ''));
+    return $key !== '' ? $key : null;
   }
 
   private function findByEmail(string $email, string $actorType): ?array {

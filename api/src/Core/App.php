@@ -124,8 +124,8 @@ final class App {
 
     // Prospect access (OTP + magic link)
     $prospectRepo = new \App\Repositories\ProspectAccessRepository($this->db);
-    $prospectAccess = new \App\Controllers\ProspectAccessController($this->config, $prospectRepo);
     $sesMailer = new \App\Services\SesEmailService($this->config);
+    $prospectAccess = new \App\Controllers\ProspectAccessController($this->config, $prospectRepo, $sesMailer);
     $prospectIdentity = new \App\Controllers\ProspectIdentityAccessController($this->config, $prospectRepo, $sesMailer);
 
     $this->router->add('GET', '/api/v1/prospectos/code', function(Request $req, Response $res) use ($authMw, $prospectAccess) {
@@ -141,6 +141,11 @@ final class App {
     $this->router->add('POST', '/api/v1/prospectos/send-emails', function(Request $req, Response $res) use ($authMw, $prospectAccess) {
       $ctx = $authMw->handle($req, $res);
       $prospectAccess->sendEmails($req, $res);
+    });
+
+    $this->router->add('POST', '/api/v1/prospectos/code/consume', function(Request $req, Response $res) use ($authMw, $prospectAccess) {
+      $ctx = $authMw->handle($req, $res);
+      $prospectAccess->consume($req, $res);
     });
 
     // Prospect identity validation (token + SES email)
@@ -178,7 +183,7 @@ final class App {
 
     // Blog
     $blogRepo = new \App\Repositories\BlogRepository($this->db);
-    $blog = new \App\Controllers\BlogController($blogRepo);
+    $blog = new \App\Controllers\BlogController($blogRepo, $mediaUpload);
 
     $this->router->add('GET', '/api/v1/blog', function(Request $req, Response $res) use ($authMw, $blog) {
       $ctx = $authMw->handle($req, $res);
@@ -200,6 +205,11 @@ final class App {
       $blog->store($req, $res);
     });
 
+    $this->router->add('POST', '/api/v1/blog/{id}/archivos/upload', function(Request $req, Response $res, array $params) use ($authMw, $blog) {
+      $ctx = $authMw->handle($req, $res);
+      $blog->uploadArchivo($req, $res, $params);
+    });
+
     $this->router->add('PUT', '/api/v1/blog/{id}', function(Request $req, Response $res, array $params) use ($authMw, $blog) {
       $ctx = $authMw->handle($req, $res);
       $blog->update($req, $res, $params);
@@ -213,6 +223,7 @@ final class App {
     // Arrendadores CRUD
     $arrendadorRepo = new \App\Repositories\ArrendadorRepository($this->db);
     $arrendadores = new \App\Controllers\ArrendadoresController($this->config, $arrendadorRepo, $mediaUpload);
+    $arrendadorArchivos = new \App\Controllers\ArrendadorArchivosController($arrendadorRepo, $mediaRepo, $mediaPresign);
 
     $this->router->add('GET', '/api/v1/arrendadores', function(Request $req, Response $res) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
@@ -271,6 +282,10 @@ final class App {
     $this->router->add('GET', '/api/v1/arrendadores/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
       $arrendadores->archivos($req, $res, $params);
+    });
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/archivos-presignados', function(Request $req, Response $res, array $params) use ($authMw, $arrendadorArchivos) {
+      $ctx = $authMw->handle($req, $res);
+      $arrendadorArchivos->presignById($req, $res, $params);
     });
     $this->router->add('POST', '/api/v1/arrendadores/{id}/archivos', function(Request $req, Response $res, array $params) use ($authMw, $arrendadores) {
       $ctx = $authMw->handle($req, $res);
@@ -685,6 +700,11 @@ final class App {
       $vencimientos->index($req, $res);
     });
 
+    $this->router->add('GET', '/api/v1/arrendadores/{id}/polizas', function(Request $req, Response $res, array $params) use ($authMw, $polizas) {
+      $ctx = $authMw->handle($req, $res);
+      $polizas->byArrendador($req, $res, $params);
+    });
+
     $this->router->add('GET', '/api/v1/polizas', function(Request $req, Response $res) use ($authMw, $polizas) {
       $ctx = $authMw->handle($req, $res);
       $polizas->index($req, $res, $ctx);
@@ -758,6 +778,7 @@ final class App {
     $liveness = new \App\Controllers\LivenessController(
       $inquilinoRepo,
       $validacionAwsRepo,
+      $mediaCopy,
       $rekognitionService,
       $this->config
     );

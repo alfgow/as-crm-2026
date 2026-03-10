@@ -602,6 +602,7 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
+- **Nota**: El `magic_link` de respuesta usa un token opaco en query param `t` (ej. `/auth/code?t=<token>`).
 
 ### 47. Enviar Emails a Prospectos
 - **Method**: `POST`
@@ -609,6 +610,22 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
+
+### 47d. Consumir Magic Link (One-Time)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/prospectos/code/consume`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "token": "<token_opaco_de_query_t>"
+  }
+  ```
+- **Comportamiento**:
+  - Valida `scope=self:update`, token no expirado y no consumido.
+  - Marca el token como consumido (`consumed_at`) para evitar reuso.
 
 ### 47a. Emitir Token Validación Identidad (Prospecto)
 - **Method**: `POST`
@@ -676,6 +693,17 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/blog/slug/{{slug}}`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+
+### 50a. Subir Imagen Blog (multipart, server-side)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/blog/{{id_blog}}/archivos/upload`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Body** (form-data):
+  - `file`: **Archivo** (binary)
+  - `tipo`: `portada | galeria | miniatura | otro`
+- **Notas**:
+  - Este endpoint sube el archivo al bucket de blog desde backend y actualiza `blog_posts.imagen_key`.
 
 ## Arrendadores (Endpoints adicionales)
 
@@ -778,6 +806,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 ### 61. Inmuebles por Arrendador
 - **Method**: `GET`
 - **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/inmuebles`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### 61a. Pólizas por Arrendador
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/polizas`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
@@ -1124,6 +1158,11 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/api/v1/vencimientos`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+- **Query params opcionales**:
+  - `mes` (1-12)
+  - `anio` (YYYY)
+  - `id_asesor` (entero positivo)
+- **Ejemplo**: `{{base_url}}/api/v1/vencimientos?mes=8&anio=2026&id_asesor=1`
 
 ## Validaciones legales / identidad / AWS / IA
 
@@ -1475,9 +1514,42 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   {
     "data": {
       "ok": true,
+      "request_ok": true,
+      "liveness_passed": true,
+      "liveness_status": "SUCCEEDED",
       "session_id": "abc-session-123",
       "status": "SUCCEEDED",
       "confidence": 99.2,
+      "reference_image": {
+        "bytes_base64": "<base64>",
+        "s3_object": {
+          "Bucket": "mi-bucket",
+          "Name": "liveness/1/reference.jpg"
+        },
+        "bounding_box": {
+          "Width": 0.31,
+          "Height": 0.31,
+          "Left": 0.34,
+          "Top": 0.22
+        },
+        "confidence": 99.99
+      },
+      "face_match": {
+        "attempted": true,
+        "request_ok": true,
+        "matched": true,
+        "reason": "match",
+        "reason_message": "La selfie coincide con la imagen de referencia.",
+        "similarity_threshold": 85,
+        "best_similarity": 98.4,
+        "selfie_key": "inquilinos/123/selfie.jpg"
+      },
+      "liveness_decision": {
+        "approved": true,
+        "code": "liveness_passed_face_match",
+        "message": "Liveness aprobado y selfie coincidente (98.40%)."
+      },
+      "liveness_message": "Liveness aprobado y selfie coincidente (98.40%).",
       "audit_images": [
         {
           "S3Object": {
@@ -1491,6 +1563,77 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
     "errors": []
   }
   ```
+- **Diferencia entre éxito técnico y éxito funcional**:
+  - `request_ok`: indica si la llamada técnica al proveedor (AWS Rekognition) fue exitosa.
+    - `true`: AWS respondió correctamente (HTTP 200 del API interno).
+    - `false`: hubo un error técnico al consultar resultados (timeout, credenciales, error AWS, etc.).
+  - `liveness_passed`: indica el resultado funcional de la validación de vida.
+    - `true` cuando `liveness_status === "SUCCEEDED"`.
+    - `false` para otros estados (`FAILED`, `EXPIRED`, etc.).
+  - `liveness_status`: valor crudo devuelto por AWS en `Status`.
+  - `reference_image`: imagen de referencia devuelta por AWS para encadenar validaciones posteriores (por ejemplo, comparación facial).
+    - `bytes_base64`: imagen en Base64 cuando AWS la devuelve embebida.
+    - `s3_object`: bucket/key cuando la imagen está en S3.
+    - `bounding_box`: recorte facial detectado por AWS.
+    - `confidence`: confianza asociada a la imagen de referencia.
+  - `face_match`: comparación automática entre `reference_image` y la selfie del inquilino (solo cuando `liveness_status = SUCCEEDED`).
+    - `attempted`: indica si se intentó la comparación.
+    - `request_ok`: éxito técnico del `CompareFaces`.
+    - `matched`: resultado funcional de coincidencia usando `similarity_threshold`.
+    - `reason`: código de motivo (`match`, `not_match`, `compare_faces_error`, `selfie_missing`, etc.).
+    - `reason_message`: mensaje legible del motivo de comparación.
+    - `best_similarity`: mejor similitud encontrada en Rekognition.
+  - `liveness_decision`: decisión final pensada para frontend.
+    - `approved`: bandera final (aprobado/no aprobado para continuar flujo).
+    - `code`: código estable de decisión (`liveness_passed_face_match`, `liveness_passed_face_mismatch`, `liveness_expired`, etc.).
+    - `message`: mensaje legible listo para UI.
+  - `liveness_message`: alias corto de `liveness_decision.message`.
+- **Ejemplos funcionales**:
+  - `SUCCEEDED` (éxito técnico + éxito funcional):
+    ```json
+    {
+      "data": {
+        "ok": true,
+        "request_ok": true,
+        "liveness_passed": true,
+        "liveness_status": "SUCCEEDED",
+        "session_id": "abc-session-123",
+        "status": "SUCCEEDED"
+      },
+      "meta": { "requestId": "abc123" },
+      "errors": []
+    }
+    ```
+  - `FAILED` (éxito técnico + fallo funcional):
+    ```json
+    {
+      "data": {
+        "ok": true,
+        "request_ok": true,
+        "liveness_passed": false,
+        "liveness_status": "FAILED",
+        "session_id": "abc-session-123",
+        "status": "FAILED"
+      },
+      "meta": { "requestId": "abc123" },
+      "errors": []
+    }
+    ```
+  - `EXPIRED` (éxito técnico + sesión expirada):
+    ```json
+    {
+      "data": {
+        "ok": true,
+        "request_ok": true,
+        "liveness_passed": false,
+        "liveness_status": "EXPIRED",
+        "session_id": "abc-session-123",
+        "status": "EXPIRED"
+      },
+      "meta": { "requestId": "abc123" },
+      "errors": []
+    }
+    ```
 - **Fail Response (502)**:
   ```json
   {

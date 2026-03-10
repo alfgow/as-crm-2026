@@ -1,0 +1,8 @@
+{
+  "name": "as-crm-2026",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:liveness-mapper": "node --test client-next/tests/mapLivenessResultToUiState.test.js"
+  }
+}

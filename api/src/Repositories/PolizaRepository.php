@@ -28,6 +28,25 @@ final class PolizaRepository {
     return $st->fetchAll();
   }
 
+  public function findByArrendadorId(int $arrendadorId): array {
+    $sql = "SELECT p.*,
+                   a.nombre_arrendador,
+                   i.nombre_inquilino,
+                   ase.nombre_asesor,
+                   inm.direccion_inmueble
+            FROM polizas p
+            LEFT JOIN arrendadores a ON p.id_arrendador = a.id
+            LEFT JOIN inquilinos i ON p.id_inquilino = i.id
+            LEFT JOIN asesores ase ON p.id_asesor = ase.id
+            LEFT JOIN inmuebles inm ON p.id_inmueble = inm.id
+            WHERE p.id_arrendador = :arrendador_id
+            ORDER BY p.id_poliza DESC";
+
+    $st = $this->pdo->prepare($sql);
+    $st->execute([':arrendador_id' => $arrendadorId]);
+    return $st->fetchAll();
+  }
+
   public function findById(int $id): ?array {
     $sql = "SELECT p.*,
                    a.nombre_arrendador,
@@ -132,7 +151,7 @@ final class PolizaRepository {
     $this->pdo->prepare($sql)->execute([':id' => $id]);
   }
 
-  public function findVencimientosProximos(): array {
+  public function findVencimientosProximos(?int $idAsesor = null): array {
     $mesActual = (int)date('n');
     $anioActual = (int)date('Y');
 
@@ -143,12 +162,13 @@ final class PolizaRepository {
       $anioSiguiente++;
     }
 
-    return $this->findVencimientosPorMesAnio($mesSiguiente, $anioSiguiente);
+    return $this->findVencimientosPorMesAnio($mesSiguiente, $anioSiguiente, $idAsesor);
   }
 
-  public function findVencimientosPorMesAnio(int $mes, int $anio): array {
+  public function findVencimientosPorMesAnio(int $mes, int $anio, ?int $idAsesor = null): array {
     $sql = "SELECT p.*,
                    a.nombre_arrendador,
+                   a.telefono AS telefono_arrendador,
                    i.nombre_inquilino,
                    ase.nombre_asesor,
                    inm.direccion_inmueble
@@ -159,14 +179,24 @@ final class PolizaRepository {
             LEFT JOIN inmuebles inm ON p.id_inmueble = inm.id
             WHERE p.estado = :estado
               AND p.mes_vencimiento = :mes
-              AND p.year_vencimiento = :anio
-            ORDER BY p.fecha_poliza ASC";
-    $st = $this->pdo->prepare($sql);
-    $st->execute([
+              AND p.year_vencimiento = :anio";
+
+    $params = [
       ':estado' => '1',
       ':mes' => $mes,
       ':anio' => $anio,
-    ]);
+    ];
+
+    if ($idAsesor !== null) {
+      $sql .= "\n              AND p.id_asesor = :id_asesor";
+      $params[':id_asesor'] = $idAsesor;
+    }
+
+    $sql .= "
+            ORDER BY p.fecha_poliza ASC";
+
+    $st = $this->pdo->prepare($sql);
+    $st->execute($params);
     return $st->fetchAll();
   }
 
