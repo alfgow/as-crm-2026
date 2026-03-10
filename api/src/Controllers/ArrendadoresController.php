@@ -18,7 +18,8 @@ final class ArrendadoresController {
   }
 
   public function index(Request $req, Response $res, array $ctx): void {
-    $all = $this->arrendadores->findAll();
+    $search = trim((string)($req->getQuery()['search'] ?? ''));
+    $all = $this->arrendadores->findAll($search !== '' ? $search : null);
 
     $res->json([
       'data' => $all,
@@ -479,9 +480,207 @@ final class ArrendadoresController {
       ]);
   }
 
+  public function updateAsesor(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+      $asesorId = (int)($body['id_asesor'] ?? 0);
+
+      if ($id <= 0 || $asesorId <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and id_asesor are required']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $this->arrendadores->update($id, ['id_asesor' => $asesorId]);
+      $updated = $this->arrendadores->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateDatosPersonales(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      $allowed = [
+          'nombre_arrendador',
+          'nombre_representante',
+          'email',
+          'device_id',
+          'celular',
+          'telefono',
+          'direccion_arrendador',
+          'estadocivil',
+          'rfc',
+          'nacionalidad',
+          'tipo_id',
+          'num_id',
+          'slug',
+      ];
+
+      $payload = [];
+      foreach ($allowed as $field) {
+          if (array_key_exists($field, $body)) {
+              $value = $body[$field];
+              $payload[$field] = is_string($value) ? trim($value) : $value;
+          }
+      }
+
+      if (empty($payload)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'No data to update']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $this->arrendadores->update($id, $payload);
+      $updated = $this->arrendadores->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateInfoBancaria(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
+
+      $allowed = ['banco', 'cuenta', 'clabe'];
+      $payload = [];
+      foreach ($allowed as $field) {
+          if (array_key_exists($field, $body)) {
+              $value = $body[$field];
+              $payload[$field] = is_string($value) ? trim($value) : $value;
+          }
+      }
+
+      if (empty($payload)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'No data to update']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $this->arrendadores->update($id, $payload);
+      $updated = $this->arrendadores->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
+  public function updateComentarios(Request $req, Response $res, array $params): void {
+      $id = (int)($params['id'] ?? 0);
+      $body = $req->getJson();
+
+      if ($id <= 0 || !array_key_exists('comentarios', $body)) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'id and comentarios are required']]
+          ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
+      }
+
+      $comentarios = $body['comentarios'];
+      if (is_string($comentarios)) {
+          $comentarios = trim($comentarios);
+      }
+
+      $this->arrendadores->update($id, ['comentarios' => $comentarios]);
+      $updated = $this->arrendadores->findById($id);
+
+      $res->json([
+          'data' => $updated,
+          'meta' => ['requestId' => $req->getRequestId()],
+          'errors' => []
+      ]);
+  }
+
   public function update(Request $req, Response $res, array $params): void {
       $id = (int)($params['id'] ?? 0);
       $body = $req->getJson();
+
+      if ($id <= 0) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'bad_request', 'message' => 'Invalid arrendador id']]
+          ], 400);
+          return;
+      }
 
       if (empty($body)) {
           $res->json([
@@ -489,6 +688,17 @@ final class ArrendadoresController {
               'meta' => ['requestId' => $req->getRequestId()],
               'errors' => [['code' => 'bad_request', 'message' => 'No data to update']]
           ], 400);
+          return;
+      }
+
+      $arrendador = $this->arrendadores->findById($id);
+      if (!$arrendador) {
+          $res->json([
+              'data' => null,
+              'meta' => ['requestId' => $req->getRequestId()],
+              'errors' => [['code' => 'not_found', 'message' => 'Arrendador not found']]
+          ], 404);
+          return;
       }
 
       $this->arrendadores->update($id, $body);

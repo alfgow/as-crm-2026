@@ -10,9 +10,26 @@ final class ArrendadorRepository {
     $this->pdo = $db->pdo();
   }
 
-  public function findAll(): array {
-    $sql = "SELECT * FROM arrendadores ORDER BY id DESC";
-    $st = $this->pdo->query($sql);
+  public function findAll(?string $search = null): array {
+    $sql = "SELECT * FROM arrendadores";
+    $params = [];
+
+    if ($search !== null && $search !== '') {
+      $sql .= " WHERE nombre_arrendador LIKE :search_nombre
+                OR email LIKE :search_email
+                OR telefono LIKE :search_telefono
+                OR celular LIKE :search_celular";
+      $searchValue = '%' . $search . '%';
+      $params[':search_nombre'] = $searchValue;
+      $params[':search_email'] = $searchValue;
+      $params[':search_telefono'] = $searchValue;
+      $params[':search_celular'] = $searchValue;
+    }
+
+    $sql .= " ORDER BY id DESC";
+
+    $st = $this->pdo->prepare($sql);
+    $st->execute($params);
     return $st->fetchAll();
   }
 
