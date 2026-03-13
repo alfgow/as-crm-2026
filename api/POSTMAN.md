@@ -1784,6 +1784,10 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Content-Type`: `application/json`
   - `Authorization`: `Bearer <Token>`
+- **Nota de autenticacion**:
+  - El router no fuerza `Bearer` en esta ruta.
+  - Si la configuracion del callback usa HMAC, el request puede validarse solo con esa firma.
+  - Si tu integracion ya usa un token de sistema, puedes seguir enviando `Authorization: Bearer <Token>`.
 - **Body** (Raw JSON):
   ```json
   {
@@ -1945,5 +1949,273 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 ### 121. Eliminar Archivo de Run
 - **Method**: `DELETE`
 - **URL**: `{{base_url}}/api/v1/income-validation/run-files/{{id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Endpoints adicionales incorporados desde el router
+
+### A1. Listar Usuarios
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/users`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A2. Eliminar API Client
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/api-clients/{{client_id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A3. Eliminar Integrations Client (Alias)
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/integrations/clients/{{client_id}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A4. Listar Blog
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/blog`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A5. Obtener Blog por ID
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/blog/{{id_blog}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A6. Crear Blog
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/blog`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A7. Actualizar Blog
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/blog/{{id_blog}}`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A8. Eliminar Blog
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/blog/{{id_blog}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A9. Arrendador Detalle
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/detalle`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A10. Archivos Presignados de Arrendador
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/arrendadores/{{id_arrendador}}/archivos-presignados`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A11. Eliminar Asesores en Bloque
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/asesores/delete-bulk`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "ids": [1, 2, 3]
+  }
+  ```
+
+### A12. Eliminar Inmuebles en Bloque
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inmuebles/delete-bulk`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "ids": [10, 11, 12]
+  }
+  ```
+
+### A13. Listar Archivos de Inquilino por ID
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/inquilinos/{{id_inquilino}}/archivos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A14. Eliminar Inquilinos en Bloque
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/inquilinos/delete-bulk`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "ids": [100, 101, 102]
+  }
+  ```
+
+## Pre-ventas
+
+### A15. Listar Pre-ventas
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/pre-ventas`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A16. Crear Pre-venta
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/pre-ventas`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A17. Cerrar Pre-venta
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/pre-ventas/{{id_preventa}}/cerrar`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A18. Eliminar Pre-venta
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/pre-ventas/{{id_preventa}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## Financieros / Pre-ventas
+
+### A19. Listar Financieros Preventas
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/financieros/preventas`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Alias del modulo de preventas financieras.
+
+### A20. Crear Financiero Preventa
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/financieros/preventas`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A21. Cerrar Financiero Preventa
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/financieros/preventas/{{id_preventa}}/cerrar`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A22. Eliminar Financiero Preventa
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/financieros/preventas/{{id_preventa}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A23. Listar Financieros Pre-ventas
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/financieros/pre-ventas`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Alias con guion del mismo modulo financiero de preventas.
+
+### A24. Crear Financiero Pre-venta
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/financieros/pre-ventas`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A25. Cerrar Financiero Pre-venta
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/financieros/pre-ventas/{{id_preventa}}/cerrar`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+
+### A26. Eliminar Financiero Pre-venta
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/financieros/pre-ventas/{{id_preventa}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+## IA (Rutas alias legacy)
+
+### A27. IA Ventas (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+- **Description**: Alias legacy de `{{base_url}}/api/v1/ia/ventas`.
+
+### A28. IA Ventas Total (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/total`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A29. IA Ventas por Canal (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/canal`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A30. IA Ventas por Modelo (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/modelo`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A31. IA Ventas por Fecha (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/fecha`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A32. IA Ventas por Usuario (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/usuario`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A33. IA Ventas por Proceso (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/proceso`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A34. IA Ventas por Proceso y Periodo (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/proceso/periodo`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A35. IA Ventas por Proceso y Usuario (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/proceso/usuario`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A36. IA Ventas por Canal y Periodo (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/ventas/canal/periodo`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A37. IA Modelos (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/modelos`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A38. IA Modelos Disponibles (alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/ia/modelos-disponibles`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
