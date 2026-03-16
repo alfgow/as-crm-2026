@@ -88,7 +88,7 @@ final class ProspectAccessController {
     $tokenHash = hash('sha256', $tokenRaw);
     $expiresAt = (new \DateTimeImmutable("@{$exp}"))->format('Y-m-d H:i:s');
 
-    $this->prospects->insertToken([
+    $this->prospects->replaceSelfUpdateTokenByEmail([
       'actor_type' => $actorType,
       'actor_id' => $actorId,
       'email' => $email,

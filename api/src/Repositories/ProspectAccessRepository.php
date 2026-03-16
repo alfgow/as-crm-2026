@@ -34,24 +34,32 @@ final class ProspectAccessRepository {
   }
 
   public function insertToken(array $row): int {
-    $sql = "INSERT INTO prospect_update_tokens
-            (actor_type, actor_id, email, jti, magic_token_hash, otp, otp_hash, token_hash, scope, expires_at)
-            VALUES (:actor_type, :actor_id, :email, :jti, :magic_token_hash, :otp, :otp_hash, :token_hash, :scope, :expires_at)";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([
-      ':actor_type' => $row['actor_type'],
-      ':actor_id' => $row['actor_id'],
-      ':email' => $row['email'],
-      ':jti' => $row['jti'],
-      ':magic_token_hash' => $row['magic_token_hash'] ?? null,
-      ':otp' => $row['otp'],
-      ':otp_hash' => $row['otp_hash'],
-      ':token_hash' => $row['token_hash'],
-      ':scope' => $row['scope'],
-      ':expires_at' => $row['expires_at'],
-    ]);
+    return $this->persistToken($row);
+  }
 
-    return (int)$this->pdo->lastInsertId();
+  public function replaceSelfUpdateTokenByEmail(array $row): int {
+    try {
+      $this->pdo->beginTransaction();
+
+      $delete = $this->pdo->prepare(
+        "DELETE FROM prospect_update_tokens
+         WHERE email = :email
+           AND scope = 'self:update'"
+      );
+      $delete->execute([
+        ':email' => strtolower(trim((string)$row['email'])),
+      ]);
+
+      $id = $this->persistToken($row);
+      $this->pdo->commit();
+
+      return $id;
+    } catch (\Throwable $e) {
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      throw $e;
+    }
   }
 
   public function insertIdentityToken(array $row): int {
@@ -189,5 +197,26 @@ final class ProspectAccessRepository {
     $row = $stmt->fetch();
 
     return $row ?: null;
+  }
+
+  private function persistToken(array $row): int {
+    $sql = "INSERT INTO prospect_update_tokens
+            (actor_type, actor_id, email, jti, magic_token_hash, otp, otp_hash, token_hash, scope, expires_at)
+            VALUES (:actor_type, :actor_id, :email, :jti, :magic_token_hash, :otp, :otp_hash, :token_hash, :scope, :expires_at)";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([
+      ':actor_type' => $row['actor_type'],
+      ':actor_id' => $row['actor_id'],
+      ':email' => strtolower(trim((string)$row['email'])),
+      ':jti' => $row['jti'],
+      ':magic_token_hash' => $row['magic_token_hash'] ?? null,
+      ':otp' => $row['otp'],
+      ':otp_hash' => $row['otp_hash'],
+      ':token_hash' => $row['token_hash'],
+      ':scope' => $row['scope'],
+      ':expires_at' => $row['expires_at'],
+    ]);
+
+    return (int)$this->pdo->lastInsertId();
   }
 }
