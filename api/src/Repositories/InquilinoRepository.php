@@ -79,10 +79,11 @@ final class InquilinoRepository {
     // 6. Validaciones
     $main['validaciones'] = $this->fetchOne('inquilinos_validaciones', $id);
 
-    // 7. Archivos (List)
-    $stmtFiles = $this->pdo->prepare("SELECT * FROM inquilinos_archivos WHERE id_inquilino = :id");
-    $stmtFiles->execute([':id' => $id]);
-    $main['archivos'] = $stmtFiles->fetchAll();
+    // 7. Referencias (List)
+    $main['referencias'] = $this->fetchAllByInquilino('inquilinos_referencias', $id);
+
+    // 8. Archivos (List)
+    $main['archivos'] = $this->fetchAllByInquilino('inquilinos_archivos', $id);
 
     return $main;
   }
@@ -138,6 +139,12 @@ final class InquilinoRepository {
       $st->execute([':id' => $idInquilino]);
       $res = $st->fetch();
       return $res ?: null;
+  }
+
+  private function fetchAllByInquilino(string $table, int $idInquilino): array {
+      $st = $this->pdo->prepare("SELECT * FROM $table WHERE id_inquilino = :id");
+      $st->execute([':id' => $idInquilino]);
+      return $st->fetchAll() ?: [];
   }
 
   // --- CRUD Main Inquilino ---
@@ -225,6 +232,7 @@ final class InquilinoRepository {
     try {
       foreach ([
         'inquilinos_archivos',
+        'inquilinos_referencias',
         'inquilinos_validaciones',
         'inquilinos_historial_vivienda',
         'inquilinos_fiador',
