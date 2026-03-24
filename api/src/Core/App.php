@@ -81,16 +81,27 @@ final class App {
     });
 
     // API Clients
-    $apiClients = new \App\Controllers\ApiClientsController($apiClientsRepo);
+    $apiClientScopeCatalog = new \App\Services\ApiClientScopeCatalog();
+    $apiClients = new \App\Controllers\ApiClientsController($apiClientsRepo, $apiClientScopeCatalog);
 
     $this->router->add('GET', '/api/v1/api-clients', function(Request $req, Response $res) use ($authMw, $apiClients) {
       $ctx = $authMw->handle($req, $res);
       $apiClients->index($req, $res, $ctx);
     });
 
+    $this->router->add('GET', '/api/v1/api-clients/scopes', function(Request $req, Response $res) use ($authMw, $apiClients) {
+      $ctx = $authMw->handle($req, $res);
+      $apiClients->scopes($req, $res);
+    });
+
     $this->router->add('GET', '/api/v1/integrations/clients', function(Request $req, Response $res) use ($authMw, $apiClients) {
       $ctx = $authMw->handle($req, $res);
       $apiClients->index($req, $res, $ctx);
+    });
+
+    $this->router->add('GET', '/api/v1/integrations/clients/scopes', function(Request $req, Response $res) use ($authMw, $apiClients) {
+      $ctx = $authMw->handle($req, $res);
+      $apiClients->scopes($req, $res);
     });
 
     $this->router->add('POST', '/api/v1/api-clients', function(Request $req, Response $res) use ($authMw, $apiClients) {

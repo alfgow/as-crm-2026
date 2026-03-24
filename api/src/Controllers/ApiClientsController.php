@@ -4,12 +4,15 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\ApiClientRepository;
+use App\Services\ApiClientScopeCatalog;
 
 final class ApiClientsController {
   private ApiClientRepository $clients;
+  private ApiClientScopeCatalog $scopeCatalog;
 
-  public function __construct(ApiClientRepository $clients) {
+  public function __construct(ApiClientRepository $clients, ApiClientScopeCatalog $scopeCatalog) {
     $this->clients = $clients;
+    $this->scopeCatalog = $scopeCatalog;
   }
 
   public function index(Request $req, Response $res, array $ctx): void {
@@ -25,19 +28,41 @@ final class ApiClientsController {
     ]);
   }
 
+  public function scopes(Request $req, Response $res): void {
+    $items = $this->scopeCatalog->all();
+
+    $res->json([
+      'data' => $items,
+      'meta' => [
+        'requestId' => $req->getRequestId(),
+        'count' => count($items),
+      ],
+      'errors' => [],
+    ]);
+  }
+
   public function store(Request $req, Response $res, array $ctx): void {
     $body = $req->getJson();
     $name = trim((string)($body['name'] ?? ''));
-    $scopes = $body['scopes'] ?? [];
+    $requestedScopes = $body['scopes'] ?? [];
+    $scopes = is_array($requestedScopes) ? $this->scopeCatalog->filterRequested($requestedScopes) : [];
     $rateLimit = (int)($body['rate_limit'] ?? 60);
     $accessTtl = isset($body['access_ttl_seconds']) ? (int)$body['access_ttl_seconds'] : null;
     $refreshTtl = isset($body['refresh_ttl_seconds']) ? (int)$body['refresh_ttl_seconds'] : null;
 
-    if ($name === '' || !is_array($scopes) || empty($scopes)) {
+    if ($name === '' || !is_array($requestedScopes) || empty($scopes)) {
+      $invalidScopes = is_array($requestedScopes)
+        ? array_values(array_diff($requestedScopes, $scopes))
+        : [];
+
       $res->json([
         'data' => null,
         'meta' => ['requestId' => $req->getRequestId()],
-        'errors' => [['code' => 'bad_request', 'message' => 'name and scopes are required']],
+        'errors' => [[
+          'code' => 'bad_request',
+          'message' => 'name and valid scopes are required',
+          'invalid_scopes' => $invalidScopes,
+        ]],
       ], 400);
       return;
     }

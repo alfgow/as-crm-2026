@@ -536,6 +536,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 39a. Listar Scopes Disponibles para API Clients
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/api-clients/scopes`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ### 40. Crear API Client
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/api-clients`
@@ -546,7 +552,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   ```json
   {
     "name": "Cliente Integración",
-    "scopes": ["read", "write"],
+    "scopes": [
+      "leads:read",
+      "polizas:read",
+      "asesores-prospectados:read",
+      "asesores-prospectados:write"
+    ],
     "rate_limit": 60,
     "access_ttl_seconds": 31536000,
     "refresh_ttl_seconds": 2592000
@@ -565,6 +576,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
 
+### 42a. Listar Scopes Disponibles para Integrations Clients (Alias)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/integrations/clients/scopes`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
 ### 43. Crear Integrations Client (Alias)
 - **Method**: `POST`
 - **URL**: `{{base_url}}/api/v1/integrations/clients`
@@ -575,7 +592,12 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   ```json
   {
     "name": "Cliente Integración",
-    "scopes": ["read", "write"],
+    "scopes": [
+      "leads:read",
+      "polizas:read",
+      "asesores-prospectados:read",
+      "asesores-prospectados:write"
+    ],
     "rate_limit": 60,
     "access_ttl_seconds": 31536000,
     "refresh_ttl_seconds": 2592000
