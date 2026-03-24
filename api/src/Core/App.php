@@ -47,6 +47,7 @@ final class App {
 
     // Protected
     $authMw = new AuthMiddleware($this->config, $tokenRepo);
+    $scopedAuthMw = new \App\Middleware\ScopedAuthMiddleware($this->config, $tokenRepo, $apiRevocationsRepo);
 
     $this->router->add('GET', '/api/v1/users/me', function(Request $req, Response $res, array $params) use ($authMw, $users) {
       $ctx = $authMw->handle($req, $res);
@@ -339,6 +340,75 @@ final class App {
     $this->router->add('POST', '/api/v1/asesores/delete-bulk', function(Request $req, Response $res) use ($authMw, $asesores) {
       $ctx = $authMw->handle($req, $res);
       $asesores->deleteBulk($req, $res);
+    });
+
+    // Asesores prospectados CRUD
+    $asesorProspectadoRepo = new \App\Repositories\AsesorProspectadoRepository($this->db);
+    $asesorProspectadoComentarioRepo = new \App\Repositories\AsesorProspectadoComentarioRepository($this->db);
+    $asesoresProspectados = new \App\Controllers\AsesoresProspectadosController($asesorProspectadoRepo);
+    $asesoresProspectadosComentarios = new \App\Controllers\AsesoresProspectadosComentariosController(
+      $asesorProspectadoRepo,
+      $asesorProspectadoComentarioRepo
+    );
+
+    $this->router->add('GET', '/api/v1/asesores-prospectados', function(Request $req, Response $res) use ($scopedAuthMw, $asesoresProspectados) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados:read']);
+      $asesoresProspectados->index($req, $res, $ctx);
+    });
+
+    $this->router->add('POST', '/api/v1/asesores-prospectados', function(Request $req, Response $res) use ($scopedAuthMw, $asesoresProspectados) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados:write']);
+      $asesoresProspectados->store($req, $res, $ctx);
+    });
+
+    $this->router->add('GET', '/api/v1/asesores-prospectados/{id}', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectados) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados:read']);
+      $asesoresProspectados->show($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/asesores-prospectados/{id}', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectados) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados:write']);
+      $asesoresProspectados->update($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/asesores-prospectados/{id}', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectados) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados:write']);
+      $asesoresProspectados->destroy($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/asesores-prospectados/{id}/comentarios', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectadosComentarios) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados-comentarios:read']);
+      $asesoresProspectadosComentarios->byProspecto($req, $res, $params);
+    });
+
+    $this->router->add('POST', '/api/v1/asesores-prospectados/{id}/comentarios', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectadosComentarios) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados-comentarios:write']);
+      $asesoresProspectadosComentarios->storeByProspecto($req, $res, $params);
+    });
+
+    $this->router->add('GET', '/api/v1/asesores-prospectados-comentarios', function(Request $req, Response $res) use ($scopedAuthMw, $asesoresProspectadosComentarios) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados-comentarios:read']);
+      $asesoresProspectadosComentarios->index($req, $res, $ctx);
+    });
+
+    $this->router->add('POST', '/api/v1/asesores-prospectados-comentarios', function(Request $req, Response $res) use ($scopedAuthMw, $asesoresProspectadosComentarios) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados-comentarios:write']);
+      $asesoresProspectadosComentarios->store($req, $res, $ctx);
+    });
+
+    $this->router->add('GET', '/api/v1/asesores-prospectados-comentarios/{id}', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectadosComentarios) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados-comentarios:read']);
+      $asesoresProspectadosComentarios->show($req, $res, $params);
+    });
+
+    $this->router->add('PUT', '/api/v1/asesores-prospectados-comentarios/{id}', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectadosComentarios) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados-comentarios:write']);
+      $asesoresProspectadosComentarios->update($req, $res, $params);
+    });
+
+    $this->router->add('DELETE', '/api/v1/asesores-prospectados-comentarios/{id}', function(Request $req, Response $res, array $params) use ($scopedAuthMw, $asesoresProspectadosComentarios) {
+      $ctx = $scopedAuthMw->handle($req, $res, ['asesores-prospectados-comentarios:write']);
+      $asesoresProspectadosComentarios->destroy($req, $res, $params);
     });
 
     // Inmuebles CRUD

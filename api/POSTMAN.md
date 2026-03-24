@@ -2219,3 +2219,117 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
 - **URL**: `{{base_url}}/ia/modelos-disponibles`
 - **Headers**:
   - `Authorization`: `Bearer <Token>`
+
+## Asesores Prospectados
+
+### A39. Listar Asesores Prospectados
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A40. Crear Asesor Prospectado
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "nombre": "María Pérez",
+    "telefono": "5512345678",
+    "fecha": "2026-03-23 12:30:00"
+  }
+  ```
+
+### A41. Obtener Asesor Prospectado por ID
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados/{{id_prospectado}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A42. Actualizar Asesor Prospectado
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados/{{id_prospectado}}`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "nombre": "María Pérez Actualizada",
+    "telefono": "5512345678"
+  }
+  ```
+
+### A43. Eliminar Asesor Prospectado
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados/{{id_prospectado}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A44. Listar Comentarios de Prospectados
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados-comentarios?id_prospecto={{id_prospectado}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A45. Crear Comentario de Prospectado
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados-comentarios`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "id_prospecto": 1,
+    "comentario": "Se llamó y pidió seguimiento el viernes",
+    "fecha": "2026-03-23 12:35:00"
+  }
+  ```
+
+### A46. Obtener Comentario por ID
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados-comentarios/{{id_comentario}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A47. Actualizar Comentario
+- **Method**: `PUT`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados-comentarios/{{id_comentario}}`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "comentario": "Seguimiento reagendado para mañana"
+  }
+  ```
+
+### A48. Eliminar Comentario
+- **Method**: `DELETE`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados-comentarios/{{id_comentario}}`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A49. Listar Comentarios por Prospectado (Ruta anidada)
+- **Method**: `GET`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados/{{id_prospectado}}/comentarios`
+- **Headers**:
+  - `Authorization`: `Bearer <Token>`
+
+### A50. Crear Comentario por Prospectado (Ruta anidada)
+- **Method**: `POST`
+- **URL**: `{{base_url}}/api/v1/asesores-prospectados/{{id_prospectado}}/comentarios`
+- **Headers**:
+  - `Content-Type`: `application/json`
+  - `Authorization`: `Bearer <Token>`
+- **Body** (Raw JSON):
+  ```json
+  {
+    "comentario": "Se generó comentario desde la vista del prospecto"
+  }
+  ```
