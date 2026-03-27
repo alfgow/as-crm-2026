@@ -6,6 +6,7 @@ use App\Core\Response;
 use App\Repositories\AsesorProspectadoRepository;
 
 final class AsesoresProspectadosController {
+  private const ESTATUS_VALIDOS = ['activo', 'contactar', 'no_contesta', 'descartado'];
   private AsesorProspectadoRepository $prospectados;
 
   public function __construct(AsesorProspectadoRepository $prospectados) {
@@ -57,6 +58,13 @@ final class AsesoresProspectadosController {
     if (!array_key_exists('fecha', $body) || trim((string)$body['fecha']) === '') {
       $body['fecha'] = date('Y-m-d H:i:s');
     }
+    if (!array_key_exists('estatus', $body) || trim((string)$body['estatus']) === '') {
+      $body['estatus'] = 'contactar';
+    }
+    if (!$this->isValidEstatus((string)$body['estatus'])) {
+      $this->validationError($req, $res, 'estatus', 'El campo estatus es inválido');
+      return;
+    }
 
     try {
       $created = $this->prospectados->create($body);
@@ -86,6 +94,10 @@ final class AsesoresProspectadosController {
 
     if (array_key_exists('telefono', $body) && trim((string)$body['telefono']) === '') {
       $this->validationError($req, $res, 'telefono', 'El campo telefono no puede ir vacío');
+      return;
+    }
+    if (array_key_exists('estatus', $body) && !$this->isValidEstatus((string)$body['estatus'])) {
+      $this->validationError($req, $res, 'estatus', 'El campo estatus es inválido');
       return;
     }
 
@@ -178,5 +190,9 @@ final class AsesoresProspectadosController {
       'meta' => ['requestId' => $req->getRequestId()],
       'errors' => [['code' => 'not_found', 'message' => $message]],
     ], 404);
+  }
+
+  private function isValidEstatus(string $estatus): bool {
+    return in_array(trim($estatus), self::ESTATUS_VALIDOS, true);
   }
 }
