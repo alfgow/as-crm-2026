@@ -15,12 +15,15 @@ Payload base:
 {
   "nombre": "María Pérez",
   "telefono": "5512345678",
+  "estatus": "contactar",
   "fecha": "2026-03-23 12:30:00"
 }
 ```
 
 Notas:
 - `telefono` es obligatorio.
+- `estatus` acepta: `activo`, `contactar`, `no_contesta`, `descartado`.
+- Si no se envía `estatus`, la API asigna `contactar` por default.
 - `fecha` es opcional; si no se envía, la API guarda la fecha actual.
 - La tabla tiene restricción `UNIQUE` en `telefono`.
 

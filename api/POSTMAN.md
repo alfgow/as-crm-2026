@@ -2261,6 +2261,7 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   {
     "nombre": "María Pérez",
     "telefono": "5512345678",
+    "estatus": "contactar",
     "fecha": "2026-03-23 12:30:00"
   }
   ```
@@ -2281,7 +2282,8 @@ Se utilizan identificadores numéricos para estados y tipos clave. El texto es d
   ```json
   {
     "nombre": "María Pérez Actualizada",
-    "telefono": "5512345678"
+    "telefono": "5512345678",
+    "estatus": "activo"
   }
   ```
 

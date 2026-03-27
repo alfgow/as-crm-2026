@@ -11,7 +11,7 @@ final class AsesorProspectadoRepository {
   }
 
   public function findAll(): array {
-    $sql = "SELECT `id`, `nombre`, `telefono`, `fecha`
+    $sql = "SELECT `id`, `nombre`, `telefono`, `estatus`, `fecha`
             FROM `asesores-prospectados`
             ORDER BY `id` DESC";
     $st = $this->pdo->query($sql);
@@ -19,7 +19,7 @@ final class AsesorProspectadoRepository {
   }
 
   public function findById(int $id): ?array {
-    $sql = "SELECT `id`, `nombre`, `telefono`, `fecha`
+    $sql = "SELECT `id`, `nombre`, `telefono`, `estatus`, `fecha`
             FROM `asesores-prospectados`
             WHERE `id` = :id
             LIMIT 1";
@@ -30,12 +30,13 @@ final class AsesorProspectadoRepository {
   }
 
   public function create(array $data): array {
-    $sql = "INSERT INTO `asesores-prospectados` (`nombre`, `telefono`, `fecha`)
-            VALUES (:nombre, :telefono, :fecha)";
+    $sql = "INSERT INTO `asesores-prospectados` (`nombre`, `telefono`, `estatus`, `fecha`)
+            VALUES (:nombre, :telefono, :estatus, :fecha)";
     $st = $this->pdo->prepare($sql);
     $st->execute([
       ':nombre' => $this->normalizeNullableString($data['nombre'] ?? null),
       ':telefono' => trim((string)$data['telefono']),
+      ':estatus' => trim((string)$data['estatus']),
       ':fecha' => $this->normalizeNullableString($data['fecha'] ?? null),
     ]);
 
@@ -57,6 +58,10 @@ final class AsesorProspectadoRepository {
     if (array_key_exists('fecha', $data)) {
       $fields[] = "`fecha` = :fecha";
       $params[':fecha'] = $this->normalizeNullableString($data['fecha']);
+    }
+    if (array_key_exists('estatus', $data)) {
+      $fields[] = "`estatus` = :estatus";
+      $params[':estatus'] = trim((string)$data['estatus']);
     }
 
     if ($fields === []) {
